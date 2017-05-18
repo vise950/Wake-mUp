@@ -1,0 +1,73 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'MyReleaseKey'
+            keyPassword 'nicola950'
+            storeFile file('C:/Users/Nicola/AndroidStudioProjects/Utilis android/keystore.release.jks')
+            storePassword 'nicola950'
+        }
+    }
+
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        applicationId "nicola.dev.com.allarmap"
+        minSdkVersion 21
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            zipAlignEnabled false
+            debuggable true
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-DEBUG'
+        }
+
+        buildTypes.each {
+            it.buildConfigField 'String', 'GOOGLE_API_AUTOCOMPLETE_KEY', GoogleApiAutocompleteKey
+            it.buildConfigField 'String', 'GOOGLE_API_MAPS_KEY', GoogleApiMapsKey
+        }
+    }
+
+    dependencies {
+        compile fileTree(dir: 'libs', include: ['*.jar'])
+
+        //Support library
+        //noinspection GradleCompatible
+        compile "com.android.support:appcompat-v7:$rootProject.ext.support_version"
+        compile "com.android.support:support-v4:$rootProject.ext.support_version"
+        compile "com.android.support:design:$rootProject.ext.support_version"
+        compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
+        //android play services library
+        compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
+        compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
+
+        //SearchView
+        compile "com.github.arimorty:floatingsearchview:$rootProject.ext.searchView_version"
+
+        //Kotlin
+        compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
