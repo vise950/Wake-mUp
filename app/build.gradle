@@ -40,10 +40,10 @@ android {
             versionNameSuffix '-DEBUG'
         }
 
-        buildTypes.each {
-            it.buildConfigField 'String', 'GOOGLE_API_AUTOCOMPLETE_KEY', GoogleApiAutocompleteKey
-            it.buildConfigField 'String', 'GOOGLE_API_MAPS_KEY', GoogleApiMapsKey
-        }
+//        buildTypes.each {
+//            it.buildConfigField 'String', 'GOOGLE_API_AUTOCOMPLETE_KEY', GoogleApiAutocompleteKey
+//            it.buildConfigField 'String', 'GOOGLE_API_MAPS_KEY', GoogleApiMapsKey
+//        }
     }
 
     dependencies {
