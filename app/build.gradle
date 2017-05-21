@@ -59,6 +59,7 @@ android {
         //android play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
         compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
+        compile "com.google.android.gms:play-services-places:$rootProject.ext.play_services_version"
 
         //SearchView
         compile "com.github.arimorty:floatingsearchview:$rootProject.ext.searchView_version"
