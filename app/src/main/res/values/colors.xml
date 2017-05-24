@@ -9,4 +9,7 @@
     <color name="divider">#BDBDBD</color>
 
     <color name="color_white">#FFFFFF</color>
+
+    <color name="stoke_map">#800091ea</color>
+    <color name="fill_map">#6418a7ff</color>
 </resources>

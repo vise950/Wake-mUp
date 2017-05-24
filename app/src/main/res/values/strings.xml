@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">AllarMap</string>
+    <string name="app_name" translatable="false">AllarMap</string>
+
+    <string name="maps_key" translatable="false">AIzaSyAg7YHx_q2HIrbbNcEaFAcH0MTufqSDOtQ</string>
+
+    <string name="no_result_suggestion">No result</string>
+    <string name="error_load_suggestion">Fail to load suggestions</string>
+
 </resources>

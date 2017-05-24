@@ -9,7 +9,12 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.SeekBar
+import com.dev.nicola.allweather.utils.log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.LocationRequest
@@ -19,9 +24,13 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.*
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
+import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
+import nicola.dev.com.allarmap.utils.Utils
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
@@ -32,10 +41,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
         private val DEFAULT_ZOOM: Float = 8F
-        private val ZOOM: Float = 15F
+        private val ZOOM: Float = 10F
     }
 
     private var mMap: GoogleMap? = null
+    private var circle: Circle? = null
     private var mRequestPermissionCount = 0
     private var isLocationPermissionGranted = false
 
@@ -43,6 +53,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var mLocation: Location? = null
     private var mLocationName: String? = null
     private var mLocationRequest: LocationRequest? = null
+    private var mMarker: Marker? = null
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
@@ -147,6 +158,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
+                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
                     }
                 }
             }
@@ -154,11 +166,75 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (slideOffset > 0) {
                     destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
+                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                 } else {
                     destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
+                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
                 }
             }
         })
+
+        radius_seekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                radius_txt.text = progress.toString()
+                val circleOptions = CircleOptions()
+                        .center(LatLng(mMarker?.position?.latitude ?: 100.0, mMarker?.position?.longitude ?: 100.0))
+                        .radius(1000.0 * progress)
+                        .strokeWidth(10F)
+                        .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
+                        .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
+
+                circle?.remove()
+                circle = mMap?.addCircle(circleOptions)
+
+                //todo improve code
+            }
+        })
+
+        destination_txt.setOnClickListener {
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        }
+
+        val resultAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
+        destination_txt?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                destination_txt?.setAdapter(resultAdapter)
+            }
+
+            //fixme resultAdapter
+            override fun onTextChanged(query: CharSequence, start: Int, before: Int, count: Int) {
+                if (query.trim() != "" && query.length > 1) {
+                    MapsGoogleApiClient.service.getPrediction(query.toString()).subscribeOn(Schedulers.newThread())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe({ data ->
+                                if (data?.predictions?.isNotEmpty() ?: false) {
+                                    data?.predictions?.forEachIndexed { index, data ->
+                                        if (index in 0..3) {
+                                            resultAdapter.add(Utils.trimString(data.description.toString()))
+                                        }
+                                    }
+                                } else {
+                                    resultAdapter.clear()
+                                    resultAdapter.add(resources.getString(R.string.no_result_suggestion))
+                                }
+                            }, { error ->
+                                error.log("Error call")
+                                resultAdapter.add(resources.getString(R.string.error_load_suggestion))
+                            })
+                }
+            }
+        })
+
+        destination_txt.setOnItemClickListener { parent, view, position, id ->
+            val result = parent.getItemAtPosition(position).toString()
+            Utils.LocationHelper.getCoordinates(result, {
+                mMarker = mMap?.addMarker(MarkerOptions()
+                        .position(LatLng(it.latitude, it.longitude)))
+            })
+        }
     }
 
     private fun setMapUi(map: GoogleMap) {
