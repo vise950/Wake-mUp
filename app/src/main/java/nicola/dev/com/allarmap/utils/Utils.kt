@@ -6,6 +6,11 @@ import com.dev.nicola.allweather.utils.log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
+import android.view.inputmethod.InputMethodManager.HIDE_IMPLICIT_ONLY
+import android.app.Activity
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
+
 
 class Utils{
     companion object{
@@ -17,6 +22,11 @@ class Utils{
                 return s.substring(0, index) + s.substring(lastIndex, s.length)
             }
             return s
+        }
+
+        fun hideKeyboard(context:Context){
+            val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
         }
     }
 

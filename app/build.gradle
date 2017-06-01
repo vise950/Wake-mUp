@@ -7,7 +7,7 @@ android {
         config {
             keyAlias 'MyReleaseKey'
             keyPassword 'nicola950'
-            storeFile file('C:/Users/Nicola/AndroidStudioProjects/Utilis android/keystore.release.jks')
+//            storeFile file('C:/Users/Nicola/AndroidStudioProjects/Utilis android/keystore.release.jks')
             storePassword 'nicola950'
         }
     }

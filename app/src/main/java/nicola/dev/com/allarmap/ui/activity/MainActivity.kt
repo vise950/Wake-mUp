@@ -1,6 +1,8 @@
-package nicola.dev.com.allarmap
+package nicola.dev.com.allarmap.ui.activity
 
 import android.Manifest
+import android.app.PendingIntent
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -17,9 +19,10 @@ import android.widget.SeekBar
 import com.dev.nicola.allweather.utils.log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -29,11 +32,17 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
+import nicola.dev.com.allarmap.R
 import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
+import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.Utils
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+class MainActivity : AppCompatActivity(),
+        OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        com.google.android.gms.location.LocationListener {
 
     companion object {
         private val TAG = "ALLARM MAP"
@@ -42,18 +51,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
         private val DEFAULT_ZOOM: Float = 8F
         private val ZOOM: Float = 10F
+        private val GEOFENCE_REQ_ID = "Allarm map geofence"
+        private val GEOFENCE_REQ_CODE = 0
     }
 
     private var mMap: GoogleMap? = null
-    private var circle: Circle? = null
+    private var mCircle: Circle? = null
+    private var mRadius: Double? = null
     private var mRequestPermissionCount = 0
-    private var isLocationPermissionGranted = false
 
     private var mGoogleApiClient: GoogleApiClient? = null
     private var mLocation: Location? = null
-    private var mLocationName: String? = null
     private var mLocationRequest: LocationRequest? = null
     private var mMarker: Marker? = null
+
+    private var mGeofence: Geofence? = null
+    private var mGeofenceRequest: GeofencingRequest? = null
+    private var mGeoFencePendingIntent:PendingIntent?=null
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
@@ -63,13 +77,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         setContentView(R.layout.activity_main)
 
         init()
-//        initUi()
     }
 
     override fun onResume() {
         super.onResume()
         if (mGoogleApiClient?.isConnected ?: false) {
             getDeviceLocation()
+        } else {
+            mGoogleApiClient?.reconnect()
         }
     }
 
@@ -82,9 +97,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onStop() {
         super.onStop()
-        if (mGoogleApiClient?.isConnected ?: false) {
-            mGoogleApiClient?.disconnect()
-        }
+        mGoogleApiClient?.disconnect()
     }
 
     override fun onMapReady(map: GoogleMap?) {
@@ -94,13 +107,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         }
 
         map?.setOnMapClickListener {
-            mBottomSheetBehavior?.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            mMarker?.remove()
+            mCircle?.remove()
+            mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
         }
     }
 
     override fun onConnected(bundle: Bundle?) {
         getDeviceLocation()
-        initMap()
+        initMap() //todo remove and use this fun on init fun
     }
 
     override fun onConnectionSuspended(i: Int) {
@@ -122,7 +138,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                         Snackbar.make(root_container, "I needed location permission for determinate your position.", Snackbar.LENGTH_INDEFINITE)
                                 .setAction("OK", {
-                                    ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+                                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                                 })
                                 .show()
                         mRequestPermissionCount++
@@ -140,15 +156,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             buildGoogleClient()
             mGoogleApiClient?.connect()
             initUi()
+//            initMap()
         } else
             requestLocationPermission()
-    }
-
-    private fun initMap() {
-        if (mMap == null) {
-            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-            mapFragment.getMapAsync(this)
-        }
     }
 
     private fun initUi() {
@@ -159,6 +169,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                        radius_seekbar.progress = 0
                     }
                 }
             }
@@ -179,15 +190,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 radius_txt.text = progress.toString()
+                mRadius = 1000.0 * progress
                 val circleOptions = CircleOptions()
                         .center(LatLng(mMarker?.position?.latitude ?: 100.0, mMarker?.position?.longitude ?: 100.0))
-                        .radius(1000.0 * progress)
+                        .radius(mRadius ?: 0.0)
                         .strokeWidth(10F)
                         .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
                         .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
 
-                circle?.remove()
-                circle = mMap?.addCircle(circleOptions)
+                mCircle?.remove()
+                mCircle = mMap?.addCircle(circleOptions)
 
                 //todo improve code
             }
@@ -195,17 +207,22 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         destination_txt.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            if (destination_txt?.text?.isNotEmpty() ?: false) {
+                destination_txt.text = null
+            }
         }
 
         val resultAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
         destination_txt?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                destination_txt?.setAdapter(resultAdapter)
-            }
+            override fun afterTextChanged(s: Editable?) {}
 
             //fixme resultAdapter
             override fun onTextChanged(query: CharSequence, start: Int, before: Int, count: Int) {
+                if (!resultAdapter.isEmpty) {
+                    resultAdapter.clear()
+                }
+
                 if (query.trim() != "" && query.length > 1) {
                     MapsGoogleApiClient.service.getPrediction(query.toString()).subscribeOn(Schedulers.newThread())
                             .observeOn(AndroidSchedulers.mainThread())
@@ -213,11 +230,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                                 if (data?.predictions?.isNotEmpty() ?: false) {
                                     data?.predictions?.forEachIndexed { index, data ->
                                         if (index in 0..3) {
+                                            "add ${data.description.toString()}".log(TAG)
                                             resultAdapter.add(Utils.trimString(data.description.toString()))
                                         }
                                     }
                                 } else {
-                                    resultAdapter.clear()
                                     resultAdapter.add(resources.getString(R.string.no_result_suggestion))
                                 }
                             }, { error ->
@@ -225,15 +242,34 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                                 resultAdapter.add(resources.getString(R.string.error_load_suggestion))
                             })
                 }
+
+                destination_txt.setAdapter(resultAdapter)
             }
         })
 
         destination_txt.setOnItemClickListener { parent, view, position, id ->
             val result = parent.getItemAtPosition(position).toString()
+            Utils.hideKeyboard(this)
             Utils.LocationHelper.getCoordinates(result, {
-                mMarker = mMap?.addMarker(MarkerOptions()
-                        .position(LatLng(it.latitude, it.longitude)))
+                mMarker?.remove()
+                mCircle?.remove()
+                mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
             })
+        }
+
+        fab.setOnClickListener {
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            buildGeofences()
+            createGeofenceRequest()
+            createGeofencePendingIntent()
+            addGeofence()
+        }
+    }
+
+    private fun initMap() {
+        if (mMap == null) {
+            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment.getMapAsync(this)
         }
     }
 
@@ -241,18 +277,45 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         map.isMyLocationEnabled = true
         map.uiSettings.isMyLocationButtonEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
+
+        //todo attendere che location!=null e poi fare lo zoom
         mLocation?.let { map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM)) }
         map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
     }
 
+    private fun buildGeofences() {
+        mGeofence = Geofence.Builder()
+                .setRequestId(GEOFENCE_REQ_ID)
+                .setCircularRegion(mLocation?.latitude ?: 100.0, mLocation?.longitude ?: 100.0, mRadius?.toFloat() ?: 0F)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE) //todo never expire only for test
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build()
+    }
+
+    private fun createGeofenceRequest() {
+        mGeofenceRequest = GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofence(mGeofence)
+                .build()
+    }
+
+    private fun createGeofencePendingIntent(){
+        val intent=Intent(this,GeofenceTransitionsIntentService::class.java)
+        mGeoFencePendingIntent= PendingIntent.getService(this, GEOFENCE_REQ_CODE,intent,PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun addGeofence(){
+        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest,mGeoFencePendingIntent)
+                .setResultCallback{
+                    it.log(TAG)
+                }
+    }
 
     @Synchronized private fun buildGoogleClient() {
         mGoogleApiClient = GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
                 .build()
         createLocationRequest()
     }
@@ -273,11 +336,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             Snackbar.make(root_container, "I needed location permission for determinate your position.", Snackbar.LENGTH_INDEFINITE)
                     .setAction("OK", {
-                        ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                     })
                     .show()
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
         }
     }
 }
