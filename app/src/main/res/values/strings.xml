@@ -6,7 +6,10 @@
     <string name="no_result_suggestion">No result</string>
     <string name="error_load_suggestion">Fail to load suggestions</string>
 
-    <string name="snackbar_permission">I needed location permission for determinate your position.</string>
+    <string name="snackbar_ask_permission">I needed location permission for determinate your position.</string>
+    <string name="snackbar_permission_denied">Go to app setting and enable permission.</string>
+    <string name="snackbar_no_location">Destination empty or wrong.</string>
+    <string name="snackbar_service_start">Starting geofence service.\nApplication will be closed.</string>
     <string name="action_OK">OK</string>
 
 </resources>

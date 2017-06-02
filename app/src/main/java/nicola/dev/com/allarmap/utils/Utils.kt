@@ -48,6 +48,8 @@ class Utils {
 
     object LocationHelper {
 
+        private val INVALID_DOUBLE_VALUE = -999.0
+
         fun getLocationName(latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null, onError: (() -> Unit)? = null) {
             MapsGoogleApiClient.service.getLocationName(latitude.toString() + "," + longitude.toString())
                     .subscribeOn(Schedulers.newThread())
@@ -72,8 +74,8 @@ class Utils {
                     .subscribe({ data ->
                         if (data?.result?.isNotEmpty() ?: false) {
                             val location = Location(LocationManager.PASSIVE_PROVIDER)
-                            location.latitude = data?.result?.get(0)?.geometry?.location?.lat ?: 0.0
-                            location.longitude = data?.result?.get(0)?.geometry?.location?.lng ?: 0.0
+                            location.latitude = data?.result?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
+                            location.longitude = data?.result?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
                             onSuccess?.invoke(location)
                         }
                     }, { error ->

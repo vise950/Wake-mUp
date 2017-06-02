@@ -53,6 +53,13 @@ class MainActivity : AppCompatActivity(),
         private val ZOOM: Float = 8F
         private val GEOFENCE_REQ_ID = "Allarm map geofence"
         private val GEOFENCE_REQ_CODE = 0
+        private val GEO_DURATION = 60 * 60 * 1000L
+
+
+        private val INVALID_FLOAT_VALUE = -999.0F
+        private val INVALID_INT_VALUE = -999
+        private val INVALID_DOUBLE_VALUE = -999.0
+        private val INVALID_STRING_VALUE = ""
     }
 
     private var mMap: GoogleMap? = null
@@ -75,9 +82,26 @@ class MainActivity : AppCompatActivity(),
     private var mLocation: Location? = null
     private var mMarker: Marker? = null
 
-    private var mGeofence: Geofence? = null
-    private var mGeofenceRequest: GeofencingRequest? = null
-    private var mGeoFencePendingIntent: PendingIntent? = null
+    private val mGeofence by lazy <Geofence> {
+        Geofence.Builder()
+                .setRequestId(GEOFENCE_REQ_ID)
+                .setCircularRegion(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE, mRadius?.toFloat() ?: INVALID_FLOAT_VALUE)
+                .setExpirationDuration(GEO_DURATION)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                .build()
+    }
+
+    private val mGeofenceRequest by lazy <GeofencingRequest> {
+        GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofence(mGeofence)
+                .build()
+    }
+
+    private val mGeoFencePendingIntent by lazy<PendingIntent> {
+        val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
+        PendingIntent.getService(this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
@@ -97,10 +121,10 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-//        if (mGoogleApiClient?.isConnected ?: false) {
+//        if (mGoogleApiClient.isConnected) {
 //            getDeviceLocation()
 //        } else {
-//            mGoogleApiClient?.reconnect()
+        mGoogleApiClient.reconnect()
 //        }
     }
 
@@ -119,14 +143,18 @@ class MainActivity : AppCompatActivity(),
     override fun onMapReady(map: GoogleMap?) {
         map?.let {
             this.mMap = it
-//            setMapUi(it)
         }
 
         map?.setOnMapClickListener {
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            Utils.hideKeyboard(this)
             mMarker?.remove()
             mCircle?.remove()
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+            Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
+                destination_txt.setText(it)
+                destination_txt.clearFocus()
+            })
         }
     }
 
@@ -139,6 +167,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onConnectionSuspended(i: Int) {
+        mGeoFencePendingIntent.let {
+            LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it)
+        }
     }
 
     override fun onConnectionFailed(result: ConnectionResult) {
@@ -155,14 +186,12 @@ class MainActivity : AppCompatActivity(),
                     getDeviceLocation()
                 } else {
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        Snackbar.make(root_container, "I needed location permission for determinate your position.", Snackbar.LENGTH_INDEFINITE)
-                                .setAction("OK", {
-                                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-                                })
-                                .show()
+                        Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_ask_permission, actionClick = {
+                            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+                        })
                         mRequestPermissionCount++
                     } else {
-                        Snackbar.make(root_container, "Go to app setting and enable permission.", Snackbar.LENGTH_LONG).show()
+                        Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
                     }
                 }
             }
@@ -171,10 +200,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun initMap() {
-        if (mMap == null) {
-            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-            mapFragment.getMapAsync(this)
-        }
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
     }
 
     private fun setMapUi(map: GoogleMap) {
@@ -184,7 +212,7 @@ class MainActivity : AppCompatActivity(),
 
         mLocation?.let {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-            map.animateCamera(CameraUpdateFactory.zoomTo(0F), 2000, null)
+            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 3000, null)
         }
     }
 
@@ -196,7 +224,10 @@ class MainActivity : AppCompatActivity(),
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
-                        radius_seekbar.progress = 0
+                    }
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
+                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                     }
                 }
             }
@@ -219,15 +250,14 @@ class MainActivity : AppCompatActivity(),
                 radius_txt.text = progress.toString()
                 mRadius = 1000.0 * progress
                 val circleOptions = CircleOptions()
-                        .center(LatLng(mMarker?.position?.latitude ?: 100.0, mMarker?.position?.longitude ?: 100.0))
-                        .radius(mRadius ?: 0.0)
+                        .center(LatLng(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE))
+                        .radius(mRadius ?: INVALID_DOUBLE_VALUE)
                         .strokeWidth(10F)
                         .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
                         .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
 
                 mCircle?.remove()
                 mCircle = mMap?.addCircle(circleOptions)
-
                 //todo improve code
             }
         })
@@ -286,45 +316,22 @@ class MainActivity : AppCompatActivity(),
 
         fab.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-            buildGeofences()
-            createGeofenceRequest()
-            createGeofencePendingIntent()
-            addGeofence()
+            if (mMarker != null) {
+                mLocation?.let {
+                    LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
+                            .setResultCallback { it.log("geofence callback") }
+                    Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                }
+            } else {
+                Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
+            }
         }
     }
 
-    private fun buildGeofences() {
-        mGeofence = Geofence.Builder()
-                .setRequestId(GEOFENCE_REQ_ID)
-                .setCircularRegion(mLocation?.latitude ?: 100.0, mLocation?.longitude ?: 100.0, mRadius?.toFloat() ?: 0F)
-                .setExpirationDuration(Geofence.NEVER_EXPIRE) //todo never expire only for test
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build()
-    }
-
-    private fun createGeofenceRequest() {
-        mGeofenceRequest = GeofencingRequest.Builder()
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                .addGeofence(mGeofence)
-                .build()
-    }
-
-    private fun createGeofencePendingIntent() {
-        val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
-        mGeoFencePendingIntent = PendingIntent.getService(this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-
-    private fun addGeofence() {
-        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
-                .setResultCallback {
-
-                }
-    }
-
     private fun getDeviceLocation() {
-        mLocationRequest.interval= UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest.fastestInterval= FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest.priority=LocationRequest.PRIORITY_HIGH_ACCURACY
+        mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
@@ -336,7 +343,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_permission, actionClick = {
+            Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_ask_permission, actionClick = {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
             })
         } else {

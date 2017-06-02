@@ -44,11 +44,12 @@ class GeofenceTransitionsIntentService : IntentService("") {
             // Get the geofence that were triggered
             val triggeringGeofences = geofencingEvent.triggeringGeofences
             // Create a detail message with Geofences received
-            val geofenceTransitionDetails = getGeofenceTrasitionDetails(geofenceTransition, triggeringGeofences)
+//            val geofenceTransitionDetails = getGeofenceTrasitionDetails(geofenceTransition, triggeringGeofences)
 
             // Send notification and log the transition details.
 //            sendNotification(geofenceTransitionDetails)
 
+            addNotification()
             "notify".log(TAG)
         } else {
             // Log the error.
@@ -57,22 +58,22 @@ class GeofenceTransitionsIntentService : IntentService("") {
     }
 
     // Create a detail message with Geofences received
-    private fun getGeofenceTrasitionDetails(geoFenceTransition: Int, triggeringGeofences: List<Geofence>): String {
-        // get the ID of each geofence triggered
-        val triggeringGeofencesList: ArrayList<String>? = null
-        for (geofence in triggeringGeofences) {
-            triggeringGeofencesList?.add(geofence.requestId)
-        }
+//    private fun getGeofenceTrasitionDetails(geoFenceTransition: Int, triggeringGeofences: List<Geofence>): String {
+//        // get the ID of each geofence triggered
+//        val triggeringGeofencesList: ArrayList<String>? = null
+//        for (geofence in triggeringGeofences) {
+//            triggeringGeofencesList?.add(geofence.requestId)
+//        }
+//
+//        var status: String? = null
+//        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
+//            status = "Entering "
+//        else if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT)
+//            status = "Exiting "
+//        return status ?: "" + TextUtils.join(", ", triggeringGeofencesList)
+//    }
 
-        var status: String? = null
-        if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER)
-            status = "Entering "
-        else if (geoFenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT)
-            status = "Exiting "
-        return status ?: "" + TextUtils.join(", ", triggeringGeofencesList)
-    }
-
-    // Send a notification
+//    // Send a notification
 //    private fun sendNotification(msg: String) {
 //        "sendNotification: $msg".log(TAG)
 //
@@ -90,28 +91,50 @@ class GeofenceTransitionsIntentService : IntentService("") {
 //        notificatioMng.notify(GEOFENCE_NOTIFICATION_ID,
 //                createNotification(msg, notificationPendingIntent))
 //    }
-//
-//    // Create a notification
-//    private fun createNotification(msg: String, notificationPendingIntent: PendingIntent): Notification {
-//        val notificationBuilder = NotificationCompat.Builder(this)
-//        notificationBuilder
-//                .setSmallIcon(R.mipmap.ic_launcher_round)
-//                .setColor(Color.RED)
-//                .setContentTitle(msg)
+
+    //    // Create a notification
+//    private fun createNotification() {
+//        val notification = NotificationCompat.Builder(this).setSmallIcon(R.mipmap.ic_launcher_round)
+//                .setContentTitle("Title")
 //                .setContentText("Geofence Notification!")
-//                .setContentIntent(notificationPendingIntent)
 //                .setDefaults(Notification.DEFAULT_LIGHTS or Notification.DEFAULT_VIBRATE or Notification.DEFAULT_SOUND)
-//                .setAutoCancel(true)
-//        return notificationBuilder.build()
-//    }
+//                .build()
 //
-//    // Handle errors
-    private fun getErrorString(errorCode: Int): String {
-        when (errorCode) {
-            GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> return "GeoFence not available"
-            GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> return "Too many GeoFences"
-            GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> return "Too many pending intents"
-            else -> return "Unknown error."
-        }
+//
+//        val notificationIntent = Intent(this, MainActivity::class.java)
+//        val contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+//                PendingIntent.FLAG_UPDATE_CURRENT)
+//        notification.setContentIntent(contentIntent)
+//
+//        // Add as notification
+//        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//        manager.notify(0, builder.build())
+//    }
+
+
+    private fun addNotification() {
+        val builder = NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle("Notifications Example")
+                .setContentText("This is a test notification")
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        builder.setContentIntent(contentIntent)
+
+        // Add as notification
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.notify(0, builder.build())
     }
+
+    //
+//    // Handle errors
+//    private fun getErrorString(errorCode: Int): String {
+//        when (errorCode) {
+//            GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> return "GeoFence not available"
+//            GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> return "Too many GeoFences"
+//            GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> return "Too many pending intents"
+//            else -> return "Unknown error."
+//        }
+//    }
 }
