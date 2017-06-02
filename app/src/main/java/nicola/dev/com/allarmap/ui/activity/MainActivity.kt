@@ -49,8 +49,8 @@ class MainActivity : AppCompatActivity(),
         private val REQUEST_LOCATION = 854
         private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
-        private val DEFAULT_ZOOM: Float = 8F
-        private val ZOOM: Float = 10F
+        private val DEFAULT_ZOOM: Float = 6F
+        private val ZOOM: Float = 8F
         private val GEOFENCE_REQ_ID = "Allarm map geofence"
         private val GEOFENCE_REQ_CODE = 0
     }
@@ -60,14 +60,24 @@ class MainActivity : AppCompatActivity(),
     private var mRadius: Double? = null
     private var mRequestPermissionCount = 0
 
-    private var mGoogleApiClient: GoogleApiClient? = null
+    private val mGoogleApiClient by lazy <GoogleApiClient> {
+        GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build()
+    }
+
+    private val mLocationRequest by lazy {
+        LocationRequest()
+    }
+
     private var mLocation: Location? = null
-    private var mLocationRequest: LocationRequest? = null
     private var mMarker: Marker? = null
 
     private var mGeofence: Geofence? = null
     private var mGeofenceRequest: GeofencingRequest? = null
-    private var mGeoFencePendingIntent:PendingIntent?=null
+    private var mGeoFencePendingIntent: PendingIntent? = null
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
@@ -76,34 +86,40 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        init()
+        initMap()
+        initUi()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mGoogleApiClient.connect()
     }
 
     override fun onResume() {
         super.onResume()
-        if (mGoogleApiClient?.isConnected ?: false) {
-            getDeviceLocation()
-        } else {
-            mGoogleApiClient?.reconnect()
-        }
+//        if (mGoogleApiClient?.isConnected ?: false) {
+//            getDeviceLocation()
+//        } else {
+//            mGoogleApiClient?.reconnect()
+//        }
     }
 
     override fun onPause() {
         super.onPause()
-        if (mGoogleApiClient?.isConnected ?: false) {
+        if (mGoogleApiClient.isConnected) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
         }
     }
 
     override fun onStop() {
         super.onStop()
-        mGoogleApiClient?.disconnect()
+        mGoogleApiClient.disconnect()
     }
 
     override fun onMapReady(map: GoogleMap?) {
         map?.let {
             this.mMap = it
-            setMapUi(it)
+//            setMapUi(it)
         }
 
         map?.setOnMapClickListener {
@@ -115,8 +131,11 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onConnected(bundle: Bundle?) {
-        getDeviceLocation()
-        initMap() //todo remove and use this fun on init fun
+        if (Utils.isPermissionGranted(this)) {
+            getDeviceLocation()
+        } else {
+            requestLocationPermission()
+        }
     }
 
     override fun onConnectionSuspended(i: Int) {
@@ -133,7 +152,7 @@ class MainActivity : AppCompatActivity(),
         when (requestCode) {
             REQUEST_LOCATION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    init()
+                    getDeviceLocation()
                 } else {
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                         Snackbar.make(root_container, "I needed location permission for determinate your position.", Snackbar.LENGTH_INDEFINITE)
@@ -151,14 +170,22 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun init() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            buildGoogleClient()
-            mGoogleApiClient?.connect()
-            initUi()
-//            initMap()
-        } else
-            requestLocationPermission()
+    private fun initMap() {
+        if (mMap == null) {
+            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment.getMapAsync(this)
+        }
+    }
+
+    private fun setMapUi(map: GoogleMap) {
+        map.isMyLocationEnabled = true
+        map.uiSettings.isMyLocationButtonEnabled = true
+        map.uiSettings.isRotateGesturesEnabled = true
+
+        mLocation?.let {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
+            map.animateCamera(CameraUpdateFactory.zoomTo(0F), 2000, null)
+        }
     }
 
     private fun initUi() {
@@ -266,23 +293,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    private fun initMap() {
-        if (mMap == null) {
-            val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-            mapFragment.getMapAsync(this)
-        }
-    }
-
-    private fun setMapUi(map: GoogleMap) {
-        map.isMyLocationEnabled = true
-        map.uiSettings.isMyLocationButtonEnabled = true
-        map.uiSettings.isRotateGesturesEnabled = true
-
-        //todo attendere che location!=null e poi fare lo zoom
-        mLocation?.let { map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM)) }
-        map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
-    }
-
     private fun buildGeofences() {
         mGeofence = Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
@@ -299,46 +309,36 @@ class MainActivity : AppCompatActivity(),
                 .build()
     }
 
-    private fun createGeofencePendingIntent(){
-        val intent=Intent(this,GeofenceTransitionsIntentService::class.java)
-        mGeoFencePendingIntent= PendingIntent.getService(this, GEOFENCE_REQ_CODE,intent,PendingIntent.FLAG_UPDATE_CURRENT)
+    private fun createGeofencePendingIntent() {
+        val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
+        mGeoFencePendingIntent = PendingIntent.getService(this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun addGeofence(){
-        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest,mGeoFencePendingIntent)
-                .setResultCallback{
-                    it.log(TAG)
+    private fun addGeofence() {
+        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
+                .setResultCallback {
+
                 }
     }
 
-    @Synchronized private fun buildGoogleClient() {
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addConnectionCallbacks(this)
-                .addApi(LocationServices.API)
-                .build()
-        createLocationRequest()
-    }
-
-    private fun createLocationRequest() {
-        mLocationRequest = LocationRequest()
-        mLocationRequest?.interval = UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest?.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
-        mLocationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-    }
-
     private fun getDeviceLocation() {
+        mLocationRequest.interval= UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.fastestInterval= FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+        mLocationRequest.priority=LocationRequest.PRIORITY_HIGH_ACCURACY
+
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+
+        mMap?.let {
+            setMapUi(it)
+        }
     }
 
     private fun requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Snackbar.make(root_container, "I needed location permission for determinate your position.", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("OK", {
-                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-                    })
-                    .show()
+            Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_permission, actionClick = {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+            })
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
         }

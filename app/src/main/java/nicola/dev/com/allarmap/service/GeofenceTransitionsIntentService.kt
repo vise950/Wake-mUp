@@ -40,7 +40,7 @@ class GeofenceTransitionsIntentService : IntentService("") {
         val geofenceTransition = geofencingEvent.geofenceTransition
 
         // Test that the reported transition was of interest.
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER || geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             // Get the geofence that were triggered
             val triggeringGeofences = geofencingEvent.triggeringGeofences
             // Create a detail message with Geofences received

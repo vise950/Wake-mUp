@@ -6,4 +6,7 @@
     <string name="no_result_suggestion">No result</string>
     <string name="error_load_suggestion">Fail to load suggestions</string>
 
+    <string name="snackbar_permission">I needed location permission for determinate your position.</string>
+    <string name="action_OK">OK</string>
+
 </resources>

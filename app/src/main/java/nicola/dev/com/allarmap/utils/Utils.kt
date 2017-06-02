@@ -1,5 +1,6 @@
 package nicola.dev.com.allarmap.utils
 
+import android.Manifest
 import android.location.Location
 import android.location.LocationManager
 import com.dev.nicola.allweather.utils.log
@@ -9,11 +10,18 @@ import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 import android.view.inputmethod.InputMethodManager.HIDE_IMPLICIT_ONLY
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
+import android.view.View
 import android.view.inputmethod.InputMethodManager
+import kotlinx.android.synthetic.main.activity_main.*
+import nicola.dev.com.allarmap.R
+import javax.xml.datatype.Duration
 
 
-class Utils{
-    companion object{
+class Utils {
+    companion object {
 
         fun trimString(s: String): String {
             val index = s.indexOf(',')
@@ -24,9 +32,17 @@ class Utils{
             return s
         }
 
-        fun hideKeyboard(context:Context){
+        fun hideKeyboard(context: Context) {
             val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+        }
+
+        fun isPermissionGranted(context: Context): Boolean {
+            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun requstPermission() {
+
         }
     }
 
@@ -63,6 +79,27 @@ class Utils{
                     }, { error ->
                         error.log("get coordinates error")
                     })
+        }
+    }
+
+    object SnackBarHepler {
+
+        fun makeSnackbar(activity: Activity, message: Int, view: View = activity.root_container,
+                         duration: Int = Snackbar.LENGTH_INDEFINITE,
+                         actionMessage: Int = R.string.action_OK,
+                         actionClick: (() -> Unit)? = null) {
+            val snackBar = Snackbar.make(view, message, duration)
+            if (duration == Snackbar.LENGTH_INDEFINITE) {
+                snackBar.setAction(actionMessage, { actionClick?.invoke() })
+            }
+            showSnackBar(activity, snackBar)
+        }
+
+        private fun showSnackBar(activity: Activity, snackBar: Snackbar) {
+            //todo repleace runOnUiThread with anko or koventant
+            activity.runOnUiThread {
+                snackBar.show()
+            }
         }
     }
 }
