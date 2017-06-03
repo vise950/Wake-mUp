@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity(),
         private val DEFAULT_ZOOM: Float = 6F
         private val ZOOM: Float = 8F
         private val GEOFENCE_REQ_ID = "Allarm map geofence"
-        private val GEOFENCE_REQ_CODE = 0
         private val GEO_DURATION = 60 * 60 * 1000L
 
 
@@ -100,7 +99,7 @@ class MainActivity : AppCompatActivity(),
 
     private val mGeoFencePendingIntent by lazy<PendingIntent> {
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
-        PendingIntent.getService(this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
@@ -121,23 +120,19 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-//        if (mGoogleApiClient.isConnected) {
-//            getDeviceLocation()
-//        } else {
         mGoogleApiClient.reconnect()
-//        }
     }
 
     override fun onPause() {
         super.onPause()
-        if (mGoogleApiClient.isConnected) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
-        }
     }
 
     override fun onStop() {
         super.onStop()
-        mGoogleApiClient.disconnect()
+        if (mGoogleApiClient.isConnected) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
+            mGoogleApiClient.disconnect()
+        }
     }
 
     override fun onMapReady(map: GoogleMap?) {
@@ -212,7 +207,7 @@ class MainActivity : AppCompatActivity(),
 
         mLocation?.let {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
+            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 1000, null)
         }
     }
 
@@ -336,13 +331,15 @@ class MainActivity : AppCompatActivity(),
     private fun addGeofence() {
         LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
                 .setResultCallback {
-                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                    if (it.isSuccess) {
+                        Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                    }
                 }
     }
 
     private fun removeGeofence(callback: (() -> Unit)) {
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, mGeoFencePendingIntent)
-                .setResultCallback { callback.invoke() }
+                .setResultCallback { if (it.isSuccess) callback.invoke() }
     }
 
     private fun getDeviceLocation() {
