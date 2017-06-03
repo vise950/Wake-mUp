@@ -18,6 +18,8 @@ import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.activity_main.*
 import nicola.dev.com.allarmap.R
 import javax.xml.datatype.Duration
+import android.app.ActivityManager
+import android.support.v7.app.AlertDialog
 
 
 class Utils {
@@ -41,8 +43,13 @@ class Utils {
             return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         }
 
-        fun requstPermission() {
+        fun isMyServiceRunning(context: Context,serviceClass: Class<*>): Boolean {
+            val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            return manager.getRunningServices(Integer.MAX_VALUE).any { serviceClass.name == it.service.className }
+        }
 
+        fun getNowInMls(): Long {
+            return System.currentTimeMillis()
         }
     }
 
@@ -55,10 +62,10 @@ class Utils {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ data ->
-                        if (data?.result?.isNotEmpty() ?: false) {
-                            data?.result?.get(0)?.addressComponents?.forEach {
+                        if (data?.results?.isNotEmpty() ?: false) {
+                            data?.results?.get(0)?.address_components?.forEach {
                                 if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
-                                    onSuccess?.invoke(it.longName.toString())
+                                    onSuccess?.invoke(it.long_name.toString())
                                 }
                             }
                         }
@@ -72,10 +79,10 @@ class Utils {
             MapsGoogleApiClient.service.getCoordinates(cityName).subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ data ->
-                        if (data?.result?.isNotEmpty() ?: false) {
+                        if (data?.results?.isNotEmpty() ?: false) {
                             val location = Location(LocationManager.PASSIVE_PROVIDER)
-                            location.latitude = data?.result?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
-                            location.longitude = data?.result?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
+                            location.latitude = data?.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
+                            location.longitude = data?.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
                             onSuccess?.invoke(location)
                         }
                     }, { error ->
@@ -84,12 +91,27 @@ class Utils {
         }
     }
 
-    object SnackBarHepler {
+    object AlertHepler {
 
-        fun makeSnackbar(activity: Activity, message: Int, view: View = activity.root_container,
-                         duration: Int = Snackbar.LENGTH_INDEFINITE,
-                         actionMessage: Int = R.string.action_OK,
-                         actionClick: (() -> Unit)? = null) {
+        fun dialog(context: Context, title: Int, message: Int, positiveClick: (() -> Unit)? = null, negativeClick: (() -> Unit)? = null) {
+            AlertDialog.Builder(context)
+                    .setTitle(title)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.action_Ok, { dialog, which ->
+                        positiveClick?.invoke()
+                        dialog.dismiss()
+                    })
+                    .setNegativeButton(R.string.action_cancel, { dialog, which ->
+                        negativeClick?.invoke()
+                        dialog.dismiss()
+                    })
+                    .show()
+        }
+
+        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container,
+                     duration: Int = Snackbar.LENGTH_INDEFINITE,
+                     actionMessage: Int = R.string.action_Ok,
+                     actionClick: (() -> Unit)? = null) {
             val snackBar = Snackbar.make(view, message, duration)
             if (duration == Snackbar.LENGTH_INDEFINITE) {
                 snackBar.setAction(actionMessage, { actionClick?.invoke() })

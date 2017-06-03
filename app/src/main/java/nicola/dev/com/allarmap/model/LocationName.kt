@@ -1,26 +1,18 @@
 package nicola.dev.com.allarmap.model
 
-import com.google.gson.annotations.SerializedName
 
 class LocationName {
-    @SerializedName("results")
-    val result: List<Result>? = null
-    @SerializedName("status")
+    val results: List<Result>? = null
     val status: String? = null
 
     inner class Result {
-        @SerializedName("address_components")
-        val addressComponents: List<AddressComponent>? = null
-        @SerializedName("formatted_address")
-        val formattedAddress: String? = null
+        val address_components: List<AddressComponent>? = null
+        val formatted_address: String? = null
     }
 
     inner class AddressComponent {
-        @SerializedName("long_name")
-        val longName: String? = null
-        @SerializedName("short_name")
-        val shortName: String? = null
-        @SerializedName("types")
+        val long_name: String? = null
+        val short_name: String? = null
         val types: List<String>? = null
     }
 }

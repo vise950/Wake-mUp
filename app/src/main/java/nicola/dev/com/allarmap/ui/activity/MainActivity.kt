@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity(),
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
             Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
                 destination_txt.setText(it)
-                destination_txt.clearFocus()
+                //fixme hide keyboard
             })
         }
     }
@@ -186,12 +186,12 @@ class MainActivity : AppCompatActivity(),
                     getDeviceLocation()
                 } else {
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_ask_permission, actionClick = {
+                        Utils.AlertHepler.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
                             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                         })
                         mRequestPermissionCount++
                     } else {
-                        Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
+                        Utils.AlertHepler.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
                     }
                 }
             }
@@ -212,7 +212,7 @@ class MainActivity : AppCompatActivity(),
 
         mLocation?.let {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 3000, null)
+            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
         }
     }
 
@@ -315,17 +315,34 @@ class MainActivity : AppCompatActivity(),
         }
 
         fab.setOnClickListener {
+            //todo service is running if only my position is inside radius of geofence
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             if (mMarker != null) {
                 mLocation?.let {
-                    LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
-                            .setResultCallback { it.log("geofence callback") }
-                    Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                    if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
+                        Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
+                            removeGeofence({ addGeofence() })
+                        })
+                    } else {
+                        addGeofence()
+                    }
                 }
             } else {
-                Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
+                Utils.AlertHepler.snackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
             }
         }
+    }
+
+    private fun addGeofence() {
+        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
+                .setResultCallback {
+                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                }
+    }
+
+    private fun removeGeofence(callback: (() -> Unit)) {
+        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, mGeoFencePendingIntent)
+                .setResultCallback { callback.invoke() }
     }
 
     private fun getDeviceLocation() {
@@ -343,7 +360,7 @@ class MainActivity : AppCompatActivity(),
 
     private fun requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.SnackBarHepler.makeSnackbar(this, R.string.snackbar_ask_permission, actionClick = {
+            Utils.AlertHepler.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
             })
         } else {

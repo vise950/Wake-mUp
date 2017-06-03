@@ -10,6 +10,11 @@
     <string name="snackbar_permission_denied">Go to app setting and enable permission.</string>
     <string name="snackbar_no_location">Destination empty or wrong.</string>
     <string name="snackbar_service_start">Starting geofence service.\nApplication will be closed.</string>
-    <string name="action_OK">OK</string>
+
+    <string name="dialog_title_another_service">Un\'altra sveglia è gia attiva</string>
+    <string name="dialog_message_another_service">Vuoi cancellare la sveglia gia creata e impostare la nuova?</string>
+
+    <string name="action_Ok">OK</string>
+    <string name="action_cancel">CANCEL</string>
 
 </resources>
