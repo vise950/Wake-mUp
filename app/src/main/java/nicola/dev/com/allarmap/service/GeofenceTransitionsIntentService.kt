@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Vibrator
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
 import com.dev.nicola.allweather.utils.log
@@ -22,6 +23,8 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         private val TAG = "GeofenceTransitionsIntentService"
     }
 
+    private var mVibrator: Vibrator? = null
+
 
     override fun onHandleIntent(intent: Intent?) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
@@ -32,17 +35,21 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
         val geofenceTransition = geofencingEvent.geofenceTransition
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            startAlert()
             createNotification()
-            "notify".log(TAG)
         } else {
             // Log the error.
             "transition invalid".log(TAG)
         }
     }
 
+    override fun stopService(name: Intent?): Boolean {
+        mVibrator?.cancel()
+        return super.stopService(name)
+    }
+
     private fun createNotification() {
-
-
+        "notification".log(TAG)
         val notificationIntent = Intent(this, MainActivity::class.java)
 
         val stackBuilder = TaskStackBuilder.create(this)
@@ -65,6 +72,23 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(0, builder.build())
+    }
+
+    fun startAlert() {
+        "alert".log(TAG)
+        mVibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
+        //start with 2 sec of delay
+        //vibrate for 1.5 sec
+        //sleep for 1 sec
+        val pattern = longArrayOf(2000, 1500, 1000)
+
+        // '0' here means to repeat indefinitely
+        // '0' is actually the index at which the pattern keeps repeating from (the start)
+        // To repeat the pattern from any other point, you could increase the index, e.g. '1'
+        // '-1' here means to vibrate once, as '-1' is out of bounds in the pattern array
+
+        mVibrator?.vibrate(pattern, 1)
     }
 
 

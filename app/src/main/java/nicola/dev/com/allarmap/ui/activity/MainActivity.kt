@@ -121,6 +121,11 @@ class MainActivity : AppCompatActivity(),
     override fun onResume() {
         super.onResume()
         mGoogleApiClient.reconnect()
+
+        Utils.isMyServiceRunning(this,GeofenceTransitionsIntentService::class.java).log("service running")
+        if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
+            stopService(Intent(this, GeofenceTransitionsIntentService::class.java))
+        }
     }
 
     override fun onPause() {
@@ -282,7 +287,7 @@ class MainActivity : AppCompatActivity(),
                                 if (data?.predictions?.isNotEmpty() ?: false) {
                                     data?.predictions?.forEachIndexed { index, data ->
                                         if (index in 0..3) {
-                                            "add ${data.description.toString()}".log(TAG)
+//                                            "add ${data.description.toString()}".log(TAG)
                                             resultAdapter.add(Utils.trimString(data.description.toString()))
                                         }
                                     }
@@ -311,6 +316,8 @@ class MainActivity : AppCompatActivity(),
 
         fab.setOnClickListener {
             //todo service is running if only my position is inside radius of geofence
+
+            //todo check radious
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             if (mMarker != null) {
                 mLocation?.let {
