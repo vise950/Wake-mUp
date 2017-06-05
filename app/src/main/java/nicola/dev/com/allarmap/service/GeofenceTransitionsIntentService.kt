@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
+import android.os.Handler
 import android.os.Vibrator
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
@@ -21,10 +23,60 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
     companion object {
         private val TAG = "GeofenceTransitionsIntentService"
+        private val VIBRATE_DELAY_TIME = 2000L
+        private val DURATION_OF_VIBRATION = 1500L
+        private val VOLUME_INCREASE_DELAY = 600
+        private val VOLUME_INCREASE_STEP = 0.01f
+        private val MAX_VOLUME = 1.0f
     }
 
     private var mVibrator: Vibrator? = null
+    private val mPlayer: MediaPlayer? = null
+    private val mVolumeLevel = 0f
 
+    private val mHandler = Handler()
+
+    private val mVibrationLoop by lazy {
+        mVibrator?.vibrate(longArrayOf(VIBRATE_DELAY_TIME, DURATION_OF_VIBRATION, VIBRATE_DELAY_TIME), 1)
+    }
+
+    
+
+    /*
+
+    private Runnable mVibrationRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mVibrator.vibrate(DURATION_OF_VIBRATION);
+            // Provide loop for vibration
+            mHandler.postDelayed(mVibrationRunnable,
+                    DURATION_OF_VIBRATION + VIBRATE_DELAY_TIME);
+        }
+    };
+
+    private Runnable mVolumeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // increase volume level until reach max value
+            if (mPlayer != null && mVolumeLevel < MAX_VOLUME) {
+                mVolumeLevel += VOLUME_INCREASE_STEP;
+                mPlayer.setVolume(mVolumeLevel, mVolumeLevel);
+                // set next increase in 600ms
+                mHandler.postDelayed(mVolumeRunnable, VOLUME_INCREASE_DELAY);
+            }
+        }
+    };
+
+    private MediaPlayer.OnErrorListener mErrorListener = (mp, what, extra) -> {
+        mp.stop();
+        mp.release();
+        mHandler.removeCallbacksAndMessages(null);
+        AlarmService.this.stopSelf();
+        return true;
+    };
+
+
+     */
 
     override fun onHandleIntent(intent: Intent?) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
@@ -37,9 +89,6 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             startAlert()
             createNotification()
-        } else {
-            // Log the error.
-            "transition invalid".log(TAG)
         }
     }
 
