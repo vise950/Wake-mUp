@@ -1,6 +1,7 @@
 package nicola.dev.com.allarmap.service
 
 import android.app.IntentService
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -30,6 +31,26 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         private val MAX_VOLUME = 1.0f
     }
 
+    private val mNotificationIntent by lazy { Intent(this, MainActivity::class.java) }
+    private var mStackBuilder: TaskStackBuilder? = null
+    private val mNotificationPendingIntent by lazy { mStackBuilder?.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
+    private val mIntentStopAlarm by lazy {
+        val stopAlarm = Intent()
+        stopAlarm.action = "STOP_ALARM"
+        PendingIntent.getBroadcast(this, 2, stopAlarm, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    private val mNotification by lazy {
+        NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle("Notifications Example")
+                .setContentText("This is a test notification")
+                .setPriority(Notification.PRIORITY_MAX)
+                .setWhen(Utils.getNowInMls())
+                .setAutoCancel(true)
+                .addAction(R.drawable.ic_alarm_off, "Stop", mIntentStopAlarm)
+                .setContentIntent(mNotificationPendingIntent)
+    }
+    private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private var mVibrator: Vibrator? = null
     private val mPlayer: MediaPlayer? = null
     private val mVolumeLevel = 0f
@@ -40,7 +61,14 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         mVibrator?.vibrate(longArrayOf(VIBRATE_DELAY_TIME, DURATION_OF_VIBRATION, VIBRATE_DELAY_TIME), 1)
     }
 
-    
+
+//    private val mErrorListener = { mp, what, extra ->
+//        mp.stop()
+//        mp.release()
+//        mHandler.removeCallbacksAndMessages(null)
+//        this.stopSelf()
+//        true
+//    }
 
     /*
 
@@ -92,39 +120,25 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         }
     }
 
-    override fun stopService(name: Intent?): Boolean {
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        mVibrator?.cancel()
+//    }
+
+    override fun stopService(name: Intent): Boolean {
         mVibrator?.cancel()
         return super.stopService(name)
     }
 
     private fun createNotification() {
-        "notification".log(TAG)
-        val notificationIntent = Intent(this, MainActivity::class.java)
+        mStackBuilder = TaskStackBuilder.create(this)
+        mStackBuilder?.addParentStack(MainActivity::class.java)
+        mStackBuilder?.addNextIntent(mNotificationIntent)
 
-        val stackBuilder = TaskStackBuilder.create(this)
-        stackBuilder.addParentStack(MainActivity::class.java)
-        stackBuilder.addNextIntent(notificationIntent)
-
-        val notificationPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-//        val contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-//        builder.setContentIntent(contentIntent)
-
-        val builder = NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Notifications Example")
-                .setContentText("This is a test notification")
-                .setWhen(Utils.getNowInMls())
-                .setAutoCancel(true)
-                .setContentIntent(notificationPendingIntent)
-//                .addAction()
-
-
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(0, builder.build())
+        mNotificationManager.notify(999, mNotification.build())
     }
 
     fun startAlert() {
-        "alert".log(TAG)
         mVibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         //start with 2 sec of delay

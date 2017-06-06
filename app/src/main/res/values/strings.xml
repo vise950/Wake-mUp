@@ -12,9 +12,9 @@
     <string name="snackbar_service_start">Starting geofence service.\nApplication will be closed.</string>
 
     <string name="dialog_title_another_service">Un\'altra sveglia è gia attiva</string>
-    <string name="dialog_message_another_service">Vuoi cancellare la sveglia gia creata e impostare la nuova?</string>
+    <string name="dialog_message_another_service">Vuoi cancellare la sveglia già creata e impostare la nuova?</string>
 
     <string name="action_Ok">OK</string>
-    <string name="action_cancel">CANCEL</string>
+    <string name="action_cancel">Cancel</string>
 
 </resources>

@@ -35,6 +35,7 @@ import kotlinx.android.synthetic.main.bottom_details.*
 import nicola.dev.com.allarmap.R
 import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
+import nicola.dev.com.allarmap.utils.PreferencesHelper
 import nicola.dev.com.allarmap.utils.Utils
 
 
@@ -116,6 +117,7 @@ class MainActivity : AppCompatActivity(),
     override fun onStart() {
         super.onStart()
         mGoogleApiClient.connect()
+
     }
 
     override fun onResume() {
@@ -321,9 +323,11 @@ class MainActivity : AppCompatActivity(),
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             if (mMarker != null) {
                 mLocation?.let {
-                    if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
+                    if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, false) as Boolean) {
                         Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
-                            removeGeofence({ addGeofence() })
+                            removeGeofence({
+                                addGeofence()
+                            })
                         })
                     } else {
                         addGeofence()
@@ -339,6 +343,7 @@ class MainActivity : AppCompatActivity(),
         LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
                 .setResultCallback {
                     if (it.isSuccess) {
+                        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, true)
                         Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
                     }
                 }
