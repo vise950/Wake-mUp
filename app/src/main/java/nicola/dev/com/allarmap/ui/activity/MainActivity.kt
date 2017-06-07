@@ -124,10 +124,10 @@ class MainActivity : AppCompatActivity(),
         super.onResume()
         mGoogleApiClient.reconnect()
 
-        Utils.isMyServiceRunning(this,GeofenceTransitionsIntentService::class.java).log("service running")
-        if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
-            stopService(Intent(this, GeofenceTransitionsIntentService::class.java))
-        }
+//        Utils.isMyServiceRunning(this,GeofenceTransitionsIntentService::class.java).log("service running")
+//        if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
+//            stopService(Intent(this, GeofenceTransitionsIntentService::class.java))
+//        }
     }
 
     override fun onPause() {

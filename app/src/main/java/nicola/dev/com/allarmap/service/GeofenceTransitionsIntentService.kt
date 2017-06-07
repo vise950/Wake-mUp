@@ -6,8 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.Handler
+import android.media.RingtoneManager
 import android.os.Vibrator
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
@@ -15,9 +16,14 @@ import com.dev.nicola.allweather.utils.log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import nicola.dev.com.allarmap.R
 import nicola.dev.com.allarmap.ui.activity.MainActivity
 import nicola.dev.com.allarmap.utils.Utils
+import java.util.concurrent.TimeUnit
 
 
 class GeofenceTransitionsIntentService : IntentService(TAG) {
@@ -52,15 +58,33 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     }
     private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private var mVibrator: Vibrator? = null
-    private val mPlayer: MediaPlayer? = null
+    private var mPlayer: MediaPlayer? = null
     private val mVolumeLevel = 0f
 
-    private val mHandler = Handler()
+//    private val mVibrationLoop by lazy {
+//        mVibrator?.vibrate(longArrayOf(VIBRATE_DELAY_TIME, DURATION_OF_VIBRATION, VIBRATE_DELAY_TIME), 1)
+//    }
 
-    private val mVibrationLoop by lazy {
-        mVibrator?.vibrate(longArrayOf(VIBRATE_DELAY_TIME, DURATION_OF_VIBRATION, VIBRATE_DELAY_TIME), 1)
+//    private val mVibrateDisposable by lazy {
+//        Observable.interval(2, TimeUnit.SECONDS, Schedulers.newThread())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({
+//                    mVibrator?.vibrate(1500L)
+//                })
+//    }
+
+    private var mVibrateDisposable: Disposable? = null
+
+    private val mVolumeDisposable by lazy {
+        Observable.interval(2, TimeUnit.SECONDS, Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    if (mPlayer != null && mVolumeLevel < MAX_VOLUME) {
+                        mVolumeLevel.plus(VOLUME_INCREASE_STEP)
+                        mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
+                    }
+                })
     }
-
 
 //    private val mErrorListener = { mp, what, extra ->
 //        mp.stop()
@@ -115,17 +139,15 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
         val geofenceTransition = geofencingEvent.geofenceTransition
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            startAlert()
             createNotification()
+            startAlert()
+//            startPlayer()
         }
     }
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        mVibrator?.cancel()
-//    }
-
     override fun stopService(name: Intent): Boolean {
+        "stop service".log(TAG)
+        mVibrateDisposable?.dispose()
         mVibrator?.cancel()
         return super.stopService(name)
     }
@@ -138,22 +160,34 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         mNotificationManager.notify(999, mNotification.build())
     }
 
-    fun startAlert() {
+    private fun startAlert() {
         mVibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-
-        //start with 2 sec of delay
-        //vibrate for 1.5 sec
-        //sleep for 1 sec
-        val pattern = longArrayOf(2000, 1500, 1000)
-
-        // '0' here means to repeat indefinitely
-        // '0' is actually the index at which the pattern keeps repeating from (the start)
-        // To repeat the pattern from any other point, you could increase the index, e.g. '1'
-        // '-1' here means to vibrate once, as '-1' is out of bounds in the pattern array
-
-        mVibrator?.vibrate(pattern, 1)
+        mVibrateDisposable = Observable.interval(2, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    mVibrator?.vibrate(1500L)
+                })
     }
 
+    private fun startPlayer() {
+        val alarmTone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val ringtone = RingtoneManager.getRingtone(this, alarmTone)
+
+        mPlayer = MediaPlayer()
+        mPlayer?.setOnErrorListener { mp, what, extra ->
+            mp.stop()
+            mp.release()
+            this.stopSelf()
+            true
+        }
+        mPlayer?.setDataSource(this, alarmTone)
+        mPlayer?.isLooping = true
+        mPlayer?.setAudioStreamType(AudioManager.STREAM_ALARM)
+        mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
+        mPlayer?.prepare()
+        mPlayer?.start()
+        mVolumeDisposable.dispose()
+    }
 
     // Handle errors
     private fun getErrorString(errorCode: Int): String {

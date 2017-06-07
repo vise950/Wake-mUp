@@ -13,8 +13,9 @@ class AlarmReceiver : BroadcastReceiver() {
         if (intent.action == "STOP_ALARM") {
             val service = GeofenceTransitionsIntentService()
 //            service.stopService(Intent(context, GeofenceTransitionsIntentService::class.java))
+            service.stopSelf()
 
-            context.stopService(Intent(context,GeofenceTransitionsIntentService::class.java))
+//            context.stopService(Intent(context,GeofenceTransitionsIntentService::class.java))
 
             val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(999)
