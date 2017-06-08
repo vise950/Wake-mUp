@@ -1,14 +1,11 @@
 package nicola.dev.com.allarmap.service
 
 import android.app.IntentService
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
-import android.media.MediaPlayer
-import android.media.RingtoneManager
+import android.media.*
 import android.os.Vibrator
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
@@ -50,85 +47,18 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("Notifications Example")
                 .setContentText("This is a test notification")
-                .setPriority(Notification.PRIORITY_MAX)
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
                 .addAction(R.drawable.ic_alarm_off, "Stop", mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)
     }
     private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
-    private var mVibrator: Vibrator? = null
-    private var mPlayer: MediaPlayer? = null
-    private val mVolumeLevel = 0f
-
-//    private val mVibrationLoop by lazy {
-//        mVibrator?.vibrate(longArrayOf(VIBRATE_DELAY_TIME, DURATION_OF_VIBRATION, VIBRATE_DELAY_TIME), 1)
-//    }
-
-//    private val mVibrateDisposable by lazy {
-//        Observable.interval(2, TimeUnit.SECONDS, Schedulers.newThread())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({
-//                    mVibrator?.vibrate(1500L)
-//                })
-//    }
-
+    private val mVibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private var mVibrateDisposable: Disposable? = null
+    private var mPlayer: MediaPlayer? = null
+    private var mVolumeLevel = 1f
+    private var mVolumeDisposable: Disposable? = null
 
-    private val mVolumeDisposable by lazy {
-        Observable.interval(2, TimeUnit.SECONDS, Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    if (mPlayer != null && mVolumeLevel < MAX_VOLUME) {
-                        mVolumeLevel.plus(VOLUME_INCREASE_STEP)
-                        mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
-                    }
-                })
-    }
-
-//    private val mErrorListener = { mp, what, extra ->
-//        mp.stop()
-//        mp.release()
-//        mHandler.removeCallbacksAndMessages(null)
-//        this.stopSelf()
-//        true
-//    }
-
-    /*
-
-    private Runnable mVibrationRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mVibrator.vibrate(DURATION_OF_VIBRATION);
-            // Provide loop for vibration
-            mHandler.postDelayed(mVibrationRunnable,
-                    DURATION_OF_VIBRATION + VIBRATE_DELAY_TIME);
-        }
-    };
-
-    private Runnable mVolumeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // increase volume level until reach max value
-            if (mPlayer != null && mVolumeLevel < MAX_VOLUME) {
-                mVolumeLevel += VOLUME_INCREASE_STEP;
-                mPlayer.setVolume(mVolumeLevel, mVolumeLevel);
-                // set next increase in 600ms
-                mHandler.postDelayed(mVolumeRunnable, VOLUME_INCREASE_DELAY);
-            }
-        }
-    };
-
-    private MediaPlayer.OnErrorListener mErrorListener = (mp, what, extra) -> {
-        mp.stop();
-        mp.release();
-        mHandler.removeCallbacksAndMessages(null);
-        AlarmService.this.stopSelf();
-        return true;
-    };
-
-
-     */
 
     override fun onHandleIntent(intent: Intent?) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
@@ -140,16 +70,17 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         val geofenceTransition = geofencingEvent.geofenceTransition
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
             createNotification()
-            startAlert()
-//            startPlayer()
+            startAlarm()
         }
     }
 
-    override fun stopService(name: Intent): Boolean {
-        "stop service".log(TAG)
+    fun stopService() {
+        "stop my service".log(TAG)
         mVibrateDisposable?.dispose()
-        mVibrator?.cancel()
-        return super.stopService(name)
+//        mVibrator.cancel()
+        mVolumeDisposable?.dispose()
+        mPlayer?.stop()
+        mPlayer?.release()
     }
 
     private fun createNotification() {
@@ -160,33 +91,35 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         mNotificationManager.notify(999, mNotification.build())
     }
 
-    private fun startAlert() {
-        mVibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    private fun startAlarm() {
         mVibrateDisposable = Observable.interval(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    mVibrator?.vibrate(1500L)
+                    mVibrator.vibrate(1500L)
                 })
-    }
 
-    private fun startPlayer() {
-        val alarmTone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        val ringtone = RingtoneManager.getRingtone(this, alarmTone)
-
-        mPlayer = MediaPlayer()
+        val ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        mPlayer = MediaPlayer.create(this, ringtone)
         mPlayer?.setOnErrorListener { mp, what, extra ->
             mp.stop()
             mp.release()
-            this.stopSelf()
-            true
+            return@setOnErrorListener true
         }
-        mPlayer?.setDataSource(this, alarmTone)
         mPlayer?.isLooping = true
-        mPlayer?.setAudioStreamType(AudioManager.STREAM_ALARM)
-        mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
-        mPlayer?.prepare()
+//        mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
+//        mPlayer?.prepare()
         mPlayer?.start()
-        mVolumeDisposable.dispose()
+//        mVolumeDisposable = Observable.interval(4, TimeUnit.SECONDS)
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({
+//                    mPlayer?.let {
+//                        if (mVolumeLevel < MAX_VOLUME) {
+//                            mVolumeLevel.log("volume")
+//                            mVolumeLevel += VOLUME_INCREASE_STEP
+//                            mPlayer?.setVolume(mVolumeLevel, mVolumeLevel)
+//                        }
+//                    }
+//                })
     }
 
     // Handle errors

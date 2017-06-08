@@ -97,6 +97,7 @@ class Utils {
             AlertDialog.Builder(context)
                     .setTitle(title)
                     .setMessage(message)
+                    .setCancelable(false)
                     .setPositiveButton(R.string.action_Ok, { dialog, which ->
                         positiveClick?.invoke()
                         dialog.dismiss()
