@@ -3,11 +3,9 @@ package nicola.dev.com.allarmap.utils
 import android.Manifest
 import android.location.Location
 import android.location.LocationManager
-import com.dev.nicola.allweather.utils.log
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
-import android.view.inputmethod.InputMethodManager.HIDE_IMPLICIT_ONLY
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -17,7 +15,6 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import kotlinx.android.synthetic.main.activity_main.*
 import nicola.dev.com.allarmap.R
-import javax.xml.datatype.Duration
 import android.app.ActivityManager
 import android.support.v7.app.AlertDialog
 

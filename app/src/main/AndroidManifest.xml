@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:allowBackup="true"
@@ -30,10 +31,12 @@
             android:value="@string/maps_key"/>
         
         <service android:name=".service.GeofenceTransitionsIntentService"/>
+        <service android:name=".service.AlarmService"/>
         <receiver
             android:name=".service.AlarmReceiver"
             android:exported="false">
             <intent-filter>
+                <action android:name="START_ALARM" />
                 <action android:name="STOP_ALARM" />
             </intent-filter>
         </receiver>

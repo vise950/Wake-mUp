@@ -16,7 +16,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
-import com.dev.nicola.allweather.utils.log
+import nicola.dev.com.allarmap.utils.log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence

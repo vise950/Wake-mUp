@@ -1,4 +1,4 @@
-package com.dev.nicola.allweather.utils
+package nicola.dev.com.allarmap.utils
 
 import kotlin.reflect.KClass
 
