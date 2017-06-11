@@ -6,7 +6,7 @@ import nicola.dev.com.allarmap.ui.activity.MainActivity
 
 object PreferencesHelper {
 
-    val KEY_PREF_SERCVICE: String = "is_service_started"
+    val KEY_PREF_GEOFENCE: String = "is_geofence_added"
 
     fun setPreferences(context: Context, key: String, defaultValue: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)

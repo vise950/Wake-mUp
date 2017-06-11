@@ -17,12 +17,15 @@ apply plugin: 'kotlin'
 allprojects {
     repositories {
         jcenter()
+        maven {
+            url "https://maven.google.com"
+        }
     }
 }
 
 ext {
     //android support
-    support_version = '25.3.1'
+    support_version = '25.4.0'
 
     //play services
     play_services_version = '11.0.0'

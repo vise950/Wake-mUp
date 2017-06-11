@@ -10,6 +10,7 @@ import android.os.Vibrator
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import nicola.dev.com.allarmap.utils.PreferencesHelper
 import java.util.concurrent.TimeUnit
 
 
@@ -36,6 +37,7 @@ class AlarmService : Service() {
         if (mRingtone.isPlaying) {
             mRingtone.stop()
         }
+        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false)
         super.onDestroy()
     }
 

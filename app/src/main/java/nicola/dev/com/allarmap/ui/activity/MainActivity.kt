@@ -16,7 +16,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
-import nicola.dev.com.allarmap.utils.log
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence
@@ -37,6 +36,9 @@ import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.PreferencesHelper
 import nicola.dev.com.allarmap.utils.Utils
+import nicola.dev.com.allarmap.utils.log
+import nicola.dev.com.allarmap.utils.other
+import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 
 
 class MainActivity : AppCompatActivity(),
@@ -102,6 +104,8 @@ class MainActivity : AppCompatActivity(),
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
+
+    private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
@@ -245,11 +249,10 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        radius_seekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                radius_txt.text = progress.toString()
+        radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener{
+            override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
+            override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mRadius = 1000.0 * progress
                 val circleOptions = CircleOptions()
                         .center(LatLng(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE))
@@ -260,7 +263,8 @@ class MainActivity : AppCompatActivity(),
 
                 mCircle?.remove()
                 mCircle = mMap?.addCircle(circleOptions)
-                //todo improve code
+                //                //todo improve code
+
             }
         })
 
@@ -323,7 +327,7 @@ class MainActivity : AppCompatActivity(),
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             if (mMarker != null) {
                 mLocation?.let {
-                    if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, false) as Boolean) {
+                    if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false) as Boolean) {
                         Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
                             removeGeofence({
                                 addGeofence()
@@ -340,18 +344,29 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun addGeofence() {
-        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
-                .setResultCallback {
-                    if (it.isSuccess) {
-                        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, true)
-                        Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
-                    }
+//        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
+//                .setResultCallback {
+//                    if (it.isSuccess) {
+//                        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, true)
+//                        Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+//                    }
+//                }
+
+        mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
+                .addOnSuccessListener {
+                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                    PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, true)
                 }
+                .addOnFailureListener { it.log(TAG) }
     }
 
     private fun removeGeofence(callback: (() -> Unit)) {
-        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, mGeoFencePendingIntent)
-                .setResultCallback { if (it.isSuccess) callback.invoke() }
+//        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, mGeoFencePendingIntent)
+//                .setResultCallback { if (it.isSuccess) callback.invoke() }
+
+        mGeofenceClient.removeGeofences(mGeoFencePendingIntent)
+                .addOnSuccessListener { callback.invoke() }
+                .addOnFailureListener { it.log(TAG) }
     }
 
     private fun getDeviceLocation() {

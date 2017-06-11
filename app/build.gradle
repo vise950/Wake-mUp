@@ -63,13 +63,15 @@ android {
         compile fileTree(dir: 'libs', include: ['*.jar'])
 
         //Support library
-        //noinspection GradleCompatible
         compile "com.android.support:appcompat-v7:$rootProject.ext.support_version"
         compile "com.android.support:support-v4:$rootProject.ext.support_version"
         compile "com.android.support:design:$rootProject.ext.support_version"
         compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
-        //android play services library
+        //Custom view
+        compile 'org.adw.library:discrete-seekbar:1.0.1'
+
+        //Play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
         compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
 

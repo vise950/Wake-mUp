@@ -1,6 +1,7 @@
 package nicola.dev.com.allarmap.service
 
 import android.app.IntentService
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -33,6 +34,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setContentText("This is a test notification")
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
+                .setPriority(Notification.PRIORITY_MAX)
                 .addAction(R.drawable.ic_alarm_off, "Dismiss", mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)
     }
