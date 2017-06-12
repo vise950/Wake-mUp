@@ -15,7 +15,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.SeekBar
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence
@@ -37,7 +36,6 @@ import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.PreferencesHelper
 import nicola.dev.com.allarmap.utils.Utils
 import nicola.dev.com.allarmap.utils.log
-import nicola.dev.com.allarmap.utils.other
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 
 
@@ -108,6 +106,10 @@ class MainActivity : AppCompatActivity(),
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
+
+    private var isBusSelected = false
+    private var isTrainSelected = false
+    private var isPlaneSelected = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -248,6 +250,57 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         })
+
+        bus_btn.setOnClickListener {
+            if (isTrainSelected || isPlaneSelected) {
+                train_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
+                plane_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
+                isTrainSelected = false
+                isPlaneSelected = false
+            }
+            if (!isBusSelected) {
+                bus_btn.background = getDrawable(R.drawable.btn_background_selected)
+                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
+                isBusSelected = true
+                radius_seekbar.max=50
+            }
+        }
+
+        train_btn.setOnClickListener {
+            if (isBusSelected || isPlaneSelected) {
+                bus_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
+                plane_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
+                isBusSelected = false
+                isPlaneSelected = false
+            }
+            if (!isTrainSelected) {
+                train_btn.background = getDrawable(R.drawable.btn_background_selected)
+                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
+                isTrainSelected = true
+                radius_seekbar.max=200
+            }
+        }
+
+        plane_btn.setOnClickListener {
+            if (isBusSelected || isTrainSelected) {
+                bus_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
+                train_btn.background = getDrawable(R.drawable.btn_background_unselected)
+                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
+                isBusSelected = false
+                isTrainSelected = false
+            }
+            if (!isPlaneSelected) {
+                plane_btn.background = getDrawable(R.drawable.btn_background_selected)
+                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_white))
+                isPlaneSelected = true
+                radius_seekbar.max=500
+            }
+        }
 
         radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener{
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
