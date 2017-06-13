@@ -7,24 +7,22 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.IBinder
 import android.os.Vibrator
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import nicola.dev.com.allarmap.utils.PreferencesHelper
-import java.util.concurrent.TimeUnit
 
 
 class AlarmService : Service() {
 
     companion object {
         private val TAG = "ALARM SERVICE"
-        private val VIBRATE_DELAY_TIME = 2L
+        private val DELAY_OF_VIBRATION = 1000L
         private val DURATION_OF_VIBRATION = 1500L
     }
 
     private val mVibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
-    private var mVibrateDisposable: Disposable? = null
     private val mRingtone by lazy { RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
+    private val mAudioAttr by lazy { AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build() }
+
+    private val isAlarmSound by lazy { PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, true) as Boolean }
 
     override fun onCreate() {
         super.onCreate()
@@ -32,7 +30,6 @@ class AlarmService : Service() {
     }
 
     override fun onDestroy() {
-        mVibrateDisposable?.dispose()
         mVibrator.cancel()
         if (mRingtone.isPlaying) {
             mRingtone.stop()
@@ -46,16 +43,11 @@ class AlarmService : Service() {
     }
 
     private fun startAlarm() {
-        mVibrateDisposable = Observable.interval(VIBRATE_DELAY_TIME, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
-                    mVibrator.vibrate(DURATION_OF_VIBRATION)
-                })
+        mVibrator.vibrate(longArrayOf(DELAY_OF_VIBRATION, DURATION_OF_VIBRATION), 0)
 
-        val audioAttr = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .build()
-        mRingtone.audioAttributes = audioAttr
-        mRingtone.play()
+        if (isAlarmSound) {
+            mRingtone.audioAttributes = mAudioAttr
+            mRingtone.play()
+        }
     }
 }

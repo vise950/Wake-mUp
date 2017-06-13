@@ -7,16 +7,17 @@ import nicola.dev.com.allarmap.ui.activity.MainActivity
 object PreferencesHelper {
 
     val KEY_PREF_GEOFENCE: String = "is_geofence_added"
+    val KEY_ALARM_SOUND:String="alarm_sound"
 
-    fun setPreferences(context: Context, key: String, defaultValue: Any) {
+    fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
         val editor = sp.edit()
-        when (defaultValue) {
-            is String -> editor.putString(key, defaultValue)
-            is Boolean -> editor.putBoolean(key, defaultValue)
-            is Int -> editor.putInt(key, defaultValue)
-            is Float -> editor.putFloat(key, defaultValue)
-            is Long -> editor.putLong(key, defaultValue)
+        when (value) {
+            is String -> editor.putString(key, value)
+            is Boolean -> editor.putBoolean(key, value)
+            is Int -> editor.putInt(key, value)
+            is Float -> editor.putFloat(key, value)
+            is Long -> editor.putLong(key, value)
         }
         editor.apply()
     }

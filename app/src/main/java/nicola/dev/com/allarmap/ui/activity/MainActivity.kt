@@ -264,7 +264,9 @@ class MainActivity : AppCompatActivity(),
                 bus_btn.background = getDrawable(R.drawable.btn_background_selected)
                 bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
                 isBusSelected = true
+                radius_seekbar.min = 1
                 radius_seekbar.max=50
+                radius_seekbar.progress = radius_seekbar.min
             }
         }
 
@@ -281,7 +283,9 @@ class MainActivity : AppCompatActivity(),
                 train_btn.background = getDrawable(R.drawable.btn_background_selected)
                 train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
                 isTrainSelected = true
+                radius_seekbar.min = 1
                 radius_seekbar.max=200
+                radius_seekbar.progress = radius_seekbar.min
             }
         }
 
@@ -298,10 +302,13 @@ class MainActivity : AppCompatActivity(),
                 plane_btn.background = getDrawable(R.drawable.btn_background_selected)
                 plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_white))
                 isPlaneSelected = true
-                radius_seekbar.max=500
+                radius_seekbar.min = 100
+                radius_seekbar.max = 500
+                radius_seekbar.progress = radius_seekbar.min
             }
         }
 
+//        radius_seekbar.isEnabled = isBusSelected || isTrainSelected || isPlaneSelected
         radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener{
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
@@ -373,6 +380,10 @@ class MainActivity : AppCompatActivity(),
             })
         }
 
+        alarm_check.setOnCheckedChangeListener { compoundButton, checked ->
+            PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, checked)
+        }
+
         fab.setOnClickListener {
             //todo service is running if only my position is inside radius of geofence
 
@@ -397,26 +408,15 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun addGeofence() {
-//        LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, mGeofenceRequest, mGeoFencePendingIntent)
-//                .setResultCallback {
-//                    if (it.isSuccess) {
-//                        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_SERCVICE, true)
-//                        Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
-//                    }
-//                }
-
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
-                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finish() })
+                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, true)
                 }
                 .addOnFailureListener { it.log(TAG) }
     }
 
     private fun removeGeofence(callback: (() -> Unit)) {
-//        LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, mGeoFencePendingIntent)
-//                .setResultCallback { if (it.isSuccess) callback.invoke() }
-
         mGeofenceClient.removeGeofences(mGeoFencePendingIntent)
                 .addOnSuccessListener { callback.invoke() }
                 .addOnFailureListener { it.log(TAG) }
