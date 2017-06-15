@@ -107,7 +107,7 @@ class MainActivity : AppCompatActivity(),
 
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
-    private var isBusSelected = false
+    private var isBusSelected = true
     private var isTrainSelected = false
     private var isPlaneSelected = false
 
@@ -308,7 +308,6 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-//        radius_seekbar.isEnabled = isBusSelected || isTrainSelected || isPlaneSelected
         radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener{
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
@@ -323,7 +322,7 @@ class MainActivity : AppCompatActivity(),
 
                 mCircle?.remove()
                 mCircle = mMap?.addCircle(circleOptions)
-                //                //todo improve code
+                //todo improve code
 
             }
         })
@@ -335,38 +334,52 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        val resultAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
+//        val resultAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
+        val results = ArrayList<String>()
+        destination_txt.threshold = 2
         destination_txt?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun afterTextChanged(s: Editable?) {}
 
             //fixme resultAdapter
             override fun onTextChanged(query: CharSequence, start: Int, before: Int, count: Int) {
-                if (!resultAdapter.isEmpty) {
-                    resultAdapter.clear()
+                if (results.count() > 0) {
+                    results.clear()
+                    "clear result".log(TAG)
                 }
 
-                if (query.trim() != "" && query.length > 1) {
-                    MapsGoogleApiClient.service.getPrediction(query.toString()).subscribeOn(Schedulers.newThread())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe({ data ->
-                                if (data?.predictions?.isNotEmpty() ?: false) {
-                                    data?.predictions?.forEachIndexed { index, data ->
-                                        if (index in 0..3) {
-//                                            "add ${data.description.toString()}".log(TAG)
-                                            resultAdapter.add(Utils.trimString(data.description.toString()))
+//                if (query.trim() != "" && query.length > 1) {
+                MapsGoogleApiClient.service.getPrediction(query.toString())
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe({
+                            "onNext".log(TAG)
+                            if (it?.predictions?.isNotEmpty() ?: false) {
+                                it?.predictions?.forEachIndexed { index, data ->
+                                    if (index in 0..2) {
+                                        "add ${data.description.toString()}".log(TAG)
+                                        results.add(Utils.trimString(data.description.toString()))
                                         }
                                     }
                                 } else {
-                                    resultAdapter.add(resources.getString(R.string.no_result_suggestion))
+                                results.clear()
+                                results.add(resources.getString(R.string.no_result_suggestion))
+                                "no result".log(TAG)
                                 }
                             }, { error ->
                                 error.log("Error call")
-                                resultAdapter.add(resources.getString(R.string.error_load_suggestion))
+                            results.clear()
+                            results.add(resources.getString(R.string.error_load_suggestion))
+                        }, {
+                            "onComplete".log(TAG)
+                            val resultAdapter = ArrayAdapter<String>(this@MainActivity, android.R.layout.simple_dropdown_item_1line, results)
+                            destination_txt.setAdapter(resultAdapter)
+                            destination_txt.showDropDown()
+                            "set adapter".log(TAG)
                             })
-                }
+//                }
 
-                destination_txt.setAdapter(resultAdapter)
+
             }
         })
 
