@@ -20,7 +20,6 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -66,10 +65,11 @@ android {
         compile "com.android.support:appcompat-v7:$rootProject.ext.support_version"
         compile "com.android.support:support-v4:$rootProject.ext.support_version"
         compile "com.android.support:design:$rootProject.ext.support_version"
-        compile 'com.android.support.constraint:constraint-layout:1.0.2'
+        compile 'com.android.support.constraint:constraint-layout:1.1.0-beta1'
 
         //Custom view
         compile 'org.adw.library:discrete-seekbar:1.0.1'
+        compile 'com.seatgeek:placesautocomplete:0.2-SNAPSHOT'
 
         //Play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
@@ -92,5 +92,6 @@ android {
 
     repositories {
         mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 }

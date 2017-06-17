@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,7 +10,8 @@
     app:behavior_peekHeight="74dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
-    <android.support.v7.widget.AppCompatAutoCompleteTextView
+
+    <com.seatgeek.placesautocomplete.PlacesAutocompleteTextView
         android:id="@+id/destination_txt"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -21,6 +21,8 @@
         android:textSize="@dimen/text_size_24sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:pacv_googleMapsApiKey="@string/autocomplete_key"
+        app:pacv_historyFile="@null"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -40,7 +42,7 @@
         android:background="@drawable/btn_background_selected"
         android:contentDescription="@string/description"
         android:elevation="@dimen/elevation_8dp"
-        android:src="@drawable/ic_bus_black"
+        android:src="@drawable/ic_bus_white"
         app:layout_constraintLeft_toRightOf="@+id/travel_txt"
         android:layout_marginStart="@dimen/margin_12dp"
         app:layout_constraintBottom_toBottomOf="@+id/travel_txt"

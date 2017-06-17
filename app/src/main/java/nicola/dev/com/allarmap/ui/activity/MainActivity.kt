@@ -11,10 +11,7 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.widget.ArrayAdapter
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence
@@ -26,17 +23,16 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import nicola.dev.com.allarmap.R
-import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.PreferencesHelper
 import nicola.dev.com.allarmap.utils.Utils
 import nicola.dev.com.allarmap.utils.log
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(),
@@ -160,7 +156,10 @@ class MainActivity : AppCompatActivity(),
             mCircle?.remove()
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
             Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
+                it.log("click map")
                 destination_txt.setText(it)
+                destination_txt.setCompletionEnabled(false)
+                Utils.hideKeyboard(this)
                 //fixme hide keyboard
             })
         }
@@ -327,70 +326,24 @@ class MainActivity : AppCompatActivity(),
             }
         })
 
-        destination_txt.setOnClickListener {
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            if (destination_txt?.text?.isNotEmpty() ?: false) {
-                destination_txt.text = null
-            }
-        }
-
-//        val resultAdapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
-        val results = ArrayList<String>()
-        destination_txt.threshold = 2
-        destination_txt?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun afterTextChanged(s: Editable?) {}
-
-            //fixme resultAdapter
-            override fun onTextChanged(query: CharSequence, start: Int, before: Int, count: Int) {
-                if (results.count() > 0) {
-                    results.clear()
-                    "clear result".log(TAG)
-                }
-
-//                if (query.trim() != "" && query.length > 1) {
-                MapsGoogleApiClient.service.getPrediction(query.toString())
-                        .subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe({
-                            "onNext".log(TAG)
-                            if (it?.predictions?.isNotEmpty() ?: false) {
-                                it?.predictions?.forEachIndexed { index, data ->
-                                    if (index in 0..2) {
-                                        "add ${data.description.toString()}".log(TAG)
-                                        results.add(Utils.trimString(data.description.toString()))
-                                        }
-                                    }
-                                } else {
-                                results.clear()
-                                results.add(resources.getString(R.string.no_result_suggestion))
-                                "no result".log(TAG)
-                                }
-                            }, { error ->
-                                error.log("Error call")
-                            results.clear()
-                            results.add(resources.getString(R.string.error_load_suggestion))
-                        }, {
-                            "onComplete".log(TAG)
-                            val resultAdapter = ArrayAdapter<String>(this@MainActivity, android.R.layout.simple_dropdown_item_1line, results)
-                            destination_txt.setAdapter(resultAdapter)
-                            destination_txt.showDropDown()
-                            "set adapter".log(TAG)
-                            })
-//                }
-
-
-            }
-        })
-
-        destination_txt.setOnItemClickListener { parent, view, position, id ->
-            val result = parent.getItemAtPosition(position).toString()
+        destination_txt.languageCode = Locale.getDefault().language
+        destination_txt.resultType = AutocompleteResultType.GEOCODE
+        destination_txt.historyManager = null
+        destination_txt.setOnPlaceSelectedListener {
             Utils.hideKeyboard(this)
-            Utils.LocationHelper.getCoordinates(result, {
+            Utils.LocationHelper.getCoordinates(it.description, {
                 mMarker?.remove()
                 mCircle?.remove()
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
             })
+        }
+
+        destination_txt.setOnClickListener {
+            destination_txt.setCompletionEnabled(true)
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            if (destination_txt?.text?.isNotEmpty() ?: false) {
+                destination_txt.text = null
+            }
         }
 
         alarm_check.setOnCheckedChangeListener { compoundButton, checked ->
@@ -398,11 +351,8 @@ class MainActivity : AppCompatActivity(),
         }
 
         fab.setOnClickListener {
-            //todo service is running if only my position is inside radius of geofence
-
-            //todo check radious
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-            if (mMarker != null) {
+            if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
                     if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false) as Boolean) {
                         Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {

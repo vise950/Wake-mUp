@@ -1,22 +1,22 @@
 package nicola.dev.com.allarmap.utils
 
 import android.Manifest
-import android.location.Location
-import android.location.LocationManager
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import nicola.dev.com.allarmap.R
-import android.app.ActivityManager
-import android.support.v7.app.AlertDialog
+import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
 
 
 class Utils {
@@ -54,36 +54,39 @@ class Utils {
 
         private val INVALID_DOUBLE_VALUE = -999.0
 
-        fun getLocationName(latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null, onError: (() -> Unit)? = null) {
+        fun getLocationName(latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null) {
             MapsGoogleApiClient.service.getLocationName(latitude.toString() + "," + longitude.toString())
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ data ->
-                        if (data?.results?.isNotEmpty() ?: false) {
-                            data?.results?.get(0)?.address_components?.forEach {
+                    .subscribe({
+                        if (it?.results?.isNotEmpty() ?: false) {
+                            it?.results?.get(0)?.address_components?.forEach {
                                 if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
                                     onSuccess?.invoke(it.long_name.toString())
                                 }
                             }
+                        } else {
+                            onSuccess?.invoke("no valid place")
                         }
-                    }, { error ->
-                        error.log("get location name error")
-                        onError?.invoke()
+                    }, {
+                        it.log("get location name error")
+                        it.printStackTrace()
                     })
         }
 
         fun getCoordinates(cityName: String, onSuccess: ((Location) -> Unit)? = null) {
             MapsGoogleApiClient.service.getCoordinates(cityName).subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({ data ->
-                        if (data?.results?.isNotEmpty() ?: false) {
+                    .subscribe({
+                        if (it?.results?.isNotEmpty() ?: false) {
                             val location = Location(LocationManager.PASSIVE_PROVIDER)
-                            location.latitude = data?.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
-                            location.longitude = data?.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
+                            location.latitude = it?.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
+                            location.longitude = it?.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
                             onSuccess?.invoke(location)
                         }
-                    }, { error ->
-                        error.log("get coordinates error")
+                    }, {
+                        it.log("get coordinates error")
+                        it.printStackTrace()
                     })
         }
     }
