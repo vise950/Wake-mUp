@@ -21,7 +21,6 @@ class AlarmService : Service() {
     private val mVibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     private val mRingtone by lazy { RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
     private val mAudioAttr by lazy { AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build() }
-
     private val isAlarmSound by lazy { PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, true) as Boolean }
 
     override fun onCreate() {
@@ -44,7 +43,6 @@ class AlarmService : Service() {
 
     private fun startAlarm() {
         mVibrator.vibrate(longArrayOf(DELAY_OF_VIBRATION, DURATION_OF_VIBRATION), 0)
-
         if (isAlarmSound) {
             mRingtone.audioAttributes = mAudioAttr
             mRingtone.play()

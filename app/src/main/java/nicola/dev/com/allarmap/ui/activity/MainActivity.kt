@@ -27,6 +27,7 @@ import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import nicola.dev.com.allarmap.R
+import nicola.dev.com.allarmap.service.AlarmService
 import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.PreferencesHelper
 import nicola.dev.com.allarmap.utils.Utils
@@ -37,6 +38,7 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(),
         OnMapReadyCallback,
+        GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
@@ -126,10 +128,9 @@ class MainActivity : AppCompatActivity(),
         super.onResume()
         mGoogleApiClient.reconnect()
 
-//        Utils.isMyServiceRunning(this,GeofenceTransitionsIntentService::class.java).log("service running")
-//        if (Utils.isMyServiceRunning(this, GeofenceTransitionsIntentService::class.java)) {
-//            stopService(Intent(this, GeofenceTransitionsIntentService::class.java))
-//        }
+        if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
+            stopService(Intent(this, AlarmService::class.java))
+        }
     }
 
     override fun onPause() {
@@ -147,20 +148,22 @@ class MainActivity : AppCompatActivity(),
     override fun onMapReady(map: GoogleMap?) {
         map?.let {
             this.mMap = it
+            it.setOnMapClickListener(this)
         }
+    }
 
-        map?.setOnMapClickListener {
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            Utils.hideKeyboard(this)
-            mMarker?.remove()
-            mCircle?.remove()
+    override fun onMapClick(latLng: LatLng?) {
+        mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        mMarker?.remove()
+        mCircle?.remove()
+        latLng?.let {
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+            mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
             Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
                 it.log("click map")
                 destination_txt.setText(it)
                 destination_txt.setCompletionEnabled(false)
-                Utils.hideKeyboard(this)
-                //fixme hide keyboard
+                //fixme se creo un marker in un paese africano il nome non cambia
             })
         }
     }
@@ -179,8 +182,7 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    override fun onConnectionFailed(result: ConnectionResult) {
-    }
+    override fun onConnectionFailed(result: ConnectionResult) {}
 
     override fun onLocationChanged(location: Location?) {
         this.mLocation = location
@@ -322,7 +324,6 @@ class MainActivity : AppCompatActivity(),
                 mCircle?.remove()
                 mCircle = mMap?.addCircle(circleOptions)
                 //todo improve code
-
             }
         })
 
@@ -335,6 +336,7 @@ class MainActivity : AppCompatActivity(),
                 mMarker?.remove()
                 mCircle?.remove()
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+                mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude,it.longitude)))
             })
         }
 
