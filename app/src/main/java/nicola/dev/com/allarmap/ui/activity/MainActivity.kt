@@ -11,6 +11,8 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -27,6 +29,8 @@ import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import nicola.dev.com.allarmap.R
+import nicola.dev.com.allarmap.preferences.Credits
+import nicola.dev.com.allarmap.preferences.Settings
 import nicola.dev.com.allarmap.service.AlarmService
 import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
 import nicola.dev.com.allarmap.utils.PreferencesHelper
@@ -121,7 +125,6 @@ class MainActivity : AppCompatActivity(),
     override fun onStart() {
         super.onStart()
         mGoogleApiClient.connect()
-
     }
 
     override fun onResume() {
@@ -208,6 +211,19 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.app_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            R.id.settings -> startActivity(Intent(this, Settings::class.java))
+            R.id.credits -> startActivity(Intent(this, Credits::class.java))
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun initMap() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -218,6 +234,13 @@ class MainActivity : AppCompatActivity(),
         map.isMyLocationEnabled = true
         map.uiSettings.isMyLocationButtonEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
+
+        map.setOnMyLocationButtonClickListener {
+            mLocation?.let {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), ZOOM))
+            }
+            true
+        }
 
         mLocation?.let {
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
@@ -233,6 +256,7 @@ class MainActivity : AppCompatActivity(),
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                        Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
@@ -345,6 +369,9 @@ class MainActivity : AppCompatActivity(),
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             if (destination_txt?.text?.isNotEmpty() ?: false) {
                 destination_txt.text = null
+                mMarker?.remove()
+                mCircle?.remove()
+                radius_seekbar.progress = radius_seekbar.min
             }
         }
 
