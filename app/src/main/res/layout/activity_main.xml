@@ -5,7 +5,7 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nicola.dev.com.allarmap.ui.activity.MainActivity">
+    tools:context="nicola.dev.com.alarmap.ui.activity.MainActivity">
 
     <include layout="@layout/map" />
 

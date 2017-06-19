@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.preferences
+package nicola.dev.com.alarmap.preferences
 
 import android.support.v7.app.AppCompatActivity
 

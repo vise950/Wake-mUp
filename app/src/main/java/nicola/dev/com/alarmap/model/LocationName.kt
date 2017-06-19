@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.model
+package nicola.dev.com.alarmap.model
 
 
 class LocationName {

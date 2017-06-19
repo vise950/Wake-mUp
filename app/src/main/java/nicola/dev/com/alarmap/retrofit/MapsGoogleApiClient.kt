@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.retrofit
+package nicola.dev.com.alarmap.retrofit
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.utils
+package nicola.dev.com.alarmap.utils
 
 import kotlin.reflect.KClass
 

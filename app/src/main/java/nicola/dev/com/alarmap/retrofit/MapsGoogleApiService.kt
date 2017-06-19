@@ -1,10 +1,10 @@
-package nicola.dev.com.allarmap.retrofit
+package nicola.dev.com.alarmap.retrofit
 
 import io.reactivex.Observable
-import nicola.dev.com.allarmap.BuildConfig
-import nicola.dev.com.allarmap.model.Coordinates
-import nicola.dev.com.allarmap.model.LocationName
-import nicola.dev.com.allarmap.model.Prediction
+import nicola.dev.com.alarmap.BuildConfig
+import nicola.dev.com.alarmap.model.Coordinates
+import nicola.dev.com.alarmap.model.LocationName
+import nicola.dev.com.alarmap.model.Prediction
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.*

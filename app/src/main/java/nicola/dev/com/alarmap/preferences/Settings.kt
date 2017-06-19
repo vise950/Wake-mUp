@@ -1,11 +1,10 @@
-package nicola.dev.com.allarmap.preferences
+package nicola.dev.com.alarmap.preferences
 
 import android.os.Bundle
 import android.preference.PreferenceFragment
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
-import nicola.dev.com.allarmap.R
-import nicola.dev.com.allarmap.utils.Utils
+import nicola.dev.com.alarmap.R
 
 class Settings : AppCompatActivity() {
 

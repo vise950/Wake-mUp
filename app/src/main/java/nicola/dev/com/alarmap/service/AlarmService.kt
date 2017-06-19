@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.service
+package nicola.dev.com.alarmap.service
 
 import android.app.Service
 import android.content.Context
@@ -7,7 +7,7 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.IBinder
 import android.os.Vibrator
-import nicola.dev.com.allarmap.utils.PreferencesHelper
+import nicola.dev.com.alarmap.utils.PreferencesHelper
 
 
 class AlarmService : Service() {

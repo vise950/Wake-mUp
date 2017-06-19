@@ -1,4 +1,4 @@
-package nicola.dev.com.allarmap.utils
+package nicola.dev.com.alarmap.utils
 
 import android.Manifest
 import android.app.Activity
@@ -15,8 +15,8 @@ import android.view.inputmethod.InputMethodManager
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import nicola.dev.com.allarmap.R
-import nicola.dev.com.allarmap.retrofit.MapsGoogleApiClient
+import nicola.dev.com.alarmap.R
+import nicola.dev.com.alarmap.retrofit.MapsGoogleApiClient
 
 
 class Utils {
@@ -31,9 +31,9 @@ class Utils {
             return s
         }
 
-        fun hideKeyboard(context: Context) {
-            val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+        fun hideKeyboard(activity: Activity) {
+            val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
         }
 
         fun isPermissionGranted(context: Context): Boolean {

@@ -1,10 +1,12 @@
-package nicola.dev.com.allarmap.ui.activity
+package nicola.dev.com.alarmap.ui.activity
 
 import android.Manifest
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.media.AudioManager
 import android.os.Bundle
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
@@ -28,14 +30,14 @@ import com.google.android.gms.maps.model.*
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
-import nicola.dev.com.allarmap.R
-import nicola.dev.com.allarmap.preferences.Credits
-import nicola.dev.com.allarmap.preferences.Settings
-import nicola.dev.com.allarmap.service.AlarmService
-import nicola.dev.com.allarmap.service.GeofenceTransitionsIntentService
-import nicola.dev.com.allarmap.utils.PreferencesHelper
-import nicola.dev.com.allarmap.utils.Utils
-import nicola.dev.com.allarmap.utils.log
+import nicola.dev.com.alarmap.R
+import nicola.dev.com.alarmap.preferences.Credits
+import nicola.dev.com.alarmap.preferences.Settings
+import nicola.dev.com.alarmap.service.AlarmService
+import nicola.dev.com.alarmap.service.GeofenceTransitionsIntentService
+import nicola.dev.com.alarmap.utils.PreferencesHelper
+import nicola.dev.com.alarmap.utils.Utils
+import nicola.dev.com.alarmap.utils.log
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
@@ -107,6 +109,9 @@ class MainActivity : AppCompatActivity(),
 
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
+    private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+    private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
+
     private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
 
     private var isBusSelected = true
@@ -159,6 +164,8 @@ class MainActivity : AppCompatActivity(),
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         mMarker?.remove()
         mCircle?.remove()
+        radius_seekbar.isEnabled = true
+        Utils.hideKeyboard(this)
         latLng?.let {
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
             mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
@@ -359,6 +366,7 @@ class MainActivity : AppCompatActivity(),
             Utils.LocationHelper.getCoordinates(it.description, {
                 mMarker?.remove()
                 mCircle?.remove()
+                radius_seekbar.isEnabled = true
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
                 mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude,it.longitude)))
             })
@@ -372,18 +380,23 @@ class MainActivity : AppCompatActivity(),
                 mMarker?.remove()
                 mCircle?.remove()
                 radius_seekbar.progress = radius_seekbar.min
+                radius_seekbar.isEnabled = false
             }
         }
 
-        alarm_check.setOnCheckedChangeListener { compoundButton, checked ->
+        alarm_sound_check.setOnCheckedChangeListener { compoundButton, checked ->
             PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, checked)
         }
 
         fab.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            Utils.hideKeyboard(this)
             if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
-                    if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false) as Boolean) {
+//                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
+//                        Utils.AlertHepler.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
+//                    } else
+                        if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false) as Boolean) {
                         Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
                             removeGeofence({
                                 addGeofence()
