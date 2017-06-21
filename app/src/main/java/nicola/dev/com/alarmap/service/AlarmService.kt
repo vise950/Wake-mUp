@@ -33,7 +33,7 @@ class AlarmService : Service() {
         if (mRingtone.isPlaying) {
             mRingtone.stop()
         }
-        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false)
+        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, false)
         super.onDestroy()
     }
 

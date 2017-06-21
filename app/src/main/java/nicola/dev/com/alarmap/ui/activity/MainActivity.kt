@@ -28,6 +28,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import nicola.dev.com.alarmap.R
@@ -35,16 +36,17 @@ import nicola.dev.com.alarmap.preferences.Credits
 import nicola.dev.com.alarmap.preferences.Settings
 import nicola.dev.com.alarmap.service.AlarmService
 import nicola.dev.com.alarmap.service.GeofenceTransitionsIntentService
+import nicola.dev.com.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
+import nicola.dev.com.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
 import nicola.dev.com.alarmap.utils.PreferencesHelper
 import nicola.dev.com.alarmap.utils.Utils
 import nicola.dev.com.alarmap.utils.log
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
-
 class MainActivity : AppCompatActivity(),
         OnMapReadyCallback,
-        GoogleMap.OnMapClickListener,
+        GoogleMap.OnMapLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
@@ -58,18 +60,25 @@ class MainActivity : AppCompatActivity(),
         private val ZOOM: Float = 8F
         private val GEOFENCE_REQ_ID = "Allarm map geofence"
         private val GEO_DURATION = 60 * 60 * 1000L
-
-
-        private val INVALID_FLOAT_VALUE = -999.0F
-        private val INVALID_INT_VALUE = -999
-        private val INVALID_DOUBLE_VALUE = -999.0
-        private val INVALID_STRING_VALUE = ""
     }
 
+    private val mBottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
     private var mMap: GoogleMap? = null
     private var mCircle: Circle? = null
+    private val mCircleOptions by lazy {
+        CircleOptions()
+                .center(LatLng(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE))
+                .strokeWidth(10F)
+                .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
+                .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
+    }
     private var mRadius: Double? = null
     private var mRequestPermissionCount = 0
+    private var isBusSelected = true
+    private var isTrainSelected = false
+    private var isPlaneSelected = false
+
+    private var mDisposable: Disposable? = null
 
     private val mGoogleApiClient by lazy <GoogleApiClient> {
         GoogleApiClient.Builder(this)
@@ -79,13 +88,9 @@ class MainActivity : AppCompatActivity(),
                 .build()
     }
 
-    private val mLocationRequest by lazy {
-        LocationRequest()
-    }
-
+    private val mLocationRequest by lazy { LocationRequest() }
     private var mLocation: Location? = null
     private var mMarker: Marker? = null
-
     private val mGeofence by lazy <Geofence> {
         Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
@@ -94,35 +99,24 @@ class MainActivity : AppCompatActivity(),
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build()
     }
-
     private val mGeofenceRequest by lazy <GeofencingRequest> {
         GeofencingRequest.Builder()
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .addGeofence(mGeofence)
                 .build()
     }
-
     private val mGeoFencePendingIntent by lazy<PendingIntent> {
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
-
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
 
-    private var mBottomSheetBehavior: BottomSheetBehavior<*>? = null
-
-    private var isBusSelected = true
-    private var isTrainSelected = false
-    private var isPlaneSelected = false
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         initMap()
         initUi()
     }
@@ -141,10 +135,6 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
-
     override fun onStop() {
         super.onStop()
         if (mGoogleApiClient.isConnected) {
@@ -156,11 +146,11 @@ class MainActivity : AppCompatActivity(),
     override fun onMapReady(map: GoogleMap?) {
         map?.let {
             this.mMap = it
-            it.setOnMapClickListener(this)
+            it.setOnMapLongClickListener(this)
         }
     }
 
-    override fun onMapClick(latLng: LatLng?) {
+    override fun onMapLongClick(latLng: LatLng?) {
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         mMarker?.remove()
         mCircle?.remove()
@@ -186,13 +176,10 @@ class MainActivity : AppCompatActivity(),
         }
     }
 
-    override fun onConnectionSuspended(i: Int) {
-        mGeoFencePendingIntent.let {
-            LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it)
-        }
-    }
-
     override fun onConnectionFailed(result: ConnectionResult) {}
+    override fun onConnectionSuspended(i: Int) {
+        mGeoFencePendingIntent.let { LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it) }
+    }
 
     override fun onLocationChanged(location: Location?) {
         this.mLocation = location
@@ -234,14 +221,13 @@ class MainActivity : AppCompatActivity(),
     private fun initMap() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
     }
 
     private fun setMapUi(map: GoogleMap) {
         map.isMyLocationEnabled = true
         map.uiSettings.isMyLocationButtonEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
-
+        map.uiSettings.isMapToolbarEnabled = false
         map.setOnMyLocationButtonClickListener {
             mLocation?.let {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), ZOOM))
@@ -256,16 +242,21 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun initUi() {
-        mBottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet)
+
+        //workaround for intercept drag map view and disable it
+        view.setOnTouchListener { view, motionEvent -> true }
+
         mBottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
+                        bottomSheet.isEnabled = false
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
                         Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
+//                        bottomSheet.isEnabled = true
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                     }
@@ -297,7 +288,7 @@ class MainActivity : AppCompatActivity(),
                 bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
                 isBusSelected = true
                 radius_seekbar.min = 1
-                radius_seekbar.max=50
+                radius_seekbar.max = 50
                 radius_seekbar.progress = radius_seekbar.min
             }
         }
@@ -315,8 +306,8 @@ class MainActivity : AppCompatActivity(),
                 train_btn.background = getDrawable(R.drawable.btn_background_selected)
                 train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
                 isTrainSelected = true
-                radius_seekbar.min = 1
-                radius_seekbar.max=200
+                radius_seekbar.min = 10
+                radius_seekbar.max = 200
                 radius_seekbar.progress = radius_seekbar.min
             }
         }
@@ -344,16 +335,10 @@ class MainActivity : AppCompatActivity(),
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
-                mRadius = 1000.0 * progress
-                val circleOptions = CircleOptions()
-                        .center(LatLng(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE))
-                        .radius(mRadius ?: INVALID_DOUBLE_VALUE)
-                        .strokeWidth(10F)
-                        .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
-                        .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
-
                 mCircle?.remove()
-                mCircle = mMap?.addCircle(circleOptions)
+                mCircleOptions.radius(progress * 1000.0)
+//                mDisposable=Observable.
+                mCircle = mMap?.addCircle(mCircleOptions)
                 //todo improve code
             }
         })
@@ -396,11 +381,9 @@ class MainActivity : AppCompatActivity(),
 //                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
 //                        Utils.AlertHepler.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
 //                    } else
-                        if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, false) as Boolean) {
+                    if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
                         Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
-                            removeGeofence({
-                                addGeofence()
-                            })
+                            removeGeofence({ addGeofence() })
                         })
                     } else {
                         addGeofence()
@@ -416,7 +399,7 @@ class MainActivity : AppCompatActivity(),
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
                     Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
-                    PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_PREF_GEOFENCE, true)
+                    PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
                 }
                 .addOnFailureListener { it.log(TAG) }
     }
@@ -435,9 +418,7 @@ class MainActivity : AppCompatActivity(),
         mLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
 
-        mMap?.let {
-            setMapUi(it)
-        }
+        mMap?.let { setMapUi(it) }
     }
 
     private fun requestLocationPermission() {

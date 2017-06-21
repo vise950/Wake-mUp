@@ -6,8 +6,8 @@ import nicola.dev.com.alarmap.ui.activity.MainActivity
 
 object PreferencesHelper {
 
-    val KEY_PREF_GEOFENCE: String = "is_geofence_added"
-    val KEY_ALARM_SOUND:String="alarm_sound"
+    val KEY_ADD_GEOFENCE: String = "is_geofence_added"
+    val KEY_ALARM_SOUND: String = "alarm_sound"
 
     fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
@@ -52,4 +52,7 @@ object PreferencesHelper {
         return value
     }
 
+    fun isAnotherGeofenceActived(context: Context): Boolean? {
+        return getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
+    }
 }
