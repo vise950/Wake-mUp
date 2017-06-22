@@ -71,6 +71,10 @@ android {
         compile 'org.adw.library:discrete-seekbar:1.0.1'
         compile 'com.seatgeek:placesautocomplete:0.2-SNAPSHOT'
 
+        //Color and theme
+        compile 'com.thebluealliance:spectrum:0.7.1'
+        compile 'com.afollestad:aesthetic:0.4.6'
+
         //Play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
         compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
@@ -92,6 +96,7 @@ android {
 
     repositories {
         mavenCentral()
+        jcenter()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 }

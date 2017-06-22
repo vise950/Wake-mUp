@@ -251,7 +251,7 @@ class MainActivity : AppCompatActivity(),
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
-                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
+                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
                         Utils.hideKeyboard(this@MainActivity)
                     }
@@ -268,7 +268,7 @@ class MainActivity : AppCompatActivity(),
                     destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                 } else {
-                    destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_white))
+                    destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
                 }
             }

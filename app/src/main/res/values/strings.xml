@@ -22,4 +22,7 @@
     <string name="action_menu_settings">Settings</string>
     <string name="action_menu_credits">Credits</string>
 
+    <string name="key_primary_color">primary_color</string>
+    <string name="key_accent_color">accent_color</string>
+
 </resources>
