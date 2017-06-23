@@ -34,7 +34,6 @@
     <color name="grey_500">#9E9E9E</color>
     <color name="blue_grey_500">#607D8B</color>
 
-
     <array name="colors">
         <item>@color/red_500</item>
         <item>@color/pink_500</item>
@@ -55,6 +54,8 @@
         <item>@color/brown_500</item>
         <item>@color/grey_500</item>
         <item>@color/blue_grey_500</item>
+        <item>@color/white</item>
+        <item>@color/black</item>
     </array>
 
 </resources>

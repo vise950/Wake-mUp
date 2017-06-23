@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.media.AudioManager
 import android.os.Bundle
@@ -16,6 +17,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.afollestad.aesthetic.Aesthetic
+import com.afollestad.aesthetic.AestheticActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence
@@ -44,7 +47,7 @@ import nicola.dev.com.alarmap.utils.log
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
-class MainActivity : AppCompatActivity(),
+class MainActivity : AestheticActivity(),
         OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -114,9 +117,21 @@ class MainActivity : AppCompatActivity(),
     private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
 
+    private var primaryColor: String? = null
+    private var accentColor: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        getColor()
+        Aesthetic.get()
+                .colorPrimary(Color.parseColor(primaryColor))
+                .colorAccent(Color.parseColor(accentColor))
+                .colorStatusBarAuto()
+                .textColorPrimaryRes(R.color.color_primary_text_dark)
+                .textColorSecondaryRes(R.color.color_secondary_text)
+                .isDark(true)
+                .apply()
         initMap()
         initUi()
     }
@@ -216,6 +231,11 @@ class MainActivity : AppCompatActivity(),
             R.id.credits -> startActivity(Intent(this, Credits::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun getColor() {
+        primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+        accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
     }
 
     private fun initMap() {

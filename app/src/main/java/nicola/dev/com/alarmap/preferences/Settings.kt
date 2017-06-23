@@ -1,35 +1,34 @@
 package nicola.dev.com.alarmap.preferences
 
+import android.graphics.Color
 import android.os.Bundle
 import android.preference.PreferenceFragment
-import android.support.v4.content.res.ResourcesCompat
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
-import com.thebluealliance.spectrum.SpectrumPreference
 import nicola.dev.com.alarmap.R
 import nicola.dev.com.alarmap.utils.PreferencesHelper
-import nicola.dev.com.alarmap.utils.log
+import nicola.dev.com.alarmap.utils.Utils
+
 
 class Settings : AestheticActivity() {
 
-    private var primaryColor: Int = 0
-    private var accentColor: Int = 0
+    private var primaryColor: String? = null
+    private var accentColor: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         getColor()
-//        if (Aesthetic.isFirstTime()) {
-//            Aesthetic.get()
-//                    .colorPrimaryRes(primaryColor)
-//                    .colorAccentRes(accentColor)
-//                    .colorStatusBarAuto()
-//                    .textColorPrimaryRes(R.color.color_primary_text_dark)
-//                    .textColorSecondaryRes(R.color.color_secondary_text)
-//                    .apply()
-//        }
+        Aesthetic.get()
+                .colorPrimary(Color.parseColor(primaryColor))
+                .colorAccent(Color.parseColor(accentColor))
+                .colorStatusBarAuto()
+                .textColorPrimaryRes(R.color.color_primary_text_dark)
+                .textColorSecondaryRes(R.color.color_secondary_text)
+                .isDark(true)
+                .apply()
 
         fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()
     }
@@ -46,9 +45,9 @@ class Settings : AestheticActivity() {
         finish()
     }
 
-    fun getColor() {
-        primaryColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_PRIMARY_COLOR, 0) as Int
-        accentColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_ACCENT_COLOR, 0) as Int
+    private fun getColor() {
+        primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+        accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
     }
 
 
@@ -58,32 +57,15 @@ class Settings : AestheticActivity() {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.settings)
 
-            val primaryColor = findPreference("primary_color") as SpectrumPreference
-            primaryColor.color.log("color")
-            primaryColor.setOnPreferenceChangeListener { preference, value ->
-                value.toString().log("change")
-//                val color = ResourcesCompat.getColor(resources, value as Int, null)
+            findPreference("primary_color").setOnPreferenceChangeListener { preference, value ->
                 activity.recreate()
                 true
             }
-//
-//            val provider = findPreference(PreferencesHelper.KEY_PREF_WEATHER_PROVIDER) as ListPreference
-//            provider.setOnPreferenceChangeListener { preference, value ->
-//                if (value == WeatherProvider.YAHOO.value) {
-//                    SnackBarHelper.yahooProvider(activity, view)
-//                }
-//                true
-//            }
-//            provider.isEnabled = isProVersion
-//
-//            val theme = findPreference(PreferencesHelper.KEY_PREF_THEME)
-//            theme.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference, value ->
-//                // entra se clicco su un item del dialog (anche se è lo stesso) quindi controllo se il value nuovo e diverso da quello vecchio
-//                if (PreferencesHelper.isPreferenceChange(activity, PreferencesHelper.KEY_PREF_THEME, PreferencesHelper.KEY_PREF_THEME, value.toString()) ?: false) {
-//                    activity.recreate()
-//                }
-//                true
-//            }
+
+            findPreference("accent_color").setOnPreferenceChangeListener { preference, value ->
+                activity.recreate()
+                true
+            }
         }
     }
 

@@ -48,6 +48,11 @@ class Utils {
         fun getNowInMls(): Long {
             return System.currentTimeMillis()
         }
+
+        fun getParseColor(context: Context, key: String): String {
+            val pref = PreferencesHelper.getDefaultPreferences(context, key, -1) as Int
+            return "#${Integer.toHexString(pref).toUpperCase()}"
+        }
     }
 
     object LocationHelper {
