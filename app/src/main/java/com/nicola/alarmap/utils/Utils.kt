@@ -15,7 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import con.nicola.com.alarmap.R
+import com.nicola.com.alarmap.R
 import com.nicola.alarmap.retrofit.MapsGoogleApiClient
 
 class Utils {

@@ -12,7 +12,7 @@ import com.nicola.alarmap.utils.log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
-import con.nicola.com.alarmap.R
+import com.nicola.com.alarmap.R
 import com.nicola.alarmap.ui.activity.MainActivity
 import com.nicola.alarmap.utils.Constant
 import com.nicola.alarmap.utils.Utils

@@ -41,7 +41,7 @@ import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
 import com.nicola.alarmap.utils.log
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
-import con.nicola.com.alarmap.R
+import com.nicola.com.alarmap.R
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
@@ -314,9 +314,8 @@ class MainActivity : AestheticActivity(),
             when (it.id) {
                 R.id.bus_btn -> {
                     if (isTrainSelected || isPlaneSelected) {
-                        train_btn.background = mUnselectedButtonBg
+                        Groupie(train_btn,plane_btn).setBackground(mUnselectedButtonBg)
                         train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
-                        plane_btn.background = mUnselectedButtonBg
                         plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
                         isTrainSelected = false
                         isPlaneSelected = false
@@ -332,9 +331,8 @@ class MainActivity : AestheticActivity(),
                 }
                 R.id.train_btn -> {
                     if (isBusSelected || isPlaneSelected) {
-                        bus_btn.background = mUnselectedButtonBg
+                        Groupie(bus_btn,plane_btn).setBackground(mUnselectedButtonBg)
                         bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                        plane_btn.background = mUnselectedButtonBg
                         plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
                         isBusSelected = false
                         isPlaneSelected = false
@@ -350,9 +348,8 @@ class MainActivity : AestheticActivity(),
                 }
                 R.id.plane_btn -> {
                     if (isBusSelected || isTrainSelected) {
-                        bus_btn.background = mUnselectedButtonBg
+                        Groupie(bus_btn,train_btn).setBackground(mUnselectedButtonBg)
                         bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                        train_btn.background = mUnselectedButtonBg
                         train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
                         isBusSelected = false
                         isTrainSelected = false

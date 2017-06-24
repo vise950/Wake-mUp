@@ -1,7 +1,7 @@
 package com.nicola.alarmap.retrofit
 
 import io.reactivex.Observable
-import con.nicola.com.alarmap.BuildConfig
+import com.nicola.com.alarmap.BuildConfig
 import com.nicola.alarmap.model.Coordinates
 import com.nicola.alarmap.model.LocationName
 import com.nicola.alarmap.model.Prediction

@@ -1,5 +1,6 @@
 package com.nicola.alarmap.utils
 
+import android.graphics.drawable.Drawable
 import android.view.View
 
 class Groupie<T : View>(vararg views: T) {
@@ -28,5 +29,9 @@ class Groupie<T : View>(vararg views: T) {
 
     fun setOnClickListener(listener: ((View) -> Unit)?) {
         mViews.forEach { it.setOnClickListener { listener?.invoke(it) } }
+    }
+
+    fun setBackground(drawable: Drawable) {
+        mViews.forEach { it.background = drawable }
     }
 }
