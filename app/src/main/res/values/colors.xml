@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="color_primary">#9C27B0</color>
-    <color name="color_primary_dark">#7B1FA2</color>
-    <color name="color_accent">#FFC107</color>
     <color name="color_primary_text_dark">#212121</color>
     <color name="color_primary_text_light">#FFFFFF</color>
     <color name="color_secondary_text">#757575</color>
     <color name="divider">#BDBDBD</color>
-
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
 
     <color name="stoke_map">#8003A9F4</color>
     <color name="fill_map">#6429B6F6</color>
@@ -33,6 +27,8 @@
     <color name="brown_500">#795548</color>
     <color name="grey_500">#9E9E9E</color>
     <color name="blue_grey_500">#607D8B</color>
+    <color name="white">#FFFFFD</color>
+    <color name="black">#000000</color>
 
     <array name="colors">
         <item>@color/red_500</item>

@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.service
+package com.nicola.alarmap.service
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -6,8 +6,8 @@ import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.os.PowerManager
-import nicola.dev.com.alarmap.utils.Constant
-import nicola.dev.com.alarmap.utils.Utils
+import com.nicola.alarmap.utils.Constant
+import com.nicola.alarmap.utils.Utils
 
 
 class AlarmReceiver : BroadcastReceiver() {

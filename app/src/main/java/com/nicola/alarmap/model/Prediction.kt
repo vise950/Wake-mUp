@@ -1,5 +1,4 @@
-package nicola.dev.com.alarmap.model
-
+package com.nicola.alarmap.model
 
 class Prediction {
     val predictions: List<Description>? = null

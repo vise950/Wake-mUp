@@ -1,9 +1,8 @@
-package nicola.dev.com.alarmap.utils
+package com.nicola.alarmap.utils
 
 import android.content.Context
 import android.preference.PreferenceManager
-import nicola.dev.com.alarmap.R
-import nicola.dev.com.alarmap.ui.activity.MainActivity
+import com.nicola.alarmap.ui.activity.MainActivity
 
 object PreferencesHelper {
 

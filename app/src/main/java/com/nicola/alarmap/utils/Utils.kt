@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.utils
+package com.nicola.alarmap.utils
 
 import android.Manifest
 import android.app.Activity
@@ -15,9 +15,8 @@ import android.view.inputmethod.InputMethodManager
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import nicola.dev.com.alarmap.R
-import nicola.dev.com.alarmap.retrofit.MapsGoogleApiClient
-
+import con.nicola.com.alarmap.R
+import com.nicola.alarmap.retrofit.MapsGoogleApiClient
 
 class Utils {
     companion object {
@@ -64,8 +63,8 @@ class Utils {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
-                        if (it?.results?.isNotEmpty() ?: false) {
-                            it?.results?.get(0)?.address_components?.forEach {
+                        if (it.results?.isNotEmpty() ?: false) {
+                            it.results?.get(0)?.address_components?.forEach {
                                 if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
                                     onSuccess?.invoke(it.long_name.toString())
                                 }
@@ -83,10 +82,10 @@ class Utils {
             MapsGoogleApiClient.service.getCoordinates(cityName).subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
-                        if (it?.results?.isNotEmpty() ?: false) {
+                        if (it.results?.isNotEmpty() ?: false) {
                             val location = Location(LocationManager.PASSIVE_PROVIDER)
-                            location.latitude = it?.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
-                            location.longitude = it?.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
+                            location.latitude = it.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
+                            location.longitude = it.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
                             onSuccess?.invoke(location)
                         }
                     }, {

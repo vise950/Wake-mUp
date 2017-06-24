@@ -1,5 +1,4 @@
-package nicola.dev.com.alarmap.model
-
+package com.nicola.alarmap.model
 
 class LocationName {
     val results: List<Result>? = null

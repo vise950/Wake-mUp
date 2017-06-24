@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.utils
+package com.nicola.alarmap.utils
 
 class Constant {
     companion object {
@@ -8,7 +8,7 @@ class Constant {
         val INVALID_DOUBLE_VALUE = -999.0
         val INVALID_STRING_VALUE = ""
 
-        val NOTIFICATION_ID=999
+        val NOTIFICATION_ID = 999
         val START_ALARM = "START_ALARM"
         val STOP_ALARM = "STOP_ALARM"
     }

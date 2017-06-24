@@ -2,11 +2,14 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--todo dark theme-->
+
     <com.thebluealliance.spectrum.SpectrumPreference
         android:defaultValue="@color/red_500"
         android:key="@string/key_primary_color"
         android:summary="Colore della toolbar e status bar"
         android:title="Primary color"
+        app:spectrum_outlineWidth=".5dp"
         app:spectrum_colors="@array/colors"/>
 
     <com.thebluealliance.spectrum.SpectrumPreference
@@ -14,6 +17,6 @@
         android:key="@string/key_accent_color"
         android:summary="Colore dei bottoni\n(meglio se contrasta con il primary color)"
         android:title="Accent color"
+        app:spectrum_outlineWidth=".5dp"
         app:spectrum_colors="@array/colors"/>
-
 </PreferenceScreen>

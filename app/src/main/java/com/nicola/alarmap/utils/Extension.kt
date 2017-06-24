@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.utils
+package com.nicola.alarmap.utils
 
 import kotlin.reflect.KClass
 
@@ -20,13 +20,3 @@ fun Any?.log(obj: Any? = null) {
     }
     android.util.Log.e(logger, message)
 }
-
-/*
-
-Test else let
-
-a?.let{ ( object not null -> run my code }
-    .other{ object null -> other code }
-
- */
-inline fun <T, R> T.other(block: (T) -> R): R = block(this)

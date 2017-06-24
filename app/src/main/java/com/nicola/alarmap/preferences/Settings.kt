@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.preferences
+package com.nicola.alarmap.preferences
 
 import android.graphics.Color
 import android.os.Bundle
@@ -6,10 +6,9 @@ import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
-import nicola.dev.com.alarmap.R
-import nicola.dev.com.alarmap.utils.PreferencesHelper
-import nicola.dev.com.alarmap.utils.Utils
-
+import con.nicola.com.alarmap.R
+import com.nicola.alarmap.utils.PreferencesHelper
+import com.nicola.alarmap.utils.Utils
 
 class Settings : AestheticActivity() {
 
@@ -27,7 +26,7 @@ class Settings : AestheticActivity() {
                 .colorStatusBarAuto()
                 .textColorPrimaryRes(R.color.color_primary_text_dark)
                 .textColorSecondaryRes(R.color.color_secondary_text)
-                .isDark(true)
+                .isDark(false)
                 .apply()
 
         fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()

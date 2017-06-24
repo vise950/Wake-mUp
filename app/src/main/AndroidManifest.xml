@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="nicola.dev.com.alarmap">
+    package="con.nicola.com.alarmap">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="nicola.dev.com.alarmap.ui.activity.MainActivity"
+            android:name="com.nicola.alarmap.ui.activity.MainActivity"
             android:launchMode="singleTask"
             android:configChanges="keyboardHidden"
             android:windowSoftInputMode="stateHidden|adjustPan"
@@ -29,17 +29,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="nicola.dev.com.alarmap.preferences.Settings"/>
-        <activity android:name="nicola.dev.com.alarmap.preferences.Credits"/>
+        <activity android:name="com.nicola.alarmap.preferences.Settings"/>
+        <activity android:name="com.nicola.alarmap.preferences.Credits"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_key"/>
         
-        <service android:name="nicola.dev.com.alarmap.service.GeofenceTransitionsIntentService"/>
-        <service android:name="nicola.dev.com.alarmap.service.AlarmService"/>
+        <service android:name="com.nicola.alarmap.service.GeofenceTransitionsIntentService"/>
+        <service android:name="com.nicola.alarmap.service.AlarmService"/>
         <receiver
-            android:name="nicola.dev.com.alarmap.service.AlarmReceiver"
+            android:name="com.nicola.alarmap.service.AlarmReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="START_ALARM" />

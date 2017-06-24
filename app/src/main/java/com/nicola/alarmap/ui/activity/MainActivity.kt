@@ -1,4 +1,4 @@
-package nicola.dev.com.alarmap.ui.activity
+package com.nicola.alarmap.ui.activity
 
 import android.Manifest
 import android.app.PendingIntent
@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.media.AudioManager
 import android.os.Bundle
@@ -13,7 +14,6 @@ import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,20 +30,21 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.nicola.alarmap.preferences.Credits
+import com.nicola.alarmap.preferences.Settings
+import com.nicola.alarmap.service.AlarmService
+import com.nicola.alarmap.service.GeofenceTransitionsIntentService
+import com.nicola.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
+import com.nicola.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
+import com.nicola.alarmap.utils.Groupie
+import com.nicola.alarmap.utils.PreferencesHelper
+import com.nicola.alarmap.utils.Utils
+import com.nicola.alarmap.utils.log
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
+import con.nicola.com.alarmap.R
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
-import nicola.dev.com.alarmap.R
-import nicola.dev.com.alarmap.preferences.Credits
-import nicola.dev.com.alarmap.preferences.Settings
-import nicola.dev.com.alarmap.service.AlarmService
-import nicola.dev.com.alarmap.service.GeofenceTransitionsIntentService
-import nicola.dev.com.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
-import nicola.dev.com.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
-import nicola.dev.com.alarmap.utils.PreferencesHelper
-import nicola.dev.com.alarmap.utils.Utils
-import nicola.dev.com.alarmap.utils.log
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
@@ -117,20 +118,22 @@ class MainActivity : AestheticActivity(),
     private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
 
-    private var primaryColor: String? = null
-    private var accentColor: String? = null
+    private var mPrimaryColor: String? = null
+    private var mAccentColor: String? = null
+    private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
+    private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         getColor()
         Aesthetic.get()
-                .colorPrimary(Color.parseColor(primaryColor))
-                .colorAccent(Color.parseColor(accentColor))
+                .colorPrimary(Color.parseColor(mPrimaryColor))
+                .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
                 .textColorPrimaryRes(R.color.color_primary_text_dark)
                 .textColorSecondaryRes(R.color.color_secondary_text)
-                .isDark(true)
+                .isDark(false)
                 .apply()
         initMap()
         initUi()
@@ -144,6 +147,8 @@ class MainActivity : AestheticActivity(),
     override fun onResume() {
         super.onResume()
         mGoogleApiClient.reconnect()
+
+        getColor()
 
         if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
             stopService(Intent(this, AlarmService::class.java))
@@ -234,8 +239,12 @@ class MainActivity : AestheticActivity(),
     }
 
     private fun getColor() {
-        primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
-        accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+        mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        mSelectedButtonBg.setColor(Color.parseColor(mAccentColor))
+        mUnselectedButtonBg.setColor(Color.WHITE)
+        radius_seekbar.setThumbColor(Color.parseColor(mAccentColor), Color.parseColor(mAccentColor))
+        radius_seekbar.setScrubberColor(Color.parseColor(mAccentColor))
     }
 
     private fun initMap() {
@@ -273,85 +282,94 @@ class MainActivity : AestheticActivity(),
                         bottomSheet.isEnabled = false
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+
                         Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
 //                        bottomSheet.isEnabled = true
-                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
+                        destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
+                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                     }
                 }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (slideOffset > 0) {
-                    destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary))
+                    destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
+                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
                 } else {
                     destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
                 }
             }
         })
 
-        bus_btn.setOnClickListener {
-            if (isTrainSelected || isPlaneSelected) {
-                train_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
-                plane_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
-                isTrainSelected = false
-                isPlaneSelected = false
-            }
-            if (!isBusSelected) {
-                bus_btn.background = getDrawable(R.drawable.btn_background_selected)
-                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
-                isBusSelected = true
-                radius_seekbar.min = 1
-                radius_seekbar.max = 50
-                radius_seekbar.progress = radius_seekbar.min
+        bus_btn.background = mSelectedButtonBg
+        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
+        Groupie(bus_btn, train_btn, plane_btn).setOnClickListener {
+            when (it.id) {
+                R.id.bus_btn -> {
+                    if (isTrainSelected || isPlaneSelected) {
+                        train_btn.background = mUnselectedButtonBg
+                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
+                        plane_btn.background = mUnselectedButtonBg
+                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
+                        isTrainSelected = false
+                        isPlaneSelected = false
+                    }
+                    if (!isBusSelected) {
+                        bus_btn.background = mSelectedButtonBg
+                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
+                        isBusSelected = true
+                        radius_seekbar.min = 1
+                        radius_seekbar.max = 50
+                        radius_seekbar.progress = radius_seekbar.min
+                    }
+                }
+                R.id.train_btn -> {
+                    if (isBusSelected || isPlaneSelected) {
+                        bus_btn.background = mUnselectedButtonBg
+                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
+                        plane_btn.background = mUnselectedButtonBg
+                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
+                        isBusSelected = false
+                        isPlaneSelected = false
+                    }
+                    if (!isTrainSelected) {
+                        train_btn.background = mSelectedButtonBg
+                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
+                        isTrainSelected = true
+                        radius_seekbar.min = 10
+                        radius_seekbar.max = 200
+                        radius_seekbar.progress = radius_seekbar.min
+                    }
+                }
+                R.id.plane_btn -> {
+                    if (isBusSelected || isTrainSelected) {
+                        bus_btn.background = mUnselectedButtonBg
+                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
+                        train_btn.background = mUnselectedButtonBg
+                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
+                        isBusSelected = false
+                        isTrainSelected = false
+                    }
+                    if (!isPlaneSelected) {
+                        plane_btn.background = mSelectedButtonBg
+                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_white))
+                        isPlaneSelected = true
+                        radius_seekbar.min = 100
+                        radius_seekbar.max = 500
+                        radius_seekbar.progress = radius_seekbar.min
+                    }
+                }
             }
         }
 
-        train_btn.setOnClickListener {
-            if (isBusSelected || isPlaneSelected) {
-                bus_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                plane_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
-                isBusSelected = false
-                isPlaneSelected = false
-            }
-            if (!isTrainSelected) {
-                train_btn.background = getDrawable(R.drawable.btn_background_selected)
-                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
-                isTrainSelected = true
-                radius_seekbar.min = 10
-                radius_seekbar.max = 200
-                radius_seekbar.progress = radius_seekbar.min
-            }
-        }
-
-        plane_btn.setOnClickListener {
-            if (isBusSelected || isTrainSelected) {
-                bus_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                train_btn.background = getDrawable(R.drawable.btn_background_unselected)
-                train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
-                isBusSelected = false
-                isTrainSelected = false
-            }
-            if (!isPlaneSelected) {
-                plane_btn.background = getDrawable(R.drawable.btn_background_selected)
-                plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_white))
-                isPlaneSelected = true
-                radius_seekbar.min = 100
-                radius_seekbar.max = 500
-                radius_seekbar.progress = radius_seekbar.min
-            }
-        }
-
-        radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener{
+        radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener {
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
@@ -373,7 +391,7 @@ class MainActivity : AestheticActivity(),
                 mCircle?.remove()
                 radius_seekbar.isEnabled = true
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
-                mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude,it.longitude)))
+                mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
             })
         }
 
@@ -398,7 +416,7 @@ class MainActivity : AestheticActivity(),
             Utils.hideKeyboard(this)
             if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
-//                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
+                    //                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
 //                        Utils.AlertHepler.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
 //                    } else
                     if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {

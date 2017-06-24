@@ -1,5 +1,4 @@
-package nicola.dev.com.alarmap.model
-
+package com.nicola.alarmap.model
 
 class Coordinates {
     val results: List<Result>? = null
@@ -18,7 +17,3 @@ class Coordinates {
         val lng: Double? = null
     }
 }
-
-
-
-
