@@ -14,9 +14,11 @@ import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
 import com.google.android.gms.common.ConnectionResult
@@ -40,8 +42,8 @@ import com.nicola.alarmap.utils.Groupie
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
 import com.nicola.alarmap.utils.log
-import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import com.nicola.com.alarmap.R
+import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
@@ -122,6 +124,9 @@ class MainActivity : AestheticActivity(),
     private var mAccentColor: String? = null
     private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
     private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
+
+    private var mPopupMenu: PopupMenu? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -232,10 +237,43 @@ class MainActivity : AestheticActivity(),
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
+            R.id.maps_style -> dropdownMenu()
             R.id.settings -> startActivity(Intent(this, Settings::class.java))
             R.id.credits -> startActivity(Intent(this, Credits::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun dropdownMenu() {
+        if (mPopupMenu == null) {
+            mPopupMenu = PopupMenu(this, findViewById(R.id.maps_style))
+            mPopupMenu?.menuInflater?.inflate(R.menu.maps_menu, mPopupMenu?.menu)
+        }
+        mPopupMenu?.show()
+        mPopupMenu?.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.standard -> {
+                    if (!item.isChecked) {
+                        item.isChecked = true
+                        mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        mMap?.setMapStyle(null)
+                    }
+                }
+                R.id.standard_dark -> {
+                    if (!item.isChecked) {
+                        item.isChecked = true
+                        mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
+                    }
+                }
+                R.id.satellite -> {
+                    if (!item.isChecked) {
+                        item.isChecked = true
+                        mMap?.mapType = GoogleMap.MAP_TYPE_HYBRID
+                    }
+                }
+            }
+            true
+        }
     }
 
     private fun getColor() {
@@ -257,6 +295,7 @@ class MainActivity : AestheticActivity(),
         map.uiSettings.isMyLocationButtonEnabled = true
         map.uiSettings.isRotateGesturesEnabled = true
         map.uiSettings.isMapToolbarEnabled = false
+
         map.setOnMyLocationButtonClickListener {
             mLocation?.let {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), ZOOM))
