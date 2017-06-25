@@ -2,21 +2,40 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!--todo dark theme-->
+    <PreferenceCategory android:title="Unità di misura">
+        <ListPreference
+            android:title="Distanza"
+            android:defaultValue="km"
+            android:entries="@array/distance_unit"
+            android:entryValues="@array/distance_value"
+            android:key="@string/key_distance"
+            android:summary="%s" />
+    </PreferenceCategory>
 
-    <com.thebluealliance.spectrum.SpectrumPreference
-        android:defaultValue="@color/red_500"
-        android:key="@string/key_primary_color"
-        android:summary="Colore della toolbar e status bar"
-        android:title="Primary color"
-        app:spectrum_outlineWidth=".5dp"
-        app:spectrum_colors="@array/colors"/>
+    <PreferenceCategory android:title="Personalizzazione">
+        <SwitchPreference
+            android:key="@string/key_theme"
+            android:title="Switch theme" />
 
-    <com.thebluealliance.spectrum.SpectrumPreference
-        android:defaultValue="@color/blue_500"
-        android:key="@string/key_accent_color"
-        android:summary="Colore dei bottoni\n(meglio se contrasta con il primary color)"
-        android:title="Accent color"
-        app:spectrum_outlineWidth=".5dp"
-        app:spectrum_colors="@array/colors"/>
+        <CheckBoxPreference
+            android:key="@string/key_nav_bar_color"
+            android:title="Color navigation bar" />
+
+        <com.thebluealliance.spectrum.SpectrumPreference
+            android:defaultValue="@color/red_500"
+            android:key="@string/key_primary_color"
+            android:summary="Colore della toolbar e status bar"
+            android:title="Primary color"
+            app:spectrum_colors="@array/colors"
+            app:spectrum_outlineWidth=".5dp" />
+
+        <com.thebluealliance.spectrum.SpectrumPreference
+            android:defaultValue="@color/blue_500"
+            android:key="@string/key_accent_color"
+            android:summary="Colore dei bottoni\n(meglio se contrasta con il primary color)"
+            android:title="Accent color"
+            app:spectrum_colors="@array/colors"
+            app:spectrum_outlineWidth=".5dp" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:hint="Search destination"
         android:padding="22dp"
-        android:textColor="@color/color_primary_text_dark"
+        android:textColor="@color/color_primary_text"
         android:textSize="@dimen/text_size_24sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

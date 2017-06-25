@@ -10,13 +10,14 @@ import android.location.LocationManager
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatDelegate
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import com.nicola.alarmap.retrofit.MapsGoogleApiClient
+import com.nicola.com.alarmap.R
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import com.nicola.com.alarmap.R
-import com.nicola.alarmap.retrofit.MapsGoogleApiClient
 
 class Utils {
     companion object {
@@ -95,7 +96,7 @@ class Utils {
         }
     }
 
-    object AlertHepler {
+    object AlertHelper {
 
         fun dialog(context: Context, title: Int, message: Int, positiveClick: (() -> Unit)? = null, negativeClick: (() -> Unit)? = null) {
             AlertDialog.Builder(context)

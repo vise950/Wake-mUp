@@ -22,7 +22,19 @@
     <string name="action_menu_settings">Settings</string>
     <string name="action_menu_credits">Credits</string>
 
+    <string name="key_distance">distance</string>
+    <string name="key_theme">theme</string>
+    <string name="key_nav_bar_color">nav_bar_color</string>
     <string name="key_primary_color">primary_color</string>
     <string name="key_accent_color">accent_color</string>
+
+    <string-array name="distance_unit">
+        <item>Kilometers</item>
+        <item>Miles</item>
+    </string-array>
+    <string-array name="distance_value" translatable="false">
+        <item>km</item>
+        <item>mi</item>
+    </string-array>
 
 </resources>

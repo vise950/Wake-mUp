@@ -2,31 +2,52 @@ package com.nicola.alarmap.preferences
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
-import com.nicola.com.alarmap.R
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
+import com.nicola.com.alarmap.R
 
 class Settings : AestheticActivity() {
 
     private var primaryColor: String? = null
     private var accentColor: String? = null
+    private var themeChanged: Boolean? = null
+    private var navBarColor: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         getColor()
+        getPreferences()
         Aesthetic.get()
+                .activityTheme(if (themeChanged == true) {
+                    R.style.AppThemeDark
+                } else {
+                    R.style.AppTheme
+                })
                 .colorPrimary(Color.parseColor(primaryColor))
                 .colorAccent(Color.parseColor(accentColor))
                 .colorStatusBarAuto()
-                .textColorPrimaryRes(R.color.color_primary_text_dark)
-                .textColorSecondaryRes(R.color.color_secondary_text)
-                .isDark(false)
+                .colorNavigationBar(if (navBarColor == true) {
+                    Color.parseColor(primaryColor)
+                } else {
+                    Color.BLACK
+                })
+                .textColorPrimaryRes(if (themeChanged == true) {
+                    R.color.color_primary_text_inverse
+                } else {
+                    R.color.color_primary_text
+                })
+                .textColorSecondaryRes(if (themeChanged == true) {
+                    R.color.color_secondary_text_inverse
+                } else {
+                    R.color.color_secondary_text
+                })
+                .isDark(themeChanged ?: false)
                 .apply()
 
         fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()
@@ -44,6 +65,11 @@ class Settings : AestheticActivity() {
         finish()
     }
 
+    private fun getPreferences() {
+        themeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        navBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
+    }
+
     private fun getColor() {
         primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
         accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
@@ -56,16 +82,29 @@ class Settings : AestheticActivity() {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.settings)
 
-            findPreference("primary_color").setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { preference, value ->
+                Handler().postDelayed({
+                    activity.recreate()
+                }, 300)
+                true
+            }
+
+            findPreference(getString(R.string.key_nav_bar_color)).setOnPreferenceChangeListener { preference, value ->
+                Handler().postDelayed({
+                    activity.recreate()
+                }, 400)
+                true
+            }
+
+            findPreference(getString(R.string.key_primary_color)).setOnPreferenceChangeListener { preference, value ->
                 activity.recreate()
                 true
             }
 
-            findPreference("accent_color").setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_accent_color)).setOnPreferenceChangeListener { preference, value ->
                 activity.recreate()
                 true
             }
         }
     }
-
 }

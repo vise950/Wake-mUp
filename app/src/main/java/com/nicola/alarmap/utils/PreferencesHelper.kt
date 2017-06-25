@@ -10,6 +10,8 @@ object PreferencesHelper {
     val KEY_ALARM_SOUND: String = "alarm_sound"
     val KEY_PRIMARY_COLOR:String= "primary_color"
     val KEY_ACCENT_COLOR:String= "accent_color"
+    val KEY_THEME: String = "theme"
+    val KEY_NAV_BAR_COLOR:String="nav_bar_color"
 
     fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)

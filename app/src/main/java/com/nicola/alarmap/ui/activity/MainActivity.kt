@@ -131,7 +131,7 @@ class MainActivity : AestheticActivity(),
                 .colorPrimary(Color.parseColor(mPrimaryColor))
                 .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
-                .textColorPrimaryRes(R.color.color_primary_text_dark)
+                .textColorPrimaryRes(R.color.color_primary_text)
                 .textColorSecondaryRes(R.color.color_secondary_text)
                 .isDark(false)
                 .apply()
@@ -212,12 +212,12 @@ class MainActivity : AestheticActivity(),
                     getDeviceLocation()
                 } else {
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        Utils.AlertHepler.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
+                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
                             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                         })
                         mRequestPermissionCount++
                     } else {
-                        Utils.AlertHepler.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
+                        Utils.AlertHelper.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
                     }
                 }
             }
@@ -281,7 +281,7 @@ class MainActivity : AestheticActivity(),
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                         destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
 
                         Utils.hideKeyboard(this@MainActivity)
@@ -289,8 +289,8 @@ class MainActivity : AestheticActivity(),
                     BottomSheetBehavior.STATE_EXPANDED -> {
 //                        bottomSheet.isEnabled = true
                         destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
-                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
-                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
+                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     }
                 }
             }
@@ -298,11 +298,11 @@ class MainActivity : AestheticActivity(),
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (slideOffset > 0) {
                     destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
-                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
-                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_light))
+                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
                     destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_dark))
+                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                     destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
                 }
             }
@@ -414,10 +414,10 @@ class MainActivity : AestheticActivity(),
             if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
                     //                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
-//                        Utils.AlertHepler.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
+//                        Utils.AlertHelper.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
 //                    } else
                     if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
-                        Utils.AlertHepler.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
+                        Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
                             removeGeofence({ addGeofence() })
                         })
                     } else {
@@ -425,7 +425,7 @@ class MainActivity : AestheticActivity(),
                     }
                 }
             } else {
-                Utils.AlertHepler.snackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
+                Utils.AlertHelper.snackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
             }
         }
     }
@@ -433,7 +433,7 @@ class MainActivity : AestheticActivity(),
     private fun addGeofence() {
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
-                    Utils.AlertHepler.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
+                    Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
                 }
                 .addOnFailureListener { it.log(TAG) }
@@ -458,7 +458,7 @@ class MainActivity : AestheticActivity(),
 
     private fun requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.AlertHepler.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
+            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
             })
         } else {
