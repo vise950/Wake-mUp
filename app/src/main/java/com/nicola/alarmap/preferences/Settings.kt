@@ -47,6 +47,7 @@ class Settings : AestheticActivity() {
                 } else {
                     R.color.color_secondary_text
                 })
+                .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
                 .isDark(themeChanged ?: false)
                 .apply()
 

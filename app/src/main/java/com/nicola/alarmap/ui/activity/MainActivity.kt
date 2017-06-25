@@ -10,6 +10,7 @@ import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
@@ -18,7 +19,6 @@ import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.CheckBox
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
 import com.google.android.gms.common.ConnectionResult
@@ -127,19 +127,14 @@ class MainActivity : AestheticActivity(),
 
     private var mPopupMenu: PopupMenu? = null
 
+    private var themeChanged: Boolean? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         getColor()
-        Aesthetic.get()
-                .colorPrimary(Color.parseColor(mPrimaryColor))
-                .colorAccent(Color.parseColor(mAccentColor))
-                .colorStatusBarAuto()
-                .textColorPrimaryRes(R.color.color_primary_text)
-                .textColorSecondaryRes(R.color.color_secondary_text)
-                .isDark(false)
-                .apply()
+        themeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
         initMap()
         initUi()
     }
@@ -202,6 +197,7 @@ class MainActivity : AestheticActivity(),
     }
 
     override fun onConnectionFailed(result: ConnectionResult) {}
+
     override fun onConnectionSuspended(i: Int) {
         mGeoFencePendingIntent.let { LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it) }
     }
@@ -238,8 +234,18 @@ class MainActivity : AestheticActivity(),
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item?.itemId) {
             R.id.maps_style -> dropdownMenu()
-            R.id.settings -> startActivity(Intent(this, Settings::class.java))
-            R.id.credits -> startActivity(Intent(this, Credits::class.java))
+            R.id.settings -> {
+                startActivity(Intent(this, Settings::class.java))
+                Handler().postDelayed({
+                    mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                }, 200)
+            }
+            R.id.credits -> {
+                startActivity(Intent(this, Credits::class.java))
+                Handler().postDelayed({
+                    mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                }, 200)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -272,6 +278,7 @@ class MainActivity : AestheticActivity(),
                     }
                 }
             }
+            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             true
         }
     }
@@ -314,19 +321,28 @@ class MainActivity : AestheticActivity(),
         //workaround for intercept drag map view and disable it
         view.setOnTouchListener { view, motionEvent -> true }
 
+        if (themeChanged == true) {
+            view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+        } else {
+            view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+        }
+
         mBottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
-                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                        if (themeChanged == true) {
+                            destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                        } else {
+                            destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                        }
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                         destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
 
                         Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
-//                        bottomSheet.isEnabled = true
                         destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                         destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
@@ -340,7 +356,11 @@ class MainActivity : AestheticActivity(),
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
-                    destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                    if (themeChanged == true) {
+                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                    } else {
+                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                    }
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                     destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
                 }
@@ -430,7 +450,6 @@ class MainActivity : AestheticActivity(),
                 mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
             })
         }
-
         destination_txt.setOnClickListener {
             destination_txt.setCompletionEnabled(true)
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED

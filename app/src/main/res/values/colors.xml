@@ -30,6 +30,7 @@
     <color name="blue_grey_500">#607D8B</color>
     <color name="white">#FFFFFD</color>
     <color name="black">#000000</color>
+    <color name="dark">#303030</color>
 
     <array name="colors">
         <item>@color/red_500</item>
