@@ -19,7 +19,6 @@ import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -44,7 +43,6 @@ import com.nicola.alarmap.utils.Utils
 import com.nicola.alarmap.utils.log
 import com.nicola.com.alarmap.R
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
@@ -69,22 +67,7 @@ class MainActivity : AestheticActivity(),
     }
 
     private val mBottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
-    private var mMap: GoogleMap? = null
-    private var mCircle: Circle? = null
-    private val mCircleOptions by lazy {
-        CircleOptions()
-                .center(LatLng(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE))
-                .strokeWidth(10F)
-                .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
-                .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
-    }
-    private var mRadius: Double? = null
-    private var mRequestPermissionCount = 0
-    private var isBusSelected = true
-    private var isTrainSelected = false
-    private var isPlaneSelected = false
-
-    private var mDisposable: Disposable? = null
+    private var mPopupMenu: PopupMenu? = null
 
     private val mGoogleApiClient by lazy <GoogleApiClient> {
         GoogleApiClient.Builder(this)
@@ -93,10 +76,17 @@ class MainActivity : AestheticActivity(),
                 .addApi(LocationServices.API)
                 .build()
     }
-
     private val mLocationRequest by lazy { LocationRequest() }
     private var mLocation: Location? = null
     private var mMarker: Marker? = null
+    private var mMap: GoogleMap? = null
+    private var mCircle: Circle? = null
+    private val mCircleOptions by lazy {
+        CircleOptions().strokeWidth(10F)
+                .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
+                .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
+    }
+    private var mRadius: Double? = null
     private val mGeofence by lazy <Geofence> {
         Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
@@ -117,6 +107,11 @@ class MainActivity : AestheticActivity(),
     }
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
+    private var mRequestPermissionCount = 0
+    private var isBusSelected = true
+    private var isTrainSelected = false
+    private var isPlaneSelected = false
+
     private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
 
@@ -124,8 +119,6 @@ class MainActivity : AestheticActivity(),
     private var mAccentColor: String? = null
     private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
     private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
-
-    private var mPopupMenu: PopupMenu? = null
 
     private var themeChanged: Boolean? = null
 
@@ -175,9 +168,11 @@ class MainActivity : AestheticActivity(),
         mMarker?.remove()
         mCircle?.remove()
         radius_seekbar.isEnabled = true
+        radius_seekbar.progress = 0
         Utils.hideKeyboard(this)
         latLng?.let {
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+            mCircleOptions?.center(mMarker?.position)
             mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
             Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
                 it.log("click map")
@@ -431,7 +426,7 @@ class MainActivity : AestheticActivity(),
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mCircle?.remove()
                 mCircleOptions.radius(progress * 1000.0)
-//                mDisposable=Observable.
+                mRadius = mCircleOptions.radius
                 mCircle = mMap?.addCircle(mCircleOptions)
                 //todo improve code
             }
@@ -445,8 +440,11 @@ class MainActivity : AestheticActivity(),
             Utils.LocationHelper.getCoordinates(it.description, {
                 mMarker?.remove()
                 mCircle?.remove()
+                mCircleOptions?.radius(0.0)
                 radius_seekbar.isEnabled = true
+                radius_seekbar.min = 0
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+                mCircleOptions.center(mMarker?.position)
                 mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
             })
         }
@@ -469,15 +467,19 @@ class MainActivity : AestheticActivity(),
         fab.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             Utils.hideKeyboard(this)
+
             if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
+                    //todo check volume sveglia
                     //                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
 //                        Utils.AlertHelper.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
 //                    } else
                     if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
-                        Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
-                            removeGeofence({ addGeofence() })
-                        })
+                        Handler().postDelayed({
+                            Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
+                                removeGeofence({ addGeofence() })
+                            })
+                        }, 300)
                     } else {
                         addGeofence()
                     }
@@ -491,6 +493,7 @@ class MainActivity : AestheticActivity(),
     private fun addGeofence() {
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
+                    //todo cambiare chiusura app
                     Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
                 }

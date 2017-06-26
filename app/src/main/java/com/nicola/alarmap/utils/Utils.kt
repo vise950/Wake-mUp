@@ -10,7 +10,6 @@ import android.location.LocationManager
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatDelegate
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.nicola.alarmap.retrofit.MapsGoogleApiClient
@@ -33,7 +32,9 @@ class Utils {
 
         fun hideKeyboard(activity: Activity) {
             val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(activity.currentFocus.windowToken, 0)
+            activity.currentFocus?.windowToken?.let {
+                imm.hideSoftInputFromWindow(it, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
         }
 
         fun isPermissionGranted(context: Context): Boolean {
