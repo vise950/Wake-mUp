@@ -208,7 +208,8 @@ class MainActivity : AestheticActivity(),
                     getDeviceLocation()
                 } else {
                     if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
+                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                                actionMessage = R.string.action_Ok, actionClick = {
                             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                         })
                         mRequestPermissionCount++
@@ -263,6 +264,7 @@ class MainActivity : AestheticActivity(),
                 R.id.standard_dark -> {
                     if (!item.isChecked) {
                         item.isChecked = true
+                        mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
                         mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
                     }
                 }
@@ -424,14 +426,17 @@ class MainActivity : AestheticActivity(),
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
-                mCircle?.remove()
-                mCircleOptions.radius(progress * 1000.0)
-                mRadius = mCircleOptions.radius
-                mCircle = mMap?.addCircle(mCircleOptions)
+                mMarker?.let {
+                    mCircle?.remove()
+                    mCircleOptions?.radius(progress * 1000.0)
+                    mRadius = mCircleOptions?.radius
+                    mCircle = mMap?.addCircle(mCircleOptions)
+                }
                 //todo improve code
             }
         })
 
+        //fixme colori con tema scuro
         destination_txt.languageCode = Locale.getDefault().language
         destination_txt.resultType = AutocompleteResultType.GEOCODE
         destination_txt.historyManager = null
@@ -493,9 +498,9 @@ class MainActivity : AestheticActivity(),
     private fun addGeofence() {
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
-                    //todo cambiare chiusura app
-                    Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start, actionClick = { finishAndRemoveTask() })
+                    Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start)
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
+                    Handler().postDelayed({ finishAndRemoveTask() }, 2000)
                 }
                 .addOnFailureListener { it.log(TAG) }
     }
@@ -519,7 +524,8 @@ class MainActivity : AestheticActivity(),
 
     private fun requestLocationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission, actionClick = {
+            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                    actionMessage = R.string.action_Ok, actionClick = {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
             })
         } else {

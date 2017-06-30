@@ -9,7 +9,8 @@
 
     <include layout="@layout/map" />
 
-    <include layout="@layout/bottom_details" />
+    <include layout="@layout/bottom_details"
+        android:elevation="@dimen/elevation_16dp"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

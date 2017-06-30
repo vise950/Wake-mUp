@@ -19,7 +19,7 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "")
-        wl.acquire()
+        wl.acquire(10000)
 
         if (intent.action == Constant.START_ALARM) {
             context.startService(Intent(context, AlarmService::class.java))
@@ -31,7 +31,7 @@ class AlarmReceiver : BroadcastReceiver() {
             val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.cancel(Constant.NOTIFICATION_ID)
 
-            wl.release()
+            wl.release(10000)
         }
     }
 }

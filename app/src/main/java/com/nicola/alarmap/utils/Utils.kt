@@ -115,13 +115,18 @@ class Utils {
                     .show()
         }
 
+        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container, duration: Int = Snackbar.LENGTH_LONG) {
+            val snackBar = Snackbar.make(view, message, duration)
+            showSnackBar(activity, snackBar)
+        }
+
         fun snackbar(activity: Activity, message: Int, view: View = activity.root_container,
                      duration: Int = Snackbar.LENGTH_INDEFINITE,
-                     actionMessage: Int = R.string.action_Ok,
-                     actionClick: (() -> Unit)? = null) {
+                     actionMessage: Int,
+                     actionClick: (() -> Unit)) {
             val snackBar = Snackbar.make(view, message, duration)
             if (duration == Snackbar.LENGTH_INDEFINITE) {
-                snackBar.setAction(actionMessage, { actionClick?.invoke() })
+                snackBar.setAction(actionMessage, { actionClick.invoke() })
             }
             showSnackBar(activity, snackBar)
         }

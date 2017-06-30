@@ -10,6 +10,13 @@ import com.afollestad.aesthetic.AestheticActivity
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
 import com.nicola.com.alarmap.R
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
+
 
 class Settings : AestheticActivity() {
 
@@ -87,6 +94,13 @@ class Settings : AestheticActivity() {
                 Handler().postDelayed({
                     activity.recreate()
                 }, 300)
+
+//                Completable.complete()
+//                        .delay(300, TimeUnit.MILLISECONDS)
+//                        .subscribeOn(Schedulers.newThread())
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .doOnComplete { activity.recreate() }
+//                        .subscribe()
                 true
             }
 

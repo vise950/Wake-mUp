@@ -30,8 +30,8 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     private val mNotification by lazy {
         NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Notifications Example")
-                .setContentText("This is a test notification")
+                .setContentTitle("Hey! Wake up")
+                .setContentText("You arrived at your destination")
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
                 .setPriority(Notification.PRIORITY_MAX)

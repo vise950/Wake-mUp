@@ -11,7 +11,7 @@
     <string name="snackbar_ask_permission">I needed location permission for determinate your position.</string>
     <string name="snackbar_permission_denied">Go to app setting and enable permission.</string>
     <string name="snackbar_no_location">Destination empty or wrong.</string>
-    <string name="snackbar_service_start">Alarm added.\nApplication will be closed.</string>
+    <string name="snackbar_service_start">Alarm added.\nApplication will be closed automatically.</string>
     <string name="snackar_no_volume">Alarm volume low</string>
 
     <string name="dialog_title_another_service">Un\'altra sveglia è gia attiva</string>

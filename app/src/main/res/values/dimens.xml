@@ -23,5 +23,6 @@
     <dimen name="elevation_2dp">2dp</dimen>
     <dimen name="elevation_6dp">6dp</dimen>
     <dimen name="elevation_8dp">8dp</dimen>
-    
+    <dimen name="elevation_16dp">16dp</dimen>
+
 </resources>

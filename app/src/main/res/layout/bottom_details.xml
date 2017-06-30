@@ -5,10 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipToPadding="true"
-    android:elevation="4dp"
     app:behavior_peekHeight="74dp"
+    android:outlineProvider="bounds"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
-
 
     <com.seatgeek.placesautocomplete.PlacesAutocompleteTextView
         android:background="@null"
@@ -56,7 +55,7 @@
         android:layout_height="40dp"
         android:background="@drawable/btn_background"
         android:contentDescription="@string/description"
-        android:elevation="@dimen/elevation_8dp"
+        android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_bus_black"
         app:layout_constraintLeft_toRightOf="@+id/travel_txt"
         android:layout_marginStart="@dimen/margin_12dp"
@@ -70,7 +69,7 @@
         android:layout_marginStart="@dimen/margin_12dp"
         android:background="@drawable/btn_background"
         android:contentDescription="@string/description"
-        android:elevation="@dimen/elevation_8dp"
+        android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_train_black"
         app:layout_constraintLeft_toRightOf="@+id/bus_btn"
         app:layout_constraintBottom_toBottomOf="@+id/bus_btn" />
@@ -82,7 +81,7 @@
         android:layout_marginStart="@dimen/margin_12dp"
         android:background="@drawable/btn_background"
         android:contentDescription="@string/description"
-        android:elevation="@dimen/elevation_8dp"
+        android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_plane_black"
         app:layout_constraintLeft_toRightOf="@+id/train_btn"
         app:layout_constraintBottom_toBottomOf="@+id/train_btn" />

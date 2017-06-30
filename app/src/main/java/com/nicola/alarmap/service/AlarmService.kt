@@ -40,6 +40,7 @@ class AlarmService : Service() {
         return null
     }
 
+    @Suppress("DEPRECATION")
     private fun startAlarm() {
         mVibrator.vibrate(longArrayOf(DELAY_OF_VIBRATION, DURATION_OF_VIBRATION), 0)
         if (isAlarmSound) {
