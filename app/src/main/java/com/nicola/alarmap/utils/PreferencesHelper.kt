@@ -11,7 +11,8 @@ object PreferencesHelper {
     val KEY_PRIMARY_COLOR:String= "primary_color"
     val KEY_ACCENT_COLOR:String= "accent_color"
     val KEY_THEME: String = "theme"
-    val KEY_NAV_BAR_COLOR:String="nav_bar_color"
+    val KEY_NAV_BAR_COLOR: String = "nav_bar_color"
+    val KEY_FIRST_RUN: String = "is_first_run"
 
     fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)

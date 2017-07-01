@@ -29,7 +29,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private val mNotification by lazy {
         NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Hey! Wake up")
                 .setContentText("You arrived at your destination")
                 .setWhen(Utils.getNowInMls())

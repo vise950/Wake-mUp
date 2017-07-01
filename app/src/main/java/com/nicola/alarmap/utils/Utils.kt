@@ -5,18 +5,27 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.location.Location
 import android.location.LocationManager
+import android.support.annotation.ColorInt
+import android.support.annotation.DrawableRes
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.res.ResourcesCompat
+import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.nicola.alarmap.retrofit.MapsGoogleApiClient
 import com.nicola.com.alarmap.R
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class Utils {
     companion object {
@@ -53,6 +62,24 @@ class Utils {
         fun getParseColor(context: Context, key: String): String {
             val pref = PreferencesHelper.getDefaultPreferences(context, key, -1) as Int
             return "#${Integer.toHexString(pref).toUpperCase()}"
+        }
+
+        fun getParseColor(color: Int): String {
+            return "#${Integer.toHexString(color).toUpperCase()}"
+        }
+
+        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int?=null): BitmapDescriptor {
+            val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
+            val bitmap = Bitmap.createBitmap(vectorDrawable?.intrinsicWidth ?: 0, vectorDrawable?.intrinsicHeight ?: 0, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            vectorDrawable?.setBounds(0, 0, canvas.width, canvas.height)
+            vectorDrawable?.let { image ->
+                color?.let { c ->
+                    DrawableCompat.setTint(image, c)
+                }
+            }
+            vectorDrawable?.draw(canvas)
+            return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
     }
 

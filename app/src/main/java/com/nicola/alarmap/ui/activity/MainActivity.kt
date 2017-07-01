@@ -19,6 +19,7 @@ import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
@@ -127,6 +128,16 @@ class MainActivity : AestheticActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         getColor()
+        Aesthetic.get()
+                .activityTheme(R.style.AppTheme)
+                .colorPrimary(Color.parseColor(mPrimaryColor))
+                .colorAccent(Color.parseColor(mAccentColor))
+                .colorStatusBarAuto()
+                .textColorPrimaryRes(R.color.color_primary_text)
+                .textColorSecondaryRes(R.color.color_secondary_text)
+                .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
+                .isDark(themeChanged ?: false)
+                .apply()
         themeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
         initMap()
         initUi()
@@ -165,13 +176,16 @@ class MainActivity : AestheticActivity(),
 
     override fun onMapLongClick(latLng: LatLng?) {
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        mRadius = 0.0
+        radius_seekbar.progress = 0
         mMarker?.remove()
         mCircle?.remove()
-        radius_seekbar.isEnabled = true
-        radius_seekbar.progress = 0
         Utils.hideKeyboard(this)
         latLng?.let {
+            radius_seekbar.isEnabled = true
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
+//            mMarker?.setIcon(Utils.vectorToBitmap(this,R.drawable.ic_alarm_add))
+            mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
             mCircleOptions?.center(mMarker?.position)
             mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
             Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
@@ -281,8 +295,14 @@ class MainActivity : AestheticActivity(),
     }
 
     private fun getColor() {
-        mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
-        mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean
+        if (isFirstRun) {
+            mPrimaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))
+            mAccentColor = Utils.getParseColor(Color.parseColor(getString(R.color.blue_500)))
+        } else {
+            mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+            mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        }
         mSelectedButtonBg.setColor(Color.parseColor(mAccentColor))
         mUnselectedButtonBg.setColor(Color.WHITE)
         radius_seekbar.setThumbColor(Color.parseColor(mAccentColor), Color.parseColor(mAccentColor))
@@ -381,7 +401,7 @@ class MainActivity : AestheticActivity(),
                         bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
                         isBusSelected = true
                         radius_seekbar.min = 1
-                        radius_seekbar.max = 50
+                        radius_seekbar.max = 30
                         radius_seekbar.progress = radius_seekbar.min
                     }
                 }

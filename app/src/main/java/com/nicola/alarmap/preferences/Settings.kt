@@ -10,20 +10,14 @@ import com.afollestad.aesthetic.AestheticActivity
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
 import com.nicola.com.alarmap.R
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.Scheduler
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
 
 
 class Settings : AestheticActivity() {
 
-    private var primaryColor: String? = null
-    private var accentColor: String? = null
-    private var themeChanged: Boolean? = null
-    private var navBarColor: Boolean? = null
+    private var mPrimaryColor: String? = null
+    private var mAccentColor: String? = null
+    private var mThemeChanged: Boolean? = null
+    private var mNavBarColor: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,31 +25,31 @@ class Settings : AestheticActivity() {
         getColor()
         getPreferences()
         Aesthetic.get()
-                .activityTheme(if (themeChanged == true) {
+                .activityTheme(if (mThemeChanged == true) {
                     R.style.AppThemeDark
                 } else {
                     R.style.AppTheme
                 })
-                .colorPrimary(Color.parseColor(primaryColor))
-                .colorAccent(Color.parseColor(accentColor))
+                .colorPrimary(Color.parseColor(mPrimaryColor))
+                .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
-                .colorNavigationBar(if (navBarColor == true) {
-                    Color.parseColor(primaryColor)
+                .colorNavigationBar(if (mNavBarColor == true) {
+                    Color.parseColor(mPrimaryColor)
                 } else {
                     Color.BLACK
                 })
-                .textColorPrimaryRes(if (themeChanged == true) {
+                .textColorPrimaryRes(if (mThemeChanged == true) {
                     R.color.color_primary_text_inverse
                 } else {
                     R.color.color_primary_text
                 })
-                .textColorSecondaryRes(if (themeChanged == true) {
+                .textColorSecondaryRes(if (mThemeChanged == true) {
                     R.color.color_secondary_text_inverse
                 } else {
                     R.color.color_secondary_text
                 })
                 .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(themeChanged ?: false)
+                .isDark(mThemeChanged ?: false)
                 .apply()
 
         fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()
@@ -74,13 +68,19 @@ class Settings : AestheticActivity() {
     }
 
     private fun getPreferences() {
-        themeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
-        navBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
+        mThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        mNavBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
     }
 
     private fun getColor() {
-        primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
-        accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean
+        if (isFirstRun) {
+            mPrimaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))
+            mAccentColor = Utils.getParseColor(Color.parseColor(getString(R.color.blue_500)))
+        } else {
+            mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+            mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+        }
     }
 
 
@@ -89,6 +89,8 @@ class Settings : AestheticActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.settings)
+
+            PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
 
             findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { preference, value ->
                 Handler().postDelayed({
