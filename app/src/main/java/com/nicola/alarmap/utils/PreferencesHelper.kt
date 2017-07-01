@@ -11,6 +11,7 @@ object PreferencesHelper {
     val KEY_PRIMARY_COLOR:String= "primary_color"
     val KEY_ACCENT_COLOR:String= "accent_color"
     val KEY_THEME: String = "theme"
+    val KEY_DISTANCE: String = "distance"
     val KEY_NAV_BAR_COLOR: String = "nav_bar_color"
     val KEY_FIRST_RUN: String = "is_first_run"
 
@@ -59,5 +60,10 @@ object PreferencesHelper {
 
     fun isAnotherGeofenceActived(context: Context): Boolean? {
         return getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
+    }
+
+    fun isUISystem(context: Context):Boolean?{
+        val pref= getDefaultPreferences(context, KEY_DISTANCE,"")
+        return pref != "mi"
     }
 }

@@ -121,7 +121,8 @@ class MainActivity : AestheticActivity(),
     private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
     private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
 
-    private var themeChanged: Boolean? = null
+    private var isThemeChanged: Boolean? = null
+    private var isUISystem: Boolean? = true     //is International System of Unit
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,9 +137,9 @@ class MainActivity : AestheticActivity(),
                 .textColorPrimaryRes(R.color.color_primary_text)
                 .textColorSecondaryRes(R.color.color_secondary_text)
                 .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(themeChanged ?: false)
+                .isDark(isThemeChanged ?: false)
                 .apply()
-        themeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
         initMap()
         initUi()
     }
@@ -157,6 +158,9 @@ class MainActivity : AestheticActivity(),
         if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
             stopService(Intent(this, AlarmService::class.java))
         }
+
+        isUISystem = PreferencesHelper.isUISystem(this)
+        radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
     }
 
     override fun onStop() {
@@ -338,7 +342,7 @@ class MainActivity : AestheticActivity(),
         //workaround for intercept drag map view and disable it
         view.setOnTouchListener { view, motionEvent -> true }
 
-        if (themeChanged == true) {
+        if (isThemeChanged == true) {
             view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
         } else {
             view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
@@ -349,7 +353,7 @@ class MainActivity : AestheticActivity(),
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
-                        if (themeChanged == true) {
+                        if (isThemeChanged == true) {
                             destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
                         } else {
                             destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
@@ -373,7 +377,7 @@ class MainActivity : AestheticActivity(),
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
-                    if (themeChanged == true) {
+                    if (isThemeChanged == true) {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
                     } else {
                         destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
@@ -448,6 +452,7 @@ class MainActivity : AestheticActivity(),
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mMarker?.let {
                     mCircle?.remove()
+                    //todo add distanza in miglia
                     mCircleOptions?.radius(progress * 1000.0)
                     mRadius = mCircleOptions?.radius
                     mCircle = mMap?.addCircle(mCircleOptions)
