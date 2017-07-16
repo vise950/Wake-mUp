@@ -114,7 +114,6 @@ class MainActivity : AestheticActivity(),
     private var isPlaneSelected = false
 
     private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-    private val mAlarmVolume by lazy { mAudioManager.getStreamVolume(AudioManager.STREAM_ALARM) }
 
     private var mPrimaryColor: String? = null
     private var mAccentColor: String? = null
@@ -122,24 +121,34 @@ class MainActivity : AestheticActivity(),
     private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
 
     private var isThemeChanged: Boolean? = null
-    private var isUISystem: Boolean? = true     //is International System of Unit
+    private var isUISystem: Boolean? = true     // International System of Unit, true is meters, false is miles
+    private var isAppRunning: Boolean? = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         getColor()
+        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        "theme change $isThemeChanged".log(TAG)
         Aesthetic.get()
                 .activityTheme(R.style.AppTheme)
                 .colorPrimary(Color.parseColor(mPrimaryColor))
                 .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
-                .textColorPrimaryRes(R.color.color_primary_text)
-                .textColorSecondaryRes(R.color.color_secondary_text)
+                .textColorPrimaryRes(if (isThemeChanged == true) {
+                    R.color.color_primary_text_inverse
+                } else {
+                    R.color.color_primary_text
+                })
+                .textColorSecondaryRes(if (isThemeChanged == true) {
+                    R.color.color_secondary_text_inverse
+                } else {
+                    R.color.color_secondary_text
+                })
                 .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
                 .isDark(isThemeChanged ?: false)
                 .apply()
-        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
         initMap()
         initUi()
     }
@@ -332,8 +341,11 @@ class MainActivity : AestheticActivity(),
         }
 
         mLocation?.let {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-            map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 1000, null)
+            if (isAppRunning == false) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
+                map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 1000, null)
+                isAppRunning = true
+            }
         }
     }
 
@@ -452,8 +464,11 @@ class MainActivity : AestheticActivity(),
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mMarker?.let {
                     mCircle?.remove()
-                    //todo add distanza in miglia
-                    mCircleOptions?.radius(progress * 1000.0)
+                    if (isUISystem == false) {
+                        mCircleOptions?.radius(Utils.milesToMeters(progress))
+                    } else {
+                        mCircleOptions?.radius(progress * 1000.0)
+                    }
                     mRadius = mCircleOptions?.radius
                     mCircle = mMap?.addCircle(mCircleOptions)
                 }
@@ -500,10 +515,6 @@ class MainActivity : AestheticActivity(),
 
             if (mMarker != null && destination_txt.text.isNotEmpty()) {
                 mLocation?.let {
-                    //todo check volume sveglia
-                    //                    if (alarm_sound_check.isChecked && mAlarmVolume <= 0) {
-//                        Utils.AlertHelper.snackbar(this, R.string.snackar_no_volume, duration = Snackbar.LENGTH_LONG)
-//                    } else
                     if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
                         Handler().postDelayed({
                             Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {

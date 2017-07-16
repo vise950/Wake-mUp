@@ -81,6 +81,14 @@ class Utils {
             vectorDrawable?.draw(canvas)
             return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
+
+//        fun metersToMiles(meters: Int): Int {
+//            return (meters / 1609.344).toInt()
+//        }
+
+        fun milesToMeters(miles: Int): Double {
+            return (miles * 1609.344)
+        }
     }
 
     object LocationHelper {

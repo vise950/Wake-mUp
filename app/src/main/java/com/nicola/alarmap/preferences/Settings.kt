@@ -7,8 +7,10 @@ import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
+import com.nicola.alarmap.ui.activity.MainActivity
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
+import com.nicola.alarmap.utils.log
 import com.nicola.com.alarmap.R
 
 
@@ -16,16 +18,17 @@ class Settings : AestheticActivity() {
 
     private var mPrimaryColor: String? = null
     private var mAccentColor: String? = null
-    private var mThemeChanged: Boolean? = null
-    private var mNavBarColor: Boolean? = null
+    private var isThemeChanged: Boolean? = null
+    private var isNavBarColor: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         getColor()
         getPreferences()
+        "theme change $isThemeChanged".log("setting")
         Aesthetic.get()
-                .activityTheme(if (mThemeChanged == true) {
+                .activityTheme(if (isThemeChanged == true) {
                     R.style.AppThemeDark
                 } else {
                     R.style.AppTheme
@@ -33,23 +36,23 @@ class Settings : AestheticActivity() {
                 .colorPrimary(Color.parseColor(mPrimaryColor))
                 .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
-                .colorNavigationBar(if (mNavBarColor == true) {
+                .colorNavigationBar(if (isNavBarColor == true) {
                     Color.parseColor(mPrimaryColor)
                 } else {
                     Color.BLACK
                 })
-                .textColorPrimaryRes(if (mThemeChanged == true) {
+                .textColorPrimaryRes(if (isThemeChanged == true) {
                     R.color.color_primary_text_inverse
                 } else {
                     R.color.color_primary_text
                 })
-                .textColorSecondaryRes(if (mThemeChanged == true) {
+                .textColorSecondaryRes(if (isThemeChanged == true) {
                     R.color.color_secondary_text_inverse
                 } else {
                     R.color.color_secondary_text
                 })
                 .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(mThemeChanged ?: false)
+                .isDark(isThemeChanged ?: false)
                 .apply()
 
         fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()
@@ -68,8 +71,8 @@ class Settings : AestheticActivity() {
     }
 
     private fun getPreferences() {
-        mThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
-        mNavBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
+        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        isNavBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
     }
 
     private fun getColor() {
