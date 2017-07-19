@@ -7,12 +7,13 @@ import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
-import com.nicola.alarmap.ui.activity.MainActivity
 import com.nicola.alarmap.utils.PreferencesHelper
 import com.nicola.alarmap.utils.Utils
-import com.nicola.alarmap.utils.log
 import com.nicola.com.alarmap.R
-
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 
 class Settings : AestheticActivity() {
 
@@ -26,7 +27,6 @@ class Settings : AestheticActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         getColor()
         getPreferences()
-        "theme change $isThemeChanged".log("setting")
         Aesthetic.get()
                 .activityTheme(if (isThemeChanged == true) {
                     R.style.AppThemeDark
@@ -96,16 +96,14 @@ class Settings : AestheticActivity() {
             PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
 
             findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { preference, value ->
+//                Observable.timer(300, TimeUnit.MILLISECONDS)
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .subscribeOn(Schedulers.newThread())
+//                        .doOnComplete { activity.recreate() }
+//                        .subscribe()
                 Handler().postDelayed({
                     activity.recreate()
                 }, 300)
-
-//                Completable.complete()
-//                        .delay(300, TimeUnit.MILLISECONDS)
-//                        .subscribeOn(Schedulers.newThread())
-//                        .observeOn(AndroidSchedulers.mainThread())
-//                        .doOnComplete { activity.recreate() }
-//                        .subscribe()
                 true
             }
 

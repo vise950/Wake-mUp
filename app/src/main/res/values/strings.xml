@@ -3,11 +3,10 @@
 
     <string name="maps_key" translatable="false">AIzaSyAg7YHx_q2HIrbbNcEaFAcH0MTufqSDOtQ</string>
     <string name="autocomplete_key" translatable="false">AIzaSyBN_nEtSAVgYV3Ah8SIgHgkmzvHAuR1qIs</string>
-
     <string name="description" translatable="false">image description</string>
+
     <string name="no_result_suggestion">No result</string>
     <string name="error_load_suggestion">Fail to load suggestions</string>
-
     <string name="text_radius">Radius (%1$s)</string>
 
     <string name="snackbar_ask_permission">I needed location permission for determinate your position.</string>
@@ -26,6 +25,12 @@
     <string name="action_map_standard">Standard</string>
     <string name="action_map_standard_dark">Standard dark</string>
     <string name="action_map_satellite">Satellite</string>
+
+    <string name="target_map">Tieni premuto per posizionare un marker</string>
+    <string name="target_edit">Oppure digita la destinazione</string>
+    <string name="target_button">Scegli il mezzo di trasporto</string>
+    <string name="target_seekbar">Imposta un raggio d\'azione</string>
+    <string name="target_fab">Infine avvia il servizio</string>
 
     <string name="key_distance">distance</string>
     <string name="key_theme">theme</string>

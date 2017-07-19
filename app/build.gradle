@@ -64,6 +64,7 @@ android {
         //Custom view
         compile 'org.adw.library:discrete-seekbar:1.0.1'
         compile 'com.seatgeek:placesautocomplete:0.2-SNAPSHOT'
+        compile 'com.getkeepsafe.taptargetview:taptargetview:1.9.1'
 
         //Color and theme
         compile 'com.thebluealliance:spectrum:0.7.1'

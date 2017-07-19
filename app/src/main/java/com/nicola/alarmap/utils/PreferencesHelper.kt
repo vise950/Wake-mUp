@@ -14,6 +14,7 @@ object PreferencesHelper {
     val KEY_DISTANCE: String = "distance"
     val KEY_NAV_BAR_COLOR: String = "nav_bar_color"
     val KEY_FIRST_RUN: String = "is_first_run"
+    val KEY_SHOW_CASE: String = "show_case"
 
     fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
@@ -65,5 +66,13 @@ object PreferencesHelper {
     fun isUISystem(context: Context):Boolean?{
         val pref= getDefaultPreferences(context, KEY_DISTANCE,"")
         return pref != "mi"
+    }
+
+    fun isFirstRun(context: Context): Boolean? {
+        return getPreferences(context, KEY_FIRST_RUN, false) as? Boolean
+    }
+
+    fun isShowCase(context: Context): Boolean? {
+        return getPreferences(context, KEY_SHOW_CASE, false) as? Boolean
     }
 }

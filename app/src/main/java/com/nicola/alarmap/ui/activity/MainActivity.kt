@@ -2,13 +2,11 @@ package com.nicola.alarmap.ui.activity
 
 import android.Manifest
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.location.Location
-import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.BottomSheetBehavior
@@ -21,6 +19,8 @@ import android.view.MenuItem
 import android.view.View
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.Geofence
@@ -46,6 +46,7 @@ import com.nicola.com.alarmap.R
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
+import kotlinx.android.synthetic.main.map.*
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
@@ -57,13 +58,13 @@ class MainActivity : AestheticActivity(),
         com.google.android.gms.location.LocationListener {
 
     companion object {
-        private val TAG = "ALLARM MAP"
+        private val TAG = "ALARM MAP"
         private val REQUEST_LOCATION = 854
         private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
         private val DEFAULT_ZOOM: Float = 6F
         private val ZOOM: Float = 8F
-        private val GEOFENCE_REQ_ID = "Allarm map geofence"
+        private val GEOFENCE_REQ_ID = "Alarm map geofence"
         private val GEO_DURATION = 60 * 60 * 1000L
     }
 
@@ -113,8 +114,6 @@ class MainActivity : AestheticActivity(),
     private var isTrainSelected = false
     private var isPlaneSelected = false
 
-    private val mAudioManager by lazy { this.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-
     private var mPrimaryColor: String? = null
     private var mAccentColor: String? = null
     private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
@@ -128,29 +127,8 @@ class MainActivity : AestheticActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        getColor()
-        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
-        "theme change $isThemeChanged".log(TAG)
-        Aesthetic.get()
-                .activityTheme(R.style.AppTheme)
-                .colorPrimary(Color.parseColor(mPrimaryColor))
-                .colorAccent(Color.parseColor(mAccentColor))
-                .colorStatusBarAuto()
-                .textColorPrimaryRes(if (isThemeChanged == true) {
-                    R.color.color_primary_text_inverse
-                } else {
-                    R.color.color_primary_text
-                })
-                .textColorSecondaryRes(if (isThemeChanged == true) {
-                    R.color.color_secondary_text_inverse
-                } else {
-                    R.color.color_secondary_text
-                })
-                .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(isThemeChanged ?: false)
-                .apply()
-        initMap()
-        initUi()
+        "onCreate".log(TAG)
+        init()
     }
 
     override fun onStart() {
@@ -347,6 +325,84 @@ class MainActivity : AestheticActivity(),
                 isAppRunning = true
             }
         }
+    }
+
+    private fun initShowCase() {
+        TapTargetSequence(this)
+                .targets(TapTarget.forView(map.view, getString(R.string.target_map))
+                        .outerCircleColor(R.color.teal_500)
+                        .transparentTarget(true)
+                        .textColor(R.color.color_primary_text_inverse)
+                        .cancelable(false),
+                        TapTarget.forView(destination_txt, getString(R.string.target_edit))
+                                .id(1)
+                                .outerCircleColor(R.color.teal_500)
+                                .transparentTarget(true)
+                                .textColor(R.color.color_primary_text_inverse)
+                                .cancelable(false),
+                        TapTarget.forView(bus_btn, getString(R.string.target_button))
+                                .outerCircleColor(R.color.teal_500)
+                                .transparentTarget(true)
+                                .textColor(R.color.color_primary_text_inverse)
+                                .cancelable(false),
+                        TapTarget.forView(radius_seekbar, getString(R.string.target_seekbar))
+                                .id(2)
+                                .outerCircleColor(R.color.teal_500)
+                                .transparentTarget(true)
+                                .textColor(R.color.color_primary_text_inverse)
+                                .cancelable(false),
+                        TapTarget.forView(fab, getString(R.string.target_fab))
+                                .outerCircleColor(R.color.teal_500)
+                                .transparentTarget(true)
+                                .textColor(R.color.color_primary_text_inverse)
+                                .cancelable(false))
+                .listener(object : TapTargetSequence.Listener {
+                    override fun onSequenceFinish() {}
+                    override fun onSequenceCanceled(lastTarget: TapTarget) {}
+
+                    override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
+                        when (lastTarget.id()) {
+                            1 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                            2 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        }
+                    }
+                })
+                .start()
+    }
+
+    private fun init() {
+        getColor()
+        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        Aesthetic.get()
+                .activityTheme(if (isThemeChanged == true) {
+                    R.style.AppThemeDark
+                } else {
+                    R.style.AppTheme
+                })
+                .colorPrimary(Color.parseColor(mPrimaryColor))
+                .colorAccent(Color.parseColor(mAccentColor))
+                .colorStatusBarAuto()
+                .textColorPrimaryRes(if (isThemeChanged == true) {
+                    R.color.color_primary_text_inverse
+                } else {
+                    R.color.color_primary_text
+                })
+                .textColorSecondaryRes(if (isThemeChanged == true) {
+                    R.color.color_secondary_text_inverse
+                } else {
+                    R.color.color_secondary_text
+                })
+                .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
+                .isDark(isThemeChanged ?: false)
+                .apply()
+        initMap()
+        initUi()
+
+        "show case ${PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_SHOW_CASE, true)}".log(TAG)
+//        if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_SHOW_CASE, true) == true) {
+        initShowCase()
+        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_SHOW_CASE, false)
+//        }
     }
 
     private fun initUi() {
