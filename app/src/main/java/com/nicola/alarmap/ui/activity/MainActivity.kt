@@ -127,7 +127,6 @@ class MainActivity : AestheticActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        "onCreate".log(TAG)
         init()
     }
 
@@ -192,7 +191,8 @@ class MainActivity : AestheticActivity(),
         if (Utils.isPermissionGranted(this)) {
             getDeviceLocation()
         } else {
-            requestLocationPermission()
+//            requestLocationPermission()
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
         }
     }
 
@@ -207,23 +207,42 @@ class MainActivity : AestheticActivity(),
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        when (requestCode) {
+//            REQUEST_LOCATION -> {
+//                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    getDeviceLocation()
+//                    if (PreferencesHelper.isShowCase(this) == true) {
+//                        initShowCase()
+//                    }
+//                } else {
+////                    Utils.AlertHelper.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
+//                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                }
+//            }
+//            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        }
+
         when (requestCode) {
             REQUEST_LOCATION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getDeviceLocation()
+                    if (PreferencesHelper.isShowCase(this) == true) {
+                        initShowCase()
+                    }
                 } else {
-                    if (mRequestPermissionCount < 2 && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        "rational ask".log(TAG)
                         Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
                                 actionMessage = R.string.action_Ok, actionClick = {
-                            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+                            //                            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
                         })
-                        mRequestPermissionCount++
                     } else {
+                        "dont ask again".log(TAG)
                         Utils.AlertHelper.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
                     }
                 }
             }
-            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
@@ -357,8 +376,10 @@ class MainActivity : AestheticActivity(),
                                 .textColor(R.color.color_primary_text_inverse)
                                 .cancelable(false))
                 .listener(object : TapTargetSequence.Listener {
-                    override fun onSequenceFinish() {}
                     override fun onSequenceCanceled(lastTarget: TapTarget) {}
+                    override fun onSequenceFinish() {
+                        PreferencesHelper.setPreferences(this@MainActivity, PreferencesHelper.KEY_SHOW_CASE, false)
+                    }
 
                     override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
                         when (lastTarget.id()) {
@@ -397,12 +418,6 @@ class MainActivity : AestheticActivity(),
                 .apply()
         initMap()
         initUi()
-
-        "show case ${PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_SHOW_CASE, true)}".log(TAG)
-//        if (PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_SHOW_CASE, true) == true) {
-        initShowCase()
-        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_SHOW_CASE, false)
-//        }
     }
 
     private fun initUi() {
@@ -615,6 +630,7 @@ class MainActivity : AestheticActivity(),
     }
 
     private fun requestLocationPermission() {
+        "ask permission".log(TAG)
         if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
             Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
                     actionMessage = R.string.action_Ok, actionClick = {

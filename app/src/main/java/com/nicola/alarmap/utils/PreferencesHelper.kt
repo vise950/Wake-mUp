@@ -73,6 +73,6 @@ object PreferencesHelper {
     }
 
     fun isShowCase(context: Context): Boolean? {
-        return getPreferences(context, KEY_SHOW_CASE, false) as? Boolean
+        return getPreferences(context, KEY_SHOW_CASE, true) as? Boolean
     }
 }
