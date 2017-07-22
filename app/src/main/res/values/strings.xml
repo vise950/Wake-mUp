@@ -7,6 +7,7 @@
 
     <string name="no_result_suggestion">No result</string>
     <string name="error_load_suggestion">Fail to load suggestions</string>
+    <string name="unknown_place">Unknown</string>
     <string name="text_radius">Radius (%1$s)</string>
 
     <string name="snackbar_ask_permission">I needed location permission for determinate your position.</string>
@@ -16,7 +17,8 @@
     <string name="snackar_no_volume">Alarm volume low</string>
 
     <string name="dialog_title_another_service">Un\'altra sveglia è gia attiva</string>
-    <string name="dialog_message_another_service">Vuoi cancellare la sveglia già creata e impostare la nuova?</string>
+    <string name="dialog_message_another_service">Vuoi eliminare la sveglia attiva e impostare la nuova?</string>
+    <string name="dialog_message_network_problem">Non è statto possible recuperare le informazioni, riprova</string>
 
     <string name="action_Ok">OK</string>
     <string name="action_cancel">Cancel</string>

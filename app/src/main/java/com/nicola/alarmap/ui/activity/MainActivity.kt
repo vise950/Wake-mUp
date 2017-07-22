@@ -1,6 +1,5 @@
 package com.nicola.alarmap.ui.activity
 
-import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,7 +10,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
-import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.PopupMenu
 import android.view.Menu
@@ -36,12 +34,9 @@ import com.nicola.alarmap.preferences.Credits
 import com.nicola.alarmap.preferences.Settings
 import com.nicola.alarmap.service.AlarmService
 import com.nicola.alarmap.service.GeofenceTransitionsIntentService
+import com.nicola.alarmap.utils.*
 import com.nicola.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
 import com.nicola.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
-import com.nicola.alarmap.utils.Groupie
-import com.nicola.alarmap.utils.PreferencesHelper
-import com.nicola.alarmap.utils.Utils
-import com.nicola.alarmap.utils.log
 import com.nicola.com.alarmap.R
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import kotlinx.android.synthetic.main.activity_main.*
@@ -59,10 +54,9 @@ class MainActivity : AestheticActivity(),
 
     companion object {
         private val TAG = "ALARM MAP"
-        private val REQUEST_LOCATION = 854
         private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
         private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
-        private val DEFAULT_ZOOM: Float = 6F
+        private val DEFAULT_ZOOM: Float = 0F
         private val ZOOM: Float = 8F
         private val GEOFENCE_REQ_ID = "Alarm map geofence"
         private val GEO_DURATION = 60 * 60 * 1000L
@@ -109,7 +103,6 @@ class MainActivity : AestheticActivity(),
     }
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
-    private var mRequestPermissionCount = 0
     private var isBusSelected = true
     private var isTrainSelected = false
     private var isPlaneSelected = false
@@ -137,7 +130,13 @@ class MainActivity : AestheticActivity(),
 
     override fun onResume() {
         super.onResume()
-        mGoogleApiClient.reconnect()
+        if (!mGoogleApiClient.isConnected) {
+            mGoogleApiClient.reconnect()
+        }
+
+        if (Utils.PermissionHelper.isLocationPermissionGranted(this)) {
+            initShowCase()
+        }
 
         getColor()
 
@@ -167,7 +166,7 @@ class MainActivity : AestheticActivity(),
     override fun onMapLongClick(latLng: LatLng?) {
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         mRadius = 0.0
-        radius_seekbar.progress = 0
+        radius_seekbar.progress = 1
         mMarker?.remove()
         mCircle?.remove()
         Utils.hideKeyboard(this)
@@ -177,22 +176,22 @@ class MainActivity : AestheticActivity(),
 //            mMarker?.setIcon(Utils.vectorToBitmap(this,R.drawable.ic_alarm_add))
             mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
             mCircleOptions?.center(mMarker?.position)
+            mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
+            mRadius = mCircleOptions?.radius
+            mCircle = mMap?.addCircle(mCircleOptions)
             mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
-            Utils.LocationHelper.getLocationName(it.latitude, it.longitude, {
-                it.log("click map")
+            Utils.LocationHelper.getLocationName(this, it.latitude, it.longitude, {
                 destination_txt.setText(it)
                 destination_txt.setCompletionEnabled(false)
-                //fixme se creo un marker in un paese africano il nome non cambia
             })
         }
     }
 
     override fun onConnected(bundle: Bundle?) {
-        if (Utils.isPermissionGranted(this)) {
+        if (Utils.PermissionHelper.isLocationPermissionGranted(this)) {
             getDeviceLocation()
         } else {
-//            requestLocationPermission()
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+            Utils.PermissionHelper.requestLocationPermission(this)
         }
     }
 
@@ -207,42 +206,15 @@ class MainActivity : AestheticActivity(),
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        when (requestCode) {
-//            REQUEST_LOCATION -> {
-//                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    getDeviceLocation()
-//                    if (PreferencesHelper.isShowCase(this) == true) {
-//                        initShowCase()
-//                    }
-//                } else {
-////                    Utils.AlertHelper.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
-//                    ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                }
-//            }
-//            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        }
-
         when (requestCode) {
-            REQUEST_LOCATION -> {
+            Constant.REQUEST_LOCATION -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getDeviceLocation()
-                    if (PreferencesHelper.isShowCase(this) == true) {
-                        initShowCase()
-                    }
                 } else {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        "rational ask".log(TAG)
-                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                                actionMessage = R.string.action_Ok, actionClick = {
-                            //                            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-                        })
-                    } else {
-                        "dont ask again".log(TAG)
-                        Utils.AlertHelper.snackbar(this, R.string.snackbar_permission_denied, duration = Snackbar.LENGTH_LONG)
-                    }
+                    Utils.PermissionHelper.requestLocationPermissionRationale(this)
                 }
             }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
@@ -332,7 +304,7 @@ class MainActivity : AestheticActivity(),
 
         map.setOnMyLocationButtonClickListener {
             mLocation?.let {
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), ZOOM))
+                map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
             }
             true
         }
@@ -340,55 +312,57 @@ class MainActivity : AestheticActivity(),
         mLocation?.let {
             if (isAppRunning == false) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-                map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 1000, null)
+                map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
                 isAppRunning = true
             }
         }
     }
 
     private fun initShowCase() {
-        TapTargetSequence(this)
-                .targets(TapTarget.forView(map.view, getString(R.string.target_map))
-                        .outerCircleColor(R.color.teal_500)
-                        .transparentTarget(true)
-                        .textColor(R.color.color_primary_text_inverse)
-                        .cancelable(false),
-                        TapTarget.forView(destination_txt, getString(R.string.target_edit))
-                                .id(1)
-                                .outerCircleColor(R.color.teal_500)
-                                .transparentTarget(true)
-                                .textColor(R.color.color_primary_text_inverse)
-                                .cancelable(false),
-                        TapTarget.forView(bus_btn, getString(R.string.target_button))
-                                .outerCircleColor(R.color.teal_500)
-                                .transparentTarget(true)
-                                .textColor(R.color.color_primary_text_inverse)
-                                .cancelable(false),
-                        TapTarget.forView(radius_seekbar, getString(R.string.target_seekbar))
-                                .id(2)
-                                .outerCircleColor(R.color.teal_500)
-                                .transparentTarget(true)
-                                .textColor(R.color.color_primary_text_inverse)
-                                .cancelable(false),
-                        TapTarget.forView(fab, getString(R.string.target_fab))
-                                .outerCircleColor(R.color.teal_500)
-                                .transparentTarget(true)
-                                .textColor(R.color.color_primary_text_inverse)
-                                .cancelable(false))
-                .listener(object : TapTargetSequence.Listener {
-                    override fun onSequenceCanceled(lastTarget: TapTarget) {}
-                    override fun onSequenceFinish() {
-                        PreferencesHelper.setPreferences(this@MainActivity, PreferencesHelper.KEY_SHOW_CASE, false)
-                    }
-
-                    override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
-                        when (lastTarget.id()) {
-                            1 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                            2 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        if (PreferencesHelper.isShowCase(this) == true) {
+            TapTargetSequence(this)
+                    .targets(TapTarget.forView(map.view, getString(R.string.target_map))
+                            .outerCircleColor(R.color.blue_grey_500)
+                            .transparentTarget(true)
+                            .textColor(R.color.color_primary_text_inverse)
+                            .cancelable(false),
+                            TapTarget.forView(destination_txt, getString(R.string.target_edit))
+                                    .id(1)
+                                    .outerCircleColor(R.color.blue_grey_500)
+                                    .transparentTarget(true)
+                                    .textColor(R.color.color_primary_text_inverse)
+                                    .cancelable(false),
+                            TapTarget.forView(bus_btn, getString(R.string.target_button))
+                                    .outerCircleColor(R.color.blue_grey_500)
+                                    .transparentTarget(true)
+                                    .textColor(R.color.color_primary_text_inverse)
+                                    .cancelable(false),
+                            TapTarget.forView(radius_seekbar, getString(R.string.target_seekbar))
+                                    .id(2)
+                                    .outerCircleColor(R.color.blue_grey_500)
+                                    .transparentTarget(true)
+                                    .textColor(R.color.color_primary_text_inverse)
+                                    .cancelable(false),
+                            TapTarget.forView(fab, getString(R.string.target_fab))
+                                    .outerCircleColor(R.color.blue_grey_500)
+                                    .transparentTarget(true)
+                                    .textColor(R.color.color_primary_text_inverse)
+                                    .cancelable(false))
+                    .listener(object : TapTargetSequence.Listener {
+                        override fun onSequenceCanceled(lastTarget: TapTarget) {}
+                        override fun onSequenceFinish() {
+                            PreferencesHelper.setPreferences(this@MainActivity, PreferencesHelper.KEY_SHOW_CASE, false)
                         }
-                    }
-                })
-                .start()
+
+                        override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
+                            when (lastTarget.id()) {
+                                1 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                2 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                            }
+                        }
+                    })
+                    .start()
+        }
     }
 
     private fun init() {
@@ -477,7 +451,7 @@ class MainActivity : AestheticActivity(),
             when (it.id) {
                 R.id.bus_btn -> {
                     if (isTrainSelected || isPlaneSelected) {
-                        Groupie(train_btn,plane_btn).setBackground(mUnselectedButtonBg)
+                        Groupie(train_btn, plane_btn).setBackground(mUnselectedButtonBg)
                         train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
                         plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
                         isTrainSelected = false
@@ -494,7 +468,7 @@ class MainActivity : AestheticActivity(),
                 }
                 R.id.train_btn -> {
                     if (isBusSelected || isPlaneSelected) {
-                        Groupie(bus_btn,plane_btn).setBackground(mUnselectedButtonBg)
+                        Groupie(bus_btn, plane_btn).setBackground(mUnselectedButtonBg)
                         bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
                         plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
                         isBusSelected = false
@@ -511,7 +485,7 @@ class MainActivity : AestheticActivity(),
                 }
                 R.id.plane_btn -> {
                     if (isBusSelected || isTrainSelected) {
-                        Groupie(bus_btn,train_btn).setBackground(mUnselectedButtonBg)
+                        Groupie(bus_btn, train_btn).setBackground(mUnselectedButtonBg)
                         bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
                         train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
                         isBusSelected = false
@@ -553,7 +527,7 @@ class MainActivity : AestheticActivity(),
         destination_txt.historyManager = null
         destination_txt.setOnPlaceSelectedListener {
             Utils.hideKeyboard(this)
-            Utils.LocationHelper.getCoordinates(it.description, {
+            Utils.LocationHelper.getCoordinates(this,it.description, {
                 mMarker?.remove()
                 mCircle?.remove()
                 mCircleOptions?.radius(0.0)
@@ -584,20 +558,22 @@ class MainActivity : AestheticActivity(),
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             Utils.hideKeyboard(this)
 
-            if (mMarker != null && destination_txt.text.isNotEmpty()) {
-                mLocation?.let {
-                    if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
-                        Handler().postDelayed({
-                            Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
-                                removeGeofence({ addGeofence() })
-                            })
-                        }, 300)
-                    } else {
-                        addGeofence()
+            mMarker?.let {
+                if (destination_txt.text.isNotEmpty() && destination_txt.text.toString() != getString(R.string.unknown_place)) {
+                    mLocation?.let {
+                        if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
+                            Handler().postDelayed({
+                                Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
+                                    removeGeofence({ addGeofence() })
+                                })
+                            }, 300)
+                        } else {
+                            addGeofence()
+                        }
                     }
+                } else {
+                    Utils.AlertHelper.snackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
                 }
-            } else {
-                Utils.AlertHelper.snackbar(this, R.string.snackbar_no_location, duration = Snackbar.LENGTH_LONG)
             }
         }
     }
@@ -627,17 +603,5 @@ class MainActivity : AestheticActivity(),
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
 
         mMap?.let { setMapUi(it) }
-    }
-
-    private fun requestLocationPermission() {
-        "ask permission".log(TAG)
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                    actionMessage = R.string.action_Ok, actionClick = {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-            })
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-        }
     }
 }

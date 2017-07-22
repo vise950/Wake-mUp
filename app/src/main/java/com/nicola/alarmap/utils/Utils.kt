@@ -4,11 +4,14 @@ import android.Manifest
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Location
 import android.location.LocationManager
+import android.net.Uri
+import android.provider.Settings
 import android.support.annotation.ColorInt
 import android.support.annotation.DrawableRes
 import android.support.design.widget.Snackbar
@@ -46,11 +49,7 @@ class Utils {
             }
         }
 
-        fun isPermissionGranted(context: Context): Boolean {
-            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        }
-
-        fun isMyServiceRunning(context: Context,serviceClass: Class<*>): Boolean {
+        fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
             val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             return manager.getRunningServices(Integer.MAX_VALUE).any { serviceClass.name == it.service.className }
         }
@@ -68,7 +67,7 @@ class Utils {
             return "#${Integer.toHexString(color).toUpperCase()}"
         }
 
-        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int?=null): BitmapDescriptor {
+        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int? = null): BitmapDescriptor {
             val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
             val bitmap = Bitmap.createBitmap(vectorDrawable?.intrinsicWidth ?: 0, vectorDrawable?.intrinsicHeight ?: 0, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
@@ -82,12 +81,34 @@ class Utils {
             return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
 
-//        fun metersToMiles(meters: Int): Int {
-//            return (meters / 1609.344).toInt()
-//        }
-
         fun milesToMeters(miles: Int): Double {
             return (miles * 1609.344)
+        }
+    }
+
+    object PermissionHelper {
+        fun isLocationPermissionGranted(context: Context): Boolean {
+            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        }
+
+        fun requestLocationPermissionRationale(activity: Activity) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                Utils.AlertHelper.snackbar(activity, R.string.snackbar_ask_permission,
+                        actionMessage = R.string.action_Ok, actionClick = {
+                    requestLocationPermission(activity)
+                })
+            } else {
+                AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
+                        actionMessage = R.string.action_Ok, actionClick = {
+                    val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            .setData(Uri.fromParts("package", activity.packageName, null))
+                    activity.startActivity(intent)
+                })
+            }
+        }
+
+        fun requestLocationPermission(activity: Activity) {
+            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), Constant.REQUEST_LOCATION)
         }
     }
 
@@ -95,7 +116,7 @@ class Utils {
 
         private val INVALID_DOUBLE_VALUE = -999.0
 
-        fun getLocationName(latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null) {
+        fun getLocationName(context: Context, latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null) {
             MapsGoogleApiClient.service.getLocationName(latitude.toString() + "," + longitude.toString())
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -104,18 +125,22 @@ class Utils {
                             it.results?.get(0)?.address_components?.forEach {
                                 if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
                                     onSuccess?.invoke(it.long_name.toString())
+                                    return@subscribe
+                                } else {
+                                    onSuccess?.invoke(context.getString(R.string.unknown_place))
                                 }
                             }
                         } else {
-                            onSuccess?.invoke("no valid place")
+                            onSuccess?.invoke(context.getString(R.string.unknown_place))
                         }
                     }, {
                         it.log("get location name error")
                         it.printStackTrace()
+                        AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
                     })
         }
 
-        fun getCoordinates(cityName: String, onSuccess: ((Location) -> Unit)? = null) {
+        fun getCoordinates(context: Context,cityName: String, onSuccess: ((Location) -> Unit)? = null) {
             MapsGoogleApiClient.service.getCoordinates(cityName).subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
@@ -128,11 +153,23 @@ class Utils {
                     }, {
                         it.log("get coordinates error")
                         it.printStackTrace()
+                        AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
                     })
         }
     }
 
     object AlertHelper {
+
+        fun dialog(context: Context, message: Int, positiveClick: (() -> Unit)? = null) {
+            AlertDialog.Builder(context)
+                    .setMessage(message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.action_Ok, { dialog, which ->
+                        positiveClick?.invoke()
+                        dialog.dismiss()
+                    })
+                    .show()
+        }
 
         fun dialog(context: Context, title: Int, message: Int, positiveClick: (() -> Unit)? = null, negativeClick: (() -> Unit)? = null) {
             AlertDialog.Builder(context)

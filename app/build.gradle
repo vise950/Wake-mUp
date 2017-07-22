@@ -31,9 +31,9 @@ android {
             signingConfig signingConfigs.config
         }
         debug {
-            minifyEnabled false
-            shrinkResources false
-            zipAlignEnabled false
+            minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
             debuggable true
             applicationIdSuffix '.debug'
             versionNameSuffix '-DEBUG'
