@@ -26,7 +26,7 @@ ext {
     support_version = '26.0.0-beta1'
 
     //play services
-    play_services_version = '11.0.2'
+    play_services_version = '11.0.4'
 
     //network
     okHttp_version = '3.8.1'

@@ -92,19 +92,19 @@ class Utils {
         }
 
         fun requestLocationPermissionRationale(activity: Activity) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 Utils.AlertHelper.snackbar(activity, R.string.snackbar_ask_permission,
                         actionMessage = R.string.action_Ok, actionClick = {
                     requestLocationPermission(activity)
                 })
-            } else {
-                AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
-                        actionMessage = R.string.action_Ok, actionClick = {
-                    val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            .setData(Uri.fromParts("package", activity.packageName, null))
-                    activity.startActivity(intent)
-                })
-            }
+        }
+
+        fun gotoSetting(activity: Activity){
+            AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
+                    actionMessage = R.string.action_Ok, actionClick = {
+                val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        .setData(Uri.fromParts("package", activity.packageName, null))
+                activity.startActivity(intent)
+            })
         }
 
         fun requestLocationPermission(activity: Activity) {

@@ -1,8 +1,8 @@
 package com.nicola.alarmap.ui.activity
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.location.Location
@@ -15,8 +15,6 @@ import android.support.v7.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import com.afollestad.aesthetic.Aesthetic
-import com.afollestad.aesthetic.AestheticActivity
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
@@ -34,18 +32,22 @@ import com.nicola.alarmap.preferences.Credits
 import com.nicola.alarmap.preferences.Settings
 import com.nicola.alarmap.service.AlarmService
 import com.nicola.alarmap.service.GeofenceTransitionsIntentService
-import com.nicola.alarmap.utils.*
 import com.nicola.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
 import com.nicola.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
+import com.nicola.alarmap.utils.Groupie
+import com.nicola.alarmap.utils.PreferencesHelper
+import com.nicola.alarmap.utils.Utils
+import com.nicola.alarmap.utils.log
 import com.nicola.com.alarmap.R
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import kotlinx.android.synthetic.main.map.*
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
 import java.util.*
 
-class MainActivity : AestheticActivity(),
+class MainActivity : BaseActivity(),
         OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
@@ -107,8 +109,6 @@ class MainActivity : AestheticActivity(),
     private var isTrainSelected = false
     private var isPlaneSelected = false
 
-    private var mPrimaryColor: String? = null
-    private var mAccentColor: String? = null
     private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
     private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
 
@@ -120,7 +120,8 @@ class MainActivity : AestheticActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        init()
+        initMap()
+        initUi()
     }
 
     override fun onStart() {
@@ -134,11 +135,7 @@ class MainActivity : AestheticActivity(),
             mGoogleApiClient.reconnect()
         }
 
-        if (Utils.PermissionHelper.isLocationPermissionGranted(this)) {
-            initShowCase()
-        }
-
-        getColor()
+        setViewColor()
 
         if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
             stopService(Intent(this, AlarmService::class.java))
@@ -188,11 +185,7 @@ class MainActivity : AestheticActivity(),
     }
 
     override fun onConnected(bundle: Bundle?) {
-        if (Utils.PermissionHelper.isLocationPermissionGranted(this)) {
-            getDeviceLocation()
-        } else {
-            Utils.PermissionHelper.requestLocationPermission(this)
-        }
+        permissionRequest()
     }
 
     override fun onConnectionFailed(result: ConnectionResult) {}
@@ -203,19 +196,6 @@ class MainActivity : AestheticActivity(),
 
     override fun onLocationChanged(location: Location?) {
         this.mLocation = location
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            Constant.REQUEST_LOCATION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getDeviceLocation()
-                } else {
-                    Utils.PermissionHelper.requestLocationPermissionRationale(this)
-                }
-            }
-            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -276,19 +256,11 @@ class MainActivity : AestheticActivity(),
         }
     }
 
-    private fun getColor() {
-        val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean
-        if (isFirstRun) {
-            mPrimaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))
-            mAccentColor = Utils.getParseColor(Color.parseColor(getString(R.color.blue_500)))
-        } else {
-            mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
-            mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
-        }
-        mSelectedButtonBg.setColor(Color.parseColor(mAccentColor))
+    private fun setViewColor() {
+        mSelectedButtonBg.setColor(Color.parseColor(BaseActivity.mAccentColor))
         mUnselectedButtonBg.setColor(Color.WHITE)
-        radius_seekbar.setThumbColor(Color.parseColor(mAccentColor), Color.parseColor(mAccentColor))
-        radius_seekbar.setScrubberColor(Color.parseColor(mAccentColor))
+        radius_seekbar.setThumbColor(Color.parseColor(BaseActivity.mAccentColor), Color.parseColor(BaseActivity.mAccentColor))
+        radius_seekbar.setScrubberColor(Color.parseColor(BaseActivity.mAccentColor))
     }
 
     private fun initMap() {
@@ -365,35 +337,6 @@ class MainActivity : AestheticActivity(),
         }
     }
 
-    private fun init() {
-        getColor()
-        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
-        Aesthetic.get()
-                .activityTheme(if (isThemeChanged == true) {
-                    R.style.AppThemeDark
-                } else {
-                    R.style.AppTheme
-                })
-                .colorPrimary(Color.parseColor(mPrimaryColor))
-                .colorAccent(Color.parseColor(mAccentColor))
-                .colorStatusBarAuto()
-                .textColorPrimaryRes(if (isThemeChanged == true) {
-                    R.color.color_primary_text_inverse
-                } else {
-                    R.color.color_primary_text
-                })
-                .textColorSecondaryRes(if (isThemeChanged == true) {
-                    R.color.color_secondary_text_inverse
-                } else {
-                    R.color.color_secondary_text
-                })
-                .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(isThemeChanged ?: false)
-                .apply()
-        initMap()
-        initUi()
-    }
-
     private fun initUi() {
 
         //workaround for intercept drag map view and disable it
@@ -421,7 +364,7 @@ class MainActivity : AestheticActivity(),
                         Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
+                        destination_txt.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
                         destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                         destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     }
@@ -430,7 +373,7 @@ class MainActivity : AestheticActivity(),
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (slideOffset > 0) {
-                    destination_txt.setBackgroundColor(Color.parseColor(mPrimaryColor))
+                    destination_txt.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
                     destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
@@ -527,15 +470,16 @@ class MainActivity : AestheticActivity(),
         destination_txt.historyManager = null
         destination_txt.setOnPlaceSelectedListener {
             Utils.hideKeyboard(this)
-            Utils.LocationHelper.getCoordinates(this,it.description, {
-                mMarker?.remove()
-                mCircle?.remove()
-                mCircleOptions?.radius(0.0)
+            Utils.LocationHelper.getCoordinates(this, it.description, {
                 radius_seekbar.isEnabled = true
-                radius_seekbar.min = 0
+                radius_seekbar.min = radius_seekbar.min
                 mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
                 mCircleOptions.center(mMarker?.position)
                 mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
+                mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
+                mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
+                mRadius = mCircleOptions?.radius
+                mCircle = mMap?.addCircle(mCircleOptions)
             })
         }
         destination_txt.setOnClickListener {
@@ -592,6 +536,24 @@ class MainActivity : AestheticActivity(),
         mGeofenceClient.removeGeofences(mGeoFencePendingIntent)
                 .addOnSuccessListener { callback.invoke() }
                 .addOnFailureListener { it.log(TAG) }
+    }
+
+    private fun permissionRequest() {
+        RxPermissions(this)
+                .requestEach(Manifest.permission.ACCESS_FINE_LOCATION)
+                .subscribe({
+                    if (it.granted) {
+                        getDeviceLocation()
+                        initShowCase()
+                    } else if (it.shouldShowRequestPermissionRationale) {
+                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                                actionMessage = R.string.action_Ok, actionClick = {
+                            permissionRequest()
+                        })
+                    } else {
+                        Utils.PermissionHelper.gotoSetting(this)
+                    }
+                })
     }
 
     private fun getDeviceLocation() {
