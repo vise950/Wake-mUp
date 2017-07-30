@@ -1,4 +1,4 @@
-package com.nicola.alarmap.service
+package com.nicola.wakemup.service
 
 import android.app.IntentService
 import android.app.Notification
@@ -8,14 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
-import com.nicola.alarmap.utils.log
+import com.nicola.wakemup.utils.log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.nicola.com.alarmap.R
-import com.nicola.alarmap.ui.activity.MainActivity
-import com.nicola.alarmap.utils.Constant
-import com.nicola.alarmap.utils.Utils
+import com.nicola.wakemup.ui.activity.MainActivity
+import com.nicola.wakemup.utils.Constant
+import com.nicola.wakemup.utils.Utils
 
 class GeofenceTransitionsIntentService : IntentService(TAG) {
 

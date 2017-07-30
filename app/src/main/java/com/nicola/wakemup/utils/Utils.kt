@@ -1,4 +1,4 @@
-package com.nicola.alarmap.utils
+package com.nicola.wakemup.utils
 
 import android.Manifest
 import android.app.Activity
@@ -23,7 +23,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.nicola.alarmap.retrofit.MapsGoogleApiClient
+import com.nicola.wakemup.retrofit.MapsGoogleApiClient
 import com.nicola.com.alarmap.R
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

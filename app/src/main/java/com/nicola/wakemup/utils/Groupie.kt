@@ -1,4 +1,4 @@
-package com.nicola.alarmap.utils
+package com.nicola.wakemup.utils
 
 import android.graphics.drawable.Drawable
 import android.view.View

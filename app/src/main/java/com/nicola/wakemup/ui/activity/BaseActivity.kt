@@ -1,11 +1,11 @@
-package com.nicola.alarmap.ui.activity
+package com.nicola.wakemup.ui.activity
 
 import android.graphics.Color
 import android.os.Bundle
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
-import com.nicola.alarmap.utils.PreferencesHelper
-import com.nicola.alarmap.utils.Utils
+import com.nicola.wakemup.utils.PreferencesHelper
+import com.nicola.wakemup.utils.Utils
 import com.nicola.com.alarmap.R
 
 open class BaseActivity : AestheticActivity() {

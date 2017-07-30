@@ -1,4 +1,4 @@
-package com.nicola.alarmap.ui.activity
+package com.nicola.wakemup.ui.activity
 
 import android.Manifest
 import android.app.PendingIntent
@@ -28,16 +28,16 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.nicola.alarmap.preferences.Credits
-import com.nicola.alarmap.preferences.Settings
-import com.nicola.alarmap.service.AlarmService
-import com.nicola.alarmap.service.GeofenceTransitionsIntentService
-import com.nicola.alarmap.utils.Constant.Companion.INVALID_DOUBLE_VALUE
-import com.nicola.alarmap.utils.Constant.Companion.INVALID_FLOAT_VALUE
-import com.nicola.alarmap.utils.Groupie
-import com.nicola.alarmap.utils.PreferencesHelper
-import com.nicola.alarmap.utils.Utils
-import com.nicola.alarmap.utils.log
+import com.nicola.wakemup.preferences.Credits
+import com.nicola.wakemup.preferences.Settings
+import com.nicola.wakemup.service.AlarmService
+import com.nicola.wakemup.service.GeofenceTransitionsIntentService
+import com.nicola.wakemup.utils.Constant.Companion.INVALID_DOUBLE_VALUE
+import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
+import com.nicola.wakemup.utils.Groupie
+import com.nicola.wakemup.utils.PreferencesHelper
+import com.nicola.wakemup.utils.Utils
+import com.nicola.wakemup.utils.log
 import com.nicola.com.alarmap.R
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType
 import com.tbruyelle.rxpermissions2.RxPermissions

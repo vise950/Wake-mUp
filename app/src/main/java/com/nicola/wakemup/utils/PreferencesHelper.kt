@@ -1,8 +1,8 @@
-package com.nicola.alarmap.utils
+package com.nicola.wakemup.utils
 
 import android.content.Context
 import android.preference.PreferenceManager
-import com.nicola.alarmap.ui.activity.MainActivity
+import com.nicola.wakemup.ui.activity.MainActivity
 
 object PreferencesHelper {
 

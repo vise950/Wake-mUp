@@ -1,4 +1,4 @@
-package com.nicola.alarmap.model
+package com.nicola.wakemup.model
 
 class LocationName {
     val results: List<Result>? = null

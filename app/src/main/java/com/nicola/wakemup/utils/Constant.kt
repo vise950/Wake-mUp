@@ -1,4 +1,4 @@
-package com.nicola.alarmap.utils
+package com.nicola.wakemup.utils
 
 class Constant {
     companion object {

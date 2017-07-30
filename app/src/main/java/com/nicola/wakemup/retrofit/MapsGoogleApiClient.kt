@@ -1,4 +1,4 @@
-package com.nicola.alarmap.retrofit
+package com.nicola.wakemup.retrofit
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

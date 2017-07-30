@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.nicola.alarmap.ui.activity.MainActivity"
+            android:name="com.nicola.wakemup.ui.activity.MainActivity"
             android:launchMode="singleTask"
             android:configChanges="keyboardHidden"
             android:windowSoftInputMode="stateHidden|adjustPan"
@@ -28,17 +28,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.nicola.alarmap.preferences.Settings"/>
-        <activity android:name="com.nicola.alarmap.preferences.Credits"/>
+        <activity android:name="com.nicola.wakemup.preferences.Settings"/>
+        <activity android:name="com.nicola.wakemup.preferences.Credits"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_key"/>
         
-        <service android:name="com.nicola.alarmap.service.GeofenceTransitionsIntentService"/>
-        <service android:name="com.nicola.alarmap.service.AlarmService"/>
+        <service android:name="com.nicola.wakemup.service.GeofenceTransitionsIntentService"/>
+        <service android:name="com.nicola.wakemup.service.AlarmService"/>
         <receiver
-            android:name="com.nicola.alarmap.service.AlarmReceiver"
+            android:name="com.nicola.wakemup.service.AlarmReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="START_ALARM" />

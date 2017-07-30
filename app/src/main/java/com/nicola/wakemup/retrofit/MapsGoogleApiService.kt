@@ -1,10 +1,10 @@
-package com.nicola.alarmap.retrofit
+package com.nicola.wakemup.retrofit
 
 import io.reactivex.Observable
 import com.nicola.com.alarmap.BuildConfig
-import com.nicola.alarmap.model.Coordinates
-import com.nicola.alarmap.model.LocationName
-import com.nicola.alarmap.model.Prediction
+import com.nicola.wakemup.model.Coordinates
+import com.nicola.wakemup.model.LocationName
+import com.nicola.wakemup.model.Prediction
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.*
