@@ -2,7 +2,7 @@ package com.nicola.wakemup.utils
 
 import kotlin.reflect.KClass
 
-fun Any?.log(obj: Any? = null) {
+fun Any?.error(obj: Any? = null) {
     val logger = when(obj){
         is KClass<*> -> obj.java.simpleName
         is Class<*> -> obj.simpleName

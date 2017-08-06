@@ -4,9 +4,9 @@ import android.graphics.Color
 import android.os.Bundle
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
+import com.nicola.wakemup.R
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
-import com.nicola.com.alarmap.R
 
 open class BaseActivity : AestheticActivity() {
 

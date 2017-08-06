@@ -13,7 +13,7 @@ android {
     }
 
     compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "nicola.dev.com.allarmap"
         minSdkVersion 21
@@ -31,17 +31,16 @@ android {
             signingConfig signingConfigs.config
         }
         debug {
-            minifyEnabled true
-            shrinkResources true
-            zipAlignEnabled true
+            minifyEnabled false
+            shrinkResources false
+            zipAlignEnabled false
             debuggable true
             applicationIdSuffix '.debug'
             versionNameSuffix '-DEBUG'
         }
 
         buildTypes.each {
-            it.buildConfigField 'String', 'GOOGLE_API_AUTOCOMPLETE_KEY', GoogleApiAutocompleteKey
-            it.buildConfigField 'String', 'GOOGLE_API_MAPS_KEY', GoogleApiMapsKey
+            it.buildConfigField 'String', 'GOOGLE_API_KEY', GoogleApiKey
         }
     }
 
@@ -63,7 +62,6 @@ android {
 
         //Custom view
         compile 'org.adw.library:discrete-seekbar:1.0.1'
-        compile 'com.seatgeek:placesautocomplete:0.2-SNAPSHOT'
         compile 'com.getkeepsafe.taptargetview:taptargetview:1.9.1'
 
         //Color and theme
@@ -73,6 +71,7 @@ android {
         //Play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
         compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
+        compile "com.google.android.gms:play-services-places:$rootProject.ext.play_services_version"
 
         //Network
         compile "com.squareup.okhttp3:okhttp:$rootProject.ext.okHttp_version"

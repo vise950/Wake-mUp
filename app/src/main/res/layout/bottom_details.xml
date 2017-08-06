@@ -5,25 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipToPadding="true"
-    app:behavior_peekHeight="74dp"
     android:outlineProvider="bounds"
+    app:behavior_peekHeight="74dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
-    <com.seatgeek.placesautocomplete.PlacesAutocompleteTextView
-        android:background="@null"
-        android:id="@+id/destination_txt"
+    <AutoCompleteTextView
+        android:id="@+id/place_autocomplete_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@null"
         android:hint="Search destination"
-        android:padding="22dp"
-        android:tag=":aesthetic_ignore"
+        android:paddingBottom="22dp"
+        android:paddingTop="22dp"
+        android:paddingStart="@dimen/margin_16dp"
+        android:paddingEnd="@dimen/margin_16dp"
         android:textColor="?android:textColorPrimary"
         android:textColorHint="?android:textColorSecondary"
         android:textSize="@dimen/text_size_24sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:pacv_googleMapsApiKey="@string/autocomplete_key"
-        app:pacv_historyFile="@null"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
@@ -36,7 +36,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/destination_txt" />
+        app:layout_constraintTop_toBottomOf="@+id/place_autocomplete_tv" />
 
     <TextView
         android:id="@+id/travel_txt"
@@ -44,22 +44,22 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16dp"
         android:layout_marginTop="@dimen/margin_24dp"
-        android:textColor="?android:textColorPrimary"
         android:text="Come viaggi?"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/destination_txt" />
+        app:layout_constraintTop_toBottomOf="@+id/place_autocomplete_tv" />
 
     <ImageButton
         android:id="@+id/bus_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="@dimen/margin_12dp"
         android:background="@drawable/btn_background"
         android:contentDescription="@string/description"
         android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_bus_black"
-        app:layout_constraintLeft_toRightOf="@+id/travel_txt"
-        android:layout_marginStart="@dimen/margin_12dp"
         app:layout_constraintBottom_toBottomOf="@+id/travel_txt"
+        app:layout_constraintLeft_toRightOf="@+id/travel_txt"
         app:layout_constraintTop_toTopOf="@+id/travel_txt" />
 
     <ImageButton
@@ -71,8 +71,8 @@
         android:contentDescription="@string/description"
         android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_train_black"
-        app:layout_constraintLeft_toRightOf="@+id/bus_btn"
-        app:layout_constraintBottom_toBottomOf="@+id/bus_btn" />
+        app:layout_constraintBottom_toBottomOf="@+id/bus_btn"
+        app:layout_constraintLeft_toRightOf="@+id/bus_btn" />
 
     <ImageButton
         android:id="@+id/plane_btn"
@@ -83,8 +83,8 @@
         android:contentDescription="@string/description"
         android:elevation="@dimen/elevation_2dp"
         android:src="@drawable/ic_plane_black"
-        app:layout_constraintLeft_toRightOf="@+id/train_btn"
-        app:layout_constraintBottom_toBottomOf="@+id/train_btn" />
+        app:layout_constraintBottom_toBottomOf="@+id/train_btn"
+        app:layout_constraintLeft_toRightOf="@+id/train_btn" />
 
     <TextView
         android:id="@+id/radius_txt"
@@ -92,8 +92,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16dp"
         android:layout_marginTop="@dimen/margin_16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
         android:textColor="?android:textColorPrimary"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/travel_txt" />
 
     <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
@@ -104,11 +104,11 @@
         android:layout_marginStart="@dimen/margin_16dp"
         android:paddingBottom="@dimen/margin_16dp"
         android:paddingTop="@dimen/margin_16dp"
+        app:dsb_max="50"
+        app:dsb_min="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radius_txt"
-        app:dsb_min="1"
-        app:dsb_max="50" />
+        app:layout_constraintTop_toBottomOf="@+id/radius_txt" />
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/alarm_sound_check"
@@ -116,10 +116,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_16dp"
         android:layout_marginStart="@dimen/margin_16dp"
-        android:textColor="?android:textColorPrimary"
         android:checked="true"
         android:text="Suoneria"
+        android:textColor="?android:textColorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/radius_seekbar"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/radius_seekbar" />
 </android.support.constraint.ConstraintLayout>

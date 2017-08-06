@@ -8,11 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
-import com.nicola.wakemup.utils.log
+import com.nicola.wakemup.utils.error
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
-import com.nicola.com.alarmap.R
+import com.nicola.wakemup.R
 import com.nicola.wakemup.ui.activity.MainActivity
 import com.nicola.wakemup.utils.Constant
 import com.nicola.wakemup.utils.Utils
@@ -47,7 +47,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     override fun onHandleIntent(intent: Intent?) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
         if (geofencingEvent.hasError()) {
-            getErrorString(geofencingEvent.errorCode).log(TAG)
+            getErrorString(geofencingEvent.errorCode).error(TAG)
             return
         }
 

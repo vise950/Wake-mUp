@@ -12,6 +12,9 @@ import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.PopupMenu
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,15 +22,20 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.places.PlaceBuffer
+import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.nicola.wakemup.R
+import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
 import com.nicola.wakemup.preferences.Credits
 import com.nicola.wakemup.preferences.Settings
 import com.nicola.wakemup.service.AlarmService
@@ -37,15 +45,12 @@ import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
 import com.nicola.wakemup.utils.Groupie
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
-import com.nicola.wakemup.utils.log
-import com.nicola.com.alarmap.R
-import com.seatgeek.placesautocomplete.model.AutocompleteResultType
+import com.nicola.wakemup.utils.error
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import kotlinx.android.synthetic.main.map.*
 import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
-import java.util.*
 
 class MainActivity : BaseActivity(),
         OnMapReadyCallback,
@@ -72,6 +77,7 @@ class MainActivity : BaseActivity(),
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
+                .addApi(Places.GEO_DATA_API)
                 .build()
     }
     private val mLocationRequest by lazy { LocationRequest() }
@@ -137,12 +143,12 @@ class MainActivity : BaseActivity(),
 
         setViewColor()
 
+        isUISystem = PreferencesHelper.isUISystem(this)
+        radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
+
         if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
             stopService(Intent(this, AlarmService::class.java))
         }
-
-        isUISystem = PreferencesHelper.isUISystem(this)
-        radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
     }
 
     override fun onStop() {
@@ -178,8 +184,8 @@ class MainActivity : BaseActivity(),
             mCircle = mMap?.addCircle(mCircleOptions)
             mMap?.animateCamera(CameraUpdateFactory.newLatLng(it))
             Utils.LocationHelper.getLocationName(this, it.latitude, it.longitude, {
-                destination_txt.setText(it)
-                destination_txt.setCompletionEnabled(false)
+                place_autocomplete_tv.setText(it)
+                place_autocomplete_tv.dismissDropDown()
             })
         }
     }
@@ -298,7 +304,7 @@ class MainActivity : BaseActivity(),
                             .transparentTarget(true)
                             .textColor(R.color.color_primary_text_inverse)
                             .cancelable(false),
-                            TapTarget.forView(destination_txt, getString(R.string.target_edit))
+                            TapTarget.forView(place_autocomplete_tv, getString(R.string.target_edit))
                                     .id(1)
                                     .outerCircleColor(R.color.blue_grey_500)
                                     .transparentTarget(true)
@@ -338,6 +344,7 @@ class MainActivity : BaseActivity(),
     }
 
     private fun initUi() {
+        isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
 
         //workaround for intercept drag map view and disable it
         view.setOnTouchListener { view, motionEvent -> true }
@@ -354,36 +361,38 @@ class MainActivity : BaseActivity(),
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
                         if (isThemeChanged == true) {
-                            destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                            place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                            place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                         } else {
-                            destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                            place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                            place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                         }
-                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
-                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+                        place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
 
                         Utils.hideKeyboard(this@MainActivity)
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        destination_txt.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
-                        destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                        destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                        place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                        place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     }
                 }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 if (slideOffset > 0) {
-                    destination_txt.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
-                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                    place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+                    place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                    place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
                     if (isThemeChanged == true) {
-                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                        place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
+                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                     } else {
-                        destination_txt.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                        place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                     }
-                    destination_txt.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
-                    destination_txt.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+                    place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
                 }
             }
         })
@@ -464,29 +473,37 @@ class MainActivity : BaseActivity(),
             }
         })
 
-        //fixme colori con tema scuro
-        destination_txt.languageCode = Locale.getDefault().language
-        destination_txt.resultType = AutocompleteResultType.GEOCODE
-        destination_txt.historyManager = null
-        destination_txt.setOnPlaceSelectedListener {
-            Utils.hideKeyboard(this)
-            Utils.LocationHelper.getCoordinates(this, it.description, {
-                radius_seekbar.isEnabled = true
-                radius_seekbar.min = radius_seekbar.min
-                mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
-                mCircleOptions.center(mMarker?.position)
-                mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
-                mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
-                mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
-                mRadius = mCircleOptions?.radius
-                mCircle = mMap?.addCircle(mCircleOptions)
-            })
+        place_autocomplete_tv?.threshold = 2
+        val adapter = PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1, mGoogleApiClient)
+        place_autocomplete_tv?.setAdapter(adapter)
+        place_autocomplete_tv.setOnItemClickListener { adapterView, view, i, l ->
+            val item = adapter.getItem(i)
+            Places.GeoDataApi.getPlaceById(mGoogleApiClient, item?.placeId?.toString())
+                    .setResultCallback {
+                        if (it.status?.isSuccess == true) {
+                            Utils.hideKeyboard(this)
+                            mMarker?.remove()
+                            mCircle?.remove()
+                            radius_seekbar.isEnabled = true
+                            radius_seekbar.min = radius_seekbar.min
+                            mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.get(0).latLng.latitude, it.get(0).latLng.longitude)))
+                            mCircleOptions.center(mMarker?.position)
+                            mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.get(0).latLng.latitude, it.get(0).latLng.longitude)))
+                            mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
+                            mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
+                            mRadius = mCircleOptions?.radius
+                            mCircle = mMap?.addCircle(mCircleOptions)
+                        } else {
+                            "Error place".error(TAG)
+                        }
+                        it.release()
+                    }
         }
-        destination_txt.setOnClickListener {
-            destination_txt.setCompletionEnabled(true)
+
+        place_autocomplete_tv.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            if (destination_txt?.text?.isNotEmpty() ?: false) {
-                destination_txt.text = null
+            if (place_autocomplete_tv?.text?.isNotEmpty() ?: false) {
+                place_autocomplete_tv.text = null
                 mMarker?.remove()
                 mCircle?.remove()
                 radius_seekbar.progress = radius_seekbar.min
@@ -503,7 +520,7 @@ class MainActivity : BaseActivity(),
             Utils.hideKeyboard(this)
 
             mMarker?.let {
-                if (destination_txt.text.isNotEmpty() && destination_txt.text.toString() != getString(R.string.unknown_place)) {
+                if (place_autocomplete_tv.text.isNotEmpty() && place_autocomplete_tv.text.toString() != getString(R.string.unknown_place)) {
                     mLocation?.let {
                         if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
                             Handler().postDelayed({
@@ -529,13 +546,13 @@ class MainActivity : BaseActivity(),
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
                     Handler().postDelayed({ finishAndRemoveTask() }, 2000)
                 }
-                .addOnFailureListener { it.log(TAG) }
+                .addOnFailureListener { it.error(TAG) }
     }
 
     private fun removeGeofence(callback: (() -> Unit)) {
         mGeofenceClient.removeGeofences(mGeoFencePendingIntent)
                 .addOnSuccessListener { callback.invoke() }
-                .addOnFailureListener { it.log(TAG) }
+                .addOnFailureListener { it.error(TAG) }
     }
 
     private fun permissionRequest() {
@@ -544,7 +561,7 @@ class MainActivity : BaseActivity(),
                 .subscribe({
                     if (it.granted) {
                         getDeviceLocation()
-                        initShowCase()
+//                        initShowCase()
                     } else if (it.shouldShowRequestPermissionRationale) {
                         Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
                                 actionMessage = R.string.action_Ok, actionClick = {

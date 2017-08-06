@@ -23,8 +23,8 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.nicola.wakemup.R
 import com.nicola.wakemup.retrofit.MapsGoogleApiClient
-import com.nicola.com.alarmap.R
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
@@ -134,7 +134,7 @@ class Utils {
                             onSuccess?.invoke(context.getString(R.string.unknown_place))
                         }
                     }, {
-                        it.log("get location name error")
+                        it.error("get location name error")
                         it.printStackTrace()
                         AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
                     })
@@ -151,7 +151,7 @@ class Utils {
                             onSuccess?.invoke(location)
                         }
                     }, {
-                        it.log("get coordinates error")
+                        it.error("get coordinates error")
                         it.printStackTrace()
                         AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
                     })

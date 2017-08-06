@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nicola.com.alarmap">
+    package="com.nicola.wakemup">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
     <application
         android:allowBackup="true"
@@ -16,10 +17,10 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="com.nicola.wakemup.ui.activity.MainActivity"
-            android:launchMode="singleTask"
             android:configChanges="keyboardHidden"
-            android:windowSoftInputMode="stateHidden|adjustPan"
-            android:taskAffinity="">
+            android:launchMode="singleTask"
+            android:screenOrientation="sensorPortrait"
+            android:windowSoftInputMode="stateHidden|adjustPan">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,15 +29,24 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.nicola.wakemup.preferences.Settings"/>
-        <activity android:name="com.nicola.wakemup.preferences.Credits"/>
+        <activity
+            android:name="com.nicola.wakemup.preferences.Settings"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name="com.nicola.wakemup.preferences.Credits"
+            android:screenOrientation="sensorPortrait" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/maps_key"/>
-        
-        <service android:name="com.nicola.wakemup.service.GeofenceTransitionsIntentService"/>
-        <service android:name="com.nicola.wakemup.service.AlarmService"/>
+            android:value="@string/google_api_key" />
+
+        <service android:name="com.nicola.wakemup.service.GeofenceTransitionsIntentService" />
+        <service android:name="com.nicola.wakemup.service.AlarmService" />
+
         <receiver
             android:name="com.nicola.wakemup.service.AlarmReceiver"
             android:exported="false">

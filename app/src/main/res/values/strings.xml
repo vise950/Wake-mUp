@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name" translatable="false">AllarMap</string>
+    <string name="app_name" translatable="false">Wake Mup</string>
 
-    <string name="maps_key" translatable="false">AIzaSyAg7YHx_q2HIrbbNcEaFAcH0MTufqSDOtQ</string>
-    <string name="autocomplete_key" translatable="false">AIzaSyBN_nEtSAVgYV3Ah8SIgHgkmzvHAuR1qIs</string>
+    <string name="google_api_key" translatable="false">AIzaSyAg7YHx_q2HIrbbNcEaFAcH0MTufqSDOtQ</string>
     <string name="description" translatable="false">image description</string>
 
     <string name="no_result_suggestion">No result</string>

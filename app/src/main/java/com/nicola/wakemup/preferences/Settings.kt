@@ -7,9 +7,9 @@ import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
+import com.nicola.wakemup.R
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
-import com.nicola.com.alarmap.R
 
 class Settings : AestheticActivity() {
 

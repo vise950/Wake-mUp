@@ -1,7 +1,7 @@
 package com.nicola.wakemup.retrofit
 
+import com.nicola.wakemup.BuildConfig
 import io.reactivex.Observable
-import com.nicola.com.alarmap.BuildConfig
 import com.nicola.wakemup.model.Coordinates
 import com.nicola.wakemup.model.LocationName
 import com.nicola.wakemup.model.Prediction
@@ -13,7 +13,7 @@ interface MapsGoogleApiService {
 
     companion object {
         private const val URL_AUTOCOMPLETE = "maps/api/place/autocomplete/json"
-        private const val API_KEY = BuildConfig.GOOGLE_API_AUTOCOMPLETE_KEY
+        private const val API_KEY = BuildConfig.GOOGLE_API_KEY
         private const val URL_GEOCODE = "maps/api/geocode/json"
     }
 
