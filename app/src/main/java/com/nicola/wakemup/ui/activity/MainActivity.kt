@@ -12,9 +12,6 @@ import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.PopupMenu
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -22,12 +19,10 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.places.PlaceBuffer
 import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -469,7 +464,6 @@ class MainActivity : BaseActivity(),
                     mRadius = mCircleOptions?.radius
                     mCircle = mMap?.addCircle(mCircleOptions)
                 }
-                //todo improve code
             }
         })
 
@@ -561,7 +555,7 @@ class MainActivity : BaseActivity(),
                 .subscribe({
                     if (it.granted) {
                         getDeviceLocation()
-//                        initShowCase()
+                        initShowCase()
                     } else if (it.shouldShowRequestPermissionRationale) {
                         Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
                                 actionMessage = R.string.action_Ok, actionClick = {

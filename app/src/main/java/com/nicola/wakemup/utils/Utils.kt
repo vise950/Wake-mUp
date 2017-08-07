@@ -87,17 +87,6 @@ class Utils {
     }
 
     object PermissionHelper {
-        fun isLocationPermissionGranted(context: Context): Boolean {
-            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        }
-
-        fun requestLocationPermissionRationale(activity: Activity) {
-                Utils.AlertHelper.snackbar(activity, R.string.snackbar_ask_permission,
-                        actionMessage = R.string.action_Ok, actionClick = {
-                    requestLocationPermission(activity)
-                })
-        }
-
         fun gotoSetting(activity: Activity){
             AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
                     actionMessage = R.string.action_Ok, actionClick = {
@@ -105,10 +94,6 @@ class Utils {
                         .setData(Uri.fromParts("package", activity.packageName, null))
                 activity.startActivity(intent)
             })
-        }
-
-        fun requestLocationPermission(activity: Activity) {
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), Constant.REQUEST_LOCATION)
         }
     }
 
@@ -204,7 +189,6 @@ class Utils {
         }
 
         private fun showSnackBar(activity: Activity, snackBar: Snackbar) {
-            //todo repleace runOnUiThread with anko or koventant
             activity.runOnUiThread {
                 snackBar.show()
             }
