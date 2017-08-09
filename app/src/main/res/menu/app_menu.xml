@@ -17,5 +17,5 @@
     <item
         android:id="@+id/credits"
         android:icon="@drawable/ic_info"
-        android:title="@string/action_menu_credits" />
+        android:title="@string/action_menu_about" />
 </menu>

@@ -1,21 +1,16 @@
 package com.nicola.wakemup.utils
 
-import android.Manifest
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
 import android.provider.Settings
 import android.support.annotation.ColorInt
 import android.support.annotation.DrawableRes
 import android.support.design.widget.Snackbar
-import android.support.v4.app.ActivityCompat
 import android.support.v4.content.res.ResourcesCompat
 import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
@@ -32,15 +27,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class Utils {
     companion object {
-
-        fun trimString(s: String): String {
-            val index = s.indexOf(',')
-            val lastIndex = s.lastIndexOf(',')
-            if (index != lastIndex) {
-                return s.substring(0, index) + s.substring(lastIndex, s.length)
-            }
-            return s
-        }
 
         fun hideKeyboard(activity: Activity) {
             val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -87,7 +73,7 @@ class Utils {
     }
 
     object PermissionHelper {
-        fun gotoSetting(activity: Activity){
+        fun gotoSetting(activity: Activity) {
             AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
                     actionMessage = R.string.action_Ok, actionClick = {
                 val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -98,8 +84,6 @@ class Utils {
     }
 
     object LocationHelper {
-
-        private val INVALID_DOUBLE_VALUE = -999.0
 
         fun getLocationName(context: Context, latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null) {
             MapsGoogleApiClient.service.getLocationName(latitude.toString() + "," + longitude.toString())
@@ -120,23 +104,6 @@ class Utils {
                         }
                     }, {
                         it.error("get location name error")
-                        it.printStackTrace()
-                        AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
-                    })
-        }
-
-        fun getCoordinates(context: Context,cityName: String, onSuccess: ((Location) -> Unit)? = null) {
-            MapsGoogleApiClient.service.getCoordinates(cityName).subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        if (it.results?.isNotEmpty() ?: false) {
-                            val location = Location(LocationManager.PASSIVE_PROVIDER)
-                            location.latitude = it.results?.get(0)?.geometry?.location?.lat ?: INVALID_DOUBLE_VALUE
-                            location.longitude = it.results?.get(0)?.geometry?.location?.lng ?: INVALID_DOUBLE_VALUE
-                            onSuccess?.invoke(location)
-                        }
-                    }, {
-                        it.error("get coordinates error")
                         it.printStackTrace()
                         AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
                     })

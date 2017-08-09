@@ -33,7 +33,7 @@
             android:name="com.nicola.wakemup.preferences.Settings"
             android:screenOrientation="sensorPortrait" />
         <activity
-            android:name="com.nicola.wakemup.preferences.Credits"
+            android:name="com.nicola.wakemup.activity.AboutActivity"
             android:screenOrientation="sensorPortrait" />
 
         <meta-data

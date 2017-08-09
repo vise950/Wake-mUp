@@ -19,7 +19,6 @@ object MapsGoogleApiClient {
             val okHttpClient = OkHttpClient.Builder()
                     .connectTimeout(20, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
-//                    .addInterceptor(interceptor)
                     .build()
 
             val retrofit = Retrofit.Builder()

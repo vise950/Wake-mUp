@@ -2,7 +2,6 @@ package com.nicola.wakemup.utils
 
 class Constant {
     companion object {
-        val REQUEST_LOCATION = 854
 
         val INVALID_FLOAT_VALUE = -999.0F
         val INVALID_INT_VALUE = -999

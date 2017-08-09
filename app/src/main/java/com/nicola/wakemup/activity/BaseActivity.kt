@@ -14,6 +14,7 @@ open class BaseActivity : AestheticActivity() {
         var mPrimaryColor: String? = null
         var mAccentColor: String? = null
         var isThemeChanged: Boolean? = null
+        var isNavBarColor: Boolean? = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +45,10 @@ open class BaseActivity : AestheticActivity() {
 
     private fun initAesthetic() {
         getColor()
+
         isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
+        isNavBarColor = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_NAV_BAR_COLOR, false) as Boolean
+
         Aesthetic.get()
                 .activityTheme(if (isThemeChanged == true) {
                     R.style.AppThemeDark
@@ -54,6 +58,11 @@ open class BaseActivity : AestheticActivity() {
                 .colorPrimary(Color.parseColor(mPrimaryColor))
                 .colorAccent(Color.parseColor(mAccentColor))
                 .colorStatusBarAuto()
+                .colorNavigationBar(if (isNavBarColor == true) {
+                    Color.parseColor(mPrimaryColor)
+                } else {
+                    Color.BLACK
+                })
                 .textColorPrimaryRes(if (isThemeChanged == true) {
                     R.color.color_primary_text_inverse
                 } else {
@@ -69,7 +78,7 @@ open class BaseActivity : AestheticActivity() {
                 .apply()
     }
 
-    private fun getColor(){
+    private fun getColor() {
         val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean
         if (isFirstRun) {
             mPrimaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))

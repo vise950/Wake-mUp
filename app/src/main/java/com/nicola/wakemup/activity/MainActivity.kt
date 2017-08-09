@@ -31,7 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.nicola.wakemup.R
 import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
-import com.nicola.wakemup.preferences.Credits
+import com.nicola.wakemup.activity.AboutActivity
 import com.nicola.wakemup.preferences.Settings
 import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
@@ -214,7 +214,7 @@ class MainActivity : BaseActivity(),
                 }, 200)
             }
             R.id.credits -> {
-                startActivity(Intent(this, Credits::class.java))
+                startActivity(Intent(this, AboutActivity::class.java))
                 Handler().postDelayed({
                     mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
                 }, 200)

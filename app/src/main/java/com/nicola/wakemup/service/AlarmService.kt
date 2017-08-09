@@ -12,7 +12,6 @@ import com.nicola.wakemup.utils.PreferencesHelper
 class AlarmService : Service() {
 
     companion object {
-        private val TAG = "ALARM SERVICE"
         private val DELAY_OF_VIBRATION = 1000L
         private val DURATION_OF_VIBRATION = 1500L
     }
@@ -24,13 +23,15 @@ class AlarmService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        startAlarm()
+        if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
+            startAlarm()
+        }
     }
 
     override fun onDestroy() {
         mVibrator.cancel()
-        if (mRingtone.isPlaying) {
-            mRingtone.stop()
+        if (mRingtone?.isPlaying == true) {
+            mRingtone?.stop()
         }
         PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, false)
         super.onDestroy()
@@ -44,8 +45,8 @@ class AlarmService : Service() {
     private fun startAlarm() {
         mVibrator.vibrate(longArrayOf(DELAY_OF_VIBRATION, DURATION_OF_VIBRATION), 0)
         if (isAlarmSound) {
-            mRingtone.audioAttributes = mAudioAttr
-            mRingtone.play()
+            mRingtone?.audioAttributes = mAudioAttr
+            mRingtone?.play()
         }
     }
 }
