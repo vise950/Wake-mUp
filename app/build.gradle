@@ -38,10 +38,6 @@ android {
             applicationIdSuffix '.debug'
             versionNameSuffix '-DEBUG'
         }
-
-        buildTypes.each {
-            it.buildConfigField 'String', 'GOOGLE_API_KEY', GoogleApiKey
-        }
     }
 
     sourceSets {

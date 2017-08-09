@@ -23,7 +23,7 @@ allprojects {
 
 ext {
     //android support
-    support_version = '26.0.0'
+    support_version = '26.0.1'
 
     //play services
     play_services_version = '11.0.4'
