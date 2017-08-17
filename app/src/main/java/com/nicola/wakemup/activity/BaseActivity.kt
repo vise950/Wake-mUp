@@ -1,4 +1,4 @@
-package com.nicola.wakemup.ui.activity
+package com.nicola.wakemup.activity
 
 import android.graphics.Color
 import android.os.Bundle

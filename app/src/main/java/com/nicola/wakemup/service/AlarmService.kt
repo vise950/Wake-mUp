@@ -37,9 +37,7 @@ class AlarmService : Service() {
         super.onDestroy()
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent): IBinder? = null
 
     @Suppress("DEPRECATION")
     private fun startAlarm() {

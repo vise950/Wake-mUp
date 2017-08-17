@@ -1,9 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Wake mUp</string>
-
-    <string name="google_api_key" translatable="false">AIzaSyAg7YHx_q2HIrbbNcEaFAcH0MTufqSDOtQ</string>
-    <string name="description" translatable="false">image description</string>
-
     <!-- generic text -->
     <string name="no_result_suggestion">No result</string>
     <string name="error_load_suggestion">Fail to load suggestions</string>
@@ -24,7 +19,6 @@
     <string name="dialog_message_network_problem">Non è statto possible recuperare le informazioni, riprova</string>
 
     <!-- Action text (menu,button,...) -->
-    <string name="action_Ok" translatable="false">OK</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_dismiss">Dismiss</string>
     <string name="action_menu_map_style">Map style</string>
@@ -42,18 +36,9 @@
     <string name="target_fab">Infine avvia il servizio</string>
 
     <!-- Shared preferences -->
-    <string name="key_distance" translatable="false">distance</string>
-    <string name="key_theme" translatable="false">theme</string>
-    <string name="key_nav_bar_color" translatable="false">nav_bar_color</string>
-    <string name="key_primary_color" translatable="false">primary_color</string>
-    <string name="key_accent_color" translatable="false">accent_color</string>
     <string-array name="distance_unit">
         <item>Kilometers</item>
         <item>Miles</item>
-    </string-array>
-    <string-array name="distance_value" translatable="false">
-        <item>km</item>
-        <item>mi</item>
     </string-array>
     <string name="category_unit">System Unit</string>
     <string name="category_customization">Customization</string>

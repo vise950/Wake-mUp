@@ -5,7 +5,7 @@ import android.os.Handler
 import android.preference.PreferenceFragment
 import android.view.MenuItem
 import com.nicola.wakemup.R
-import com.nicola.wakemup.ui.activity.BaseActivity
+import com.nicola.wakemup.activity.BaseActivity
 import com.nicola.wakemup.utils.PreferencesHelper
 
 class Settings : BaseActivity() {

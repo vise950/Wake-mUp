@@ -1,4 +1,4 @@
-package com.nicola.wakemup.ui.activity
+package com.nicola.wakemup.activity
 
 import android.Manifest
 import android.app.PendingIntent
@@ -31,7 +31,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.nicola.wakemup.R
 import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
-import com.nicola.wakemup.activity.AboutActivity
 import com.nicola.wakemup.preferences.Settings
 import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService

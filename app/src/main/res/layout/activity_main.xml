@@ -5,22 +5,23 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.nicola.wakemup.ui.activity.MainActivity">
+    tools:context="com.nicola.wakemup.activity.MainActivity">
 
     <include layout="@layout/map" />
 
-    <include layout="@layout/bottom_details"
-        android:elevation="@dimen/elevation_16dp"/>
+    <include
+        layout="@layout/bottom_details"
+        android:elevation="@dimen/elevation_16dp" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:elevation="6dp"
-        android:translationZ="10dp"
+        android:elevation="@dimen/elevation_6dp"
         android:src="@drawable/ic_alarm_add"
+        android:translationZ="@dimen/elevation_12dp"
         app:layout_anchor="@+id/bottom_sheet"
-        app:layout_anchorGravity="top|end" />
+        app:layout_anchorGravity="top|end"
+        app:useCompatPadding="true" />
 
 </android.support.design.widget.CoordinatorLayout>

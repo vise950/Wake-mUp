@@ -5,7 +5,7 @@
     <item
         android:id="@+id/maps_style"
         android:icon="@drawable/ic_map"
-        android:title="@string/action_menu_settings"
+        android:title="@string/action_menu_map_style"
         app:showAsAction="ifRoom"/>
 
     <item

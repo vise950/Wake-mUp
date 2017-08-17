@@ -3,7 +3,6 @@ package com.nicola.wakemup.activity
 import android.os.Bundle
 import android.view.MenuItem
 import com.nicola.wakemup.R
-import com.nicola.wakemup.ui.activity.BaseActivity
 
 class AboutActivity : BaseActivity() {
 

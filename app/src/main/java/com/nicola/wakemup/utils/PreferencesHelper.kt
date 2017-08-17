@@ -2,7 +2,7 @@ package com.nicola.wakemup.utils
 
 import android.content.Context
 import android.preference.PreferenceManager
-import com.nicola.wakemup.ui.activity.MainActivity
+import com.nicola.wakemup.activity.MainActivity
 
 object PreferencesHelper {
 
@@ -59,20 +59,14 @@ object PreferencesHelper {
         return value
     }
 
-    fun isAnotherGeofenceActived(context: Context): Boolean? {
-        return getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
-    }
+    fun isAnotherGeofenceActived(context: Context): Boolean? =
+            getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
 
     fun isUISystem(context: Context): Boolean? {
         val pref = getDefaultPreferences(context, KEY_DISTANCE, "")
         return pref != "mi"
     }
 
-    fun isFirstRun(context: Context): Boolean? {
-        return getPreferences(context, KEY_FIRST_RUN, false) as? Boolean
-    }
-
-    fun isShowCase(context: Context): Boolean? {
-        return getPreferences(context, KEY_SHOW_CASE, true) as? Boolean
-    }
+    fun isShowCase(context: Context): Boolean? =
+            getPreferences(context, KEY_SHOW_CASE, true) as? Boolean
 }

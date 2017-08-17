@@ -12,7 +12,7 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.nicola.wakemup.R
-import com.nicola.wakemup.ui.activity.MainActivity
+import com.nicola.wakemup.activity.MainActivity
 import com.nicola.wakemup.utils.Constant
 import com.nicola.wakemup.utils.Utils
 import com.nicola.wakemup.utils.error
@@ -36,12 +36,12 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     private val mNotification by lazy {
         NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_alarm)
-                .setContentTitle("Hey! Wake up")
-                .setContentText("You arrived to destination")
+                .setContentTitle(getText(R.string.notification_title))
+                .setContentText(getText(R.string.notification_desc))
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
                 .setPriority(Notification.PRIORITY_MAX)
-                .addAction(R.drawable.ic_alarm_off, "Dismiss", mIntentStopAlarm)
+                .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)
         //todo string
     }

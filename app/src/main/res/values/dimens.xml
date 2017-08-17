@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="bottom_sheet_peek_height">74dp</dimen>
 
     <dimen name="margin_2dp">2dp</dimen>
     <dimen name="margin_6dp">6dp</dimen>
+    <dimen name="margin_8dp">8dp</dimen>
     <dimen name="margin_12dp">12dp</dimen>
     <dimen name="margin_16dp">16dp</dimen>
     <dimen name="margin_18dp">18dp</dimen>
+    <dimen name="margin_22dp">22dp</dimen>
     <dimen name="margin_24dp">24dp</dimen>
     <dimen name="margin_36dp">36dp</dimen>
     <dimen name="margin_48dp">48dp</dimen>
@@ -23,6 +25,7 @@
     <dimen name="elevation_2dp">2dp</dimen>
     <dimen name="elevation_6dp">6dp</dimen>
     <dimen name="elevation_8dp">8dp</dimen>
+    <dimen name="elevation_12dp">12dp</dimen>
     <dimen name="elevation_16dp">16dp</dimen>
 
 </resources>

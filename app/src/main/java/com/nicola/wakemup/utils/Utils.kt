@@ -35,23 +35,20 @@ class Utils {
             }
         }
 
+        @Suppress("DEPRECATION")
         fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
             val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             return manager.getRunningServices(Integer.MAX_VALUE).any { serviceClass.name == it.service.className }
         }
 
-        fun getNowInMls(): Long {
-            return System.currentTimeMillis()
-        }
+        fun getNowInMls(): Long = System.currentTimeMillis()
 
         fun getParseColor(context: Context, key: String): String {
             val pref = PreferencesHelper.getDefaultPreferences(context, key, -1) as Int
             return "#${Integer.toHexString(pref).toUpperCase()}"
         }
 
-        fun getParseColor(color: Int): String {
-            return "#${Integer.toHexString(color).toUpperCase()}"
-        }
+        fun getParseColor(color: Int): String = "#${Integer.toHexString(color).toUpperCase()}"
 
         fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int? = null): BitmapDescriptor {
             val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
@@ -67,9 +64,7 @@ class Utils {
             return BitmapDescriptorFactory.fromBitmap(bitmap)
         }
 
-        fun milesToMeters(miles: Int): Double {
-            return (miles * 1609.344)
-        }
+        fun milesToMeters(miles: Int): Double = (miles * 1609.344)
     }
 
     object PermissionHelper {
@@ -90,8 +85,8 @@ class Utils {
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({
-                        if (it.results?.isNotEmpty() ?: false) {
-                            it.results?.get(0)?.address_components?.forEach {
+                        if (it.results?.isNotEmpty() == true) {
+                            it.results[0].address_components?.forEach {
                                 if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
                                     onSuccess?.invoke(it.long_name.toString())
                                     return@subscribe
@@ -116,7 +111,7 @@ class Utils {
             AlertDialog.Builder(context)
                     .setMessage(message)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.action_Ok, { dialog, which ->
+                    .setPositiveButton(R.string.action_Ok, { dialog, _ ->
                         positiveClick?.invoke()
                         dialog.dismiss()
                     })
@@ -128,11 +123,11 @@ class Utils {
                     .setTitle(title)
                     .setMessage(message)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.action_Ok, { dialog, which ->
+                    .setPositiveButton(R.string.action_Ok, { dialog, _ ->
                         positiveClick?.invoke()
                         dialog.dismiss()
                     })
-                    .setNegativeButton(R.string.action_cancel, { dialog, which ->
+                    .setNegativeButton(R.string.action_cancel, { dialog, _ ->
                         negativeClick?.invoke()
                         dialog.dismiss()
                     })

@@ -38,6 +38,9 @@
   *;
 }
 
+# Support library view (for Aesthetic)
+-keep class android.support.design.widget.** { *; }
+
 # OkHttp
 -keepattributes Signature
 -keepattributes *Annotation*
