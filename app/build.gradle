@@ -5,10 +5,10 @@ apply plugin: 'kotlin-android-extensions'
 android {
     signingConfigs {
         config {
-            keyAlias 'MyReleaseKey'
+            keyAlias 'releaseKeySignaturePlayStore'
             keyPassword 'nicola950'
-            storeFile file('/home/nicola/Android Utility/keystore.release.jks')
-            storePassword 'nicola950'
+            storeFile file('/home/nicola/Android Utility/keystore/keystorePlayStore.jks')
+            storePassword 'nicoladev'
         }
     }
 
@@ -51,6 +51,7 @@ android {
         compile fileTree(dir: 'libs', include: ['*.jar'])
 
         //Support library
+        //noinspection GradleCompatible
         compile "com.android.support:appcompat-v7:$rootProject.ext.support_version"
         compile "com.android.support:support-v4:$rootProject.ext.support_version"
         compile "com.android.support:design:$rootProject.ext.support_version"

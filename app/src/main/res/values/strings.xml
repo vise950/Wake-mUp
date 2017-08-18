@@ -15,13 +15,13 @@
 
     <!-- Alert text -->
     <string name="snackbar_ask_permission">I needed location permission for determinate your position.</string>
-    <string name="snackbar_permission_denied">Go to app setting and enable permission.</string>
+    <string name="snackbar_permission_denied">Go to app settings and enable permission.</string>
     <string name="snackbar_no_location">Destination empty or wrong.</string>
     <string name="snackbar_service_start">Alarm added.\nApplication will be closed automatically.</string>
-    <string name="snackbar_no_volume">Alarm volume low</string>
-    <string name="dialog_title_another_service">Un\'altra sveglia è gia attiva</string>
-    <string name="dialog_message_another_service">Vuoi eliminare la sveglia attiva e impostare la nuova?</string>
-    <string name="dialog_message_network_problem">Non è statto possible recuperare le informazioni, riprova</string>
+    <string name="snackbar_no_volume">Ringtone volume low</string>
+    <string name="dialog_title_another_service">Another alarm clock is already active</string>
+    <string name="dialog_message_another_service">Do you want delete the active alarm and set the new?</string>
+    <string name="dialog_message_network_problem">It is not possible to recover the information, try again</string>
 
     <!-- Action text (menu,button,...) -->
     <string name="action_Ok" translatable="false">OK</string>
@@ -29,17 +29,17 @@
     <string name="action_dismiss">Dismiss</string>
     <string name="action_menu_map_style">Map style</string>
     <string name="action_menu_settings">Settings</string>
-    <string name="action_menu_about">About</string>
-    <string name="action_map_standard">Standard</string>
+    <string name="action_menu_about" translatable="false">About</string>
+    <string name="action_map_standard" translatable="false">Standard</string>
     <string name="action_map_standard_dark">Standard dark</string>
-    <string name="action_map_satellite">Satellite</string>
+    <string name="action_map_satellite" translatable="false">Satellite</string>
 
     <!-- Tutorial text-->
-    <string name="target_map">Tieni premuto per posizionare un marker</string>
-    <string name="target_edit">Oppure digita la destinazione</string>
-    <string name="target_button">Scegli il mezzo di trasporto</string>
-    <string name="target_seekbar">Imposta un raggio d\'azione</string>
-    <string name="target_fab">Infine avvia il servizio</string>
+    <string name="target_map">Press and hold to position a marker</string>
+    <string name="target_edit">or type the destination</string>
+    <string name="target_button">Choose the transport type</string>
+    <string name="target_seekbar">Set an action radius</string>
+    <string name="target_fab">Finally starts the service</string>
 
     <!-- Shared preferences -->
     <string name="key_distance" translatable="false">distance</string>
@@ -58,12 +58,12 @@
     <string name="category_unit">System Unit</string>
     <string name="category_customization">Customization</string>
     <string name="distance_title">Distance</string>
-    <string name="distance_default_value">km</string>
+    <string name="distance_default_value" translatable="false">km</string>
     <string name="switch_theme_title">Switch theme</string>
-    <string name="nav_bar_title">Color navigation bar</string>
-    <string name="primary_color_title">Primary color</string>
+    <string name="nav_bar_title">Navigation bar color</string>
+    <string name="primary_color_title" translatable="false">Primary color</string>
     <string name="primary_color_summary">Ex. Toolbar</string>
-    <string name="accent_color_title">Accent color</string>
+    <string name="accent_color_title" translatable="false">Accent color</string>
     <string name="accent_color_summary">Ex. Button</string>
 
     <!-- notification -->
