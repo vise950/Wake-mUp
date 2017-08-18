@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/category_unit">
+        <ListPreference
+            android:defaultValue="@string/distance_default_value"
+            android:entries="@array/distance_unit"
+            android:entryValues="@array/distance_value"
+            android:key="@string/key_distance"
+            android:summary="%s"
+            android:title="@string/distance_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_customization">
+        <SwitchPreference
+            android:key="@string/key_theme"
+            android:title="@string/switch_theme_title" />
+
+        <CheckBoxPreference
+            android:key="@string/key_nav_bar_color"
+            android:title="@string/nav_bar_title" />
+
+        <com.thebluealliance.spectrum.SpectrumPreference
+            android:defaultValue="@color/red_500"
+            android:key="@string/key_primary_color"
+            android:summary="@string/primary_color_summary"
+            android:title="@string/primary_color_title"
+            app:spectrum_colors="@array/primary_colors"
+            app:spectrum_outlineWidth=".5dp" />
+
+        <com.thebluealliance.spectrum.SpectrumPreference
+            android:defaultValue="@color/blue_500"
+            android:key="@string/key_accent_color"
+            android:summary="@string/accent_color_summary"
+            android:title="@string/accent_color_title"
+            app:spectrum_colors="@array/accent_colors"
+            app:spectrum_outlineWidth=".5dp" />
+    </PreferenceCategory>
+</PreferenceScreen>

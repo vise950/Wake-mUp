@@ -1,0 +1,52 @@
+<resources>
+    <!-- generic text -->
+    <string name="no_result_suggestion">Nessun risultato</string>
+    <string name="error_load_suggestion">Caricamento suggerimenti fallito</string>
+    <string name="unknown_place">Sconosciuto</string>
+    <string name="text_radius">Raggio (%1$s)</string>
+    <string name="hint_autocomplete">Cerca destinazione</string>
+    <string name="how_travel">Come viaggi?</string>
+    <string name="ringtone">Suoneria</string>
+
+    <!-- Alert text -->
+    <string name="snackbar_ask_permission">Ho bisogno del permesso per determinare la tua posizione.</string>
+    <string name="snackbar_permission_denied">Vai nelle impostazioni dell\'app e abilita il permsesso.</string>
+    <string name="snackbar_no_location">Destinazione mancante o errata.</string>
+    <string name="snackbar_service_start">Sveglia aggiunta.\nL\'app si chiuderà automaticamente.</string>
+    <string name="snackbar_no_volume">Volume sveglia basso</string>
+    <string name="dialog_title_another_service">Un\'altra sveglia è già attiva</string>
+    <string name="dialog_message_another_service">Vuoi eliminare la sveglia attiva e impostare la nuova?</string>
+    <string name="dialog_message_network_problem">Non è stato possible recuperare le informazioni, riprova</string>
+
+    <!-- Action text (menu,button,...) -->
+    <string name="action_cancel">Annulla</string>
+    <string name="action_dismiss">Rimuovi</string>
+    <string name="action_menu_map_style">Stile mappa</string>
+    <string name="action_menu_settings">Imposationi</string>
+    <string name="action_map_standard_dark">Standard scura</string>
+
+    <!-- Tutorial text-->
+    <string name="target_map">Tieni premuto per posizionare un marker</string>
+    <string name="target_edit">oppure digita la destinazione</string>
+    <string name="target_button">Scegli il mezzo di trasporto</string>
+    <string name="target_seekbar">Imposta un raggio d\'azione</string>
+    <string name="target_fab">Infine avvia il servizio</string>
+
+    <!-- Shared preferences -->
+    <string-array name="distance_unit">
+        <item>Kilometri</item>
+        <item>Miglia</item>
+    </string-array>
+    <string name="category_unit">unità di misura</string>
+    <string name="category_customization">Personalizzazione</string>
+    <string name="distance_title">Distanza</string>
+    <string name="switch_theme_title">Cambia tema</string>
+    <string name="nav_bar_title">Colore navigation bar</string>
+    <string name="primary_color_summary">Es. Toolbar</string>
+    <string name="accent_color_summary">Es. Bottoni</string>
+
+    <!-- notification -->
+    <string name="notification_title">Hey! Svegliati</string>
+    <string name="notification_desc">Sei arrivato a destinazione</string>
+
+</resources>

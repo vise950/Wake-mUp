@@ -1,8 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nicola.dev.com.allarmap.MainActivity">
+    tools:context="com.nicola.wakemup.activity.MainActivity">
 
-</android.support.constraint.ConstraintLayout>
+    <include layout="@layout/map" />
+
+    <include
+        layout="@layout/bottom_details"
+        android:elevation="@dimen/elevation_16dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/elevation_6dp"
+        android:src="@drawable/ic_alarm_add"
+        android:translationZ="@dimen/elevation_12dp"
+        app:layout_anchor="@+id/bottom_sheet"
+        app:layout_anchorGravity="top|end"
+        app:useCompatPadding="true" />
+
+</android.support.design.widget.CoordinatorLayout>

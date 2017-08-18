@@ -5,22 +5,21 @@ apply plugin: 'kotlin-android-extensions'
 android {
     signingConfigs {
         config {
-            keyAlias 'MyReleaseKey'
+            keyAlias 'releaseKeySignaturePlayStore'
             keyPassword 'nicola950'
-            storeFile file('C:/Users/Nicola/AndroidStudioProjects/Utilis android/keystore.release.jks')
-            storePassword 'nicola950'
+            storeFile file('/home/nicola/Android Utility/keystore/keystorePlayStore.jks')
+            storePassword 'nicoladev'
         }
     }
 
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "nicola.dev.com.allarmap"
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -39,11 +38,13 @@ android {
             applicationIdSuffix '.debug'
             versionNameSuffix '-DEBUG'
         }
+    }
 
-        buildTypes.each {
-            it.buildConfigField 'String', 'GOOGLE_API_AUTOCOMPLETE_KEY', GoogleApiAutocompleteKey
-            it.buildConfigField 'String', 'GOOGLE_API_MAPS_KEY', GoogleApiMapsKey
-        }
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
     }
 
     dependencies {
@@ -54,20 +55,41 @@ android {
         compile "com.android.support:appcompat-v7:$rootProject.ext.support_version"
         compile "com.android.support:support-v4:$rootProject.ext.support_version"
         compile "com.android.support:design:$rootProject.ext.support_version"
-        compile 'com.android.support.constraint:constraint-layout:1.0.2'
+        compile 'com.android.support.constraint:constraint-layout:1.1.0-beta1'
 
-        //android play services library
+        //Custom view
+        compile 'org.adw.library:discrete-seekbar:1.0.1'
+        compile 'com.getkeepsafe.taptargetview:taptargetview:1.9.1'
+
+        //Color and theme
+        compile 'com.thebluealliance:spectrum:0.7.1'
+        compile 'com.afollestad:aesthetic:0.4.7'
+
+        //Play services library
         compile "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
         compile "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
+        compile "com.google.android.gms:play-services-places:$rootProject.ext.play_services_version"
 
-        //SearchView
-        compile "com.github.arimorty:floatingsearchview:$rootProject.ext.searchView_version"
+        //Network
+        compile "com.squareup.okhttp3:okhttp:$rootProject.ext.okHttp_version"
+        compile "com.squareup.okhttp3:logging-interceptor:$rootProject.ext.okHttp_version"
+        compile "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit_version"
+        compile "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit_version"
+        compile "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.retrofit_version"
 
         //Kotlin
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+        //Rx
+        compile 'io.reactivex.rxjava2:rxkotlin:2.0.3'
+        compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+        compile 'io.reactivex.rxjava2:rxjava:2.1.1'
+        compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
     }
 
     repositories {
         mavenCentral()
+        jcenter()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 }
