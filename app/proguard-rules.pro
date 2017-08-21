@@ -42,21 +42,13 @@
 -keep class android.support.design.widget.** { *; }
 
 # OkHttp
--keepattributes Signature
--keepattributes *Annotation*
--keep class okhttp3.** { *; }
--keep interface okhttp3.** { *; }
--dontwarn okhttp3.**
 -dontwarn okio.**
+-dontwarn javax.annotation.Nullable
+-dontwarn javax.annotation.ParametersAreNonnullByDefault
 
 # Retrofit 2
--dontwarn retrofit2.**
--keep class retrofit2.** { *; }
--keepattributes Signature
--keepattributes Exceptions
--keepclasseswithmembers class * {
-    @retrofit2.http.* <methods>;
-}
+-dontwarn okio.**
+-dontwarn javax.annotation.**
 
 # rxjava
 -keep class rx.schedulers.Schedulers {

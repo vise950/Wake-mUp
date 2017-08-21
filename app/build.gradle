@@ -3,15 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    signingConfigs {
-        config {
-            keyAlias 'releaseKeySignaturePlayStore'
-            keyPassword 'nicola950'
-            storeFile file('/home/nicola/Android Utility/keystore/keystorePlayStore.jks')
-            storePassword 'nicoladev'
-        }
-    }
-
     compileSdkVersion 26
     buildToolsVersion "26.0.1"
     defaultConfig {
@@ -28,7 +19,6 @@ android {
             zipAlignEnabled true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
         debug {
             minifyEnabled false

@@ -105,13 +105,6 @@ class MainActivity : BaseActivity(),
     }
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
-    private var isBusSelected = true
-    private var isTrainSelected = false
-    private var isPlaneSelected = false
-
-    private val mUnselectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
-    private val mSelectedButtonBg by lazy { getDrawable(R.drawable.btn_background) as GradientDrawable }
-
     private var isThemeChanged: Boolean? = null
     private var isUISystem: Boolean? = true     // International System of Unit, true is meters, false is miles
     private var isAppRunning: Boolean? = false
@@ -257,8 +250,6 @@ class MainActivity : BaseActivity(),
     }
 
     private fun setViewColor() {
-        mSelectedButtonBg.setColor(Color.parseColor(BaseActivity.mAccentColor))
-        mUnselectedButtonBg.setColor(Color.WHITE)
         radius_seekbar.setThumbColor(Color.parseColor(BaseActivity.mAccentColor), Color.parseColor(BaseActivity.mAccentColor))
         radius_seekbar.setScrubberColor(Color.parseColor(BaseActivity.mAccentColor))
     }
@@ -300,11 +291,6 @@ class MainActivity : BaseActivity(),
                             .cancelable(false),
                             TapTarget.forView(place_autocomplete_tv, getString(R.string.target_edit))
                                     .id(1)
-                                    .outerCircleColor(R.color.blue_grey_500)
-                                    .transparentTarget(true)
-                                    .textColor(R.color.color_primary_text_inverse)
-                                    .cancelable(false),
-                            TapTarget.forView(bus_btn, getString(R.string.target_button))
                                     .outerCircleColor(R.color.blue_grey_500)
                                     .transparentTarget(true)
                                     .textColor(R.color.color_primary_text_inverse)
@@ -390,64 +376,6 @@ class MainActivity : BaseActivity(),
                 }
             }
         })
-
-        bus_btn.background = mSelectedButtonBg
-        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
-        Groupie(bus_btn, train_btn, plane_btn).setOnClickListener {
-            when (it.id) {
-                R.id.bus_btn -> {
-                    if (isTrainSelected || isPlaneSelected) {
-                        Groupie(train_btn, plane_btn).setBackground(mUnselectedButtonBg)
-                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
-                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
-                        isTrainSelected = false
-                        isPlaneSelected = false
-                    }
-                    if (!isBusSelected) {
-                        bus_btn.background = mSelectedButtonBg
-                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_white))
-                        isBusSelected = true
-                        radius_seekbar.min = 1
-                        radius_seekbar.max = 30
-                        radius_seekbar.progress = radius_seekbar.min
-                    }
-                }
-                R.id.train_btn -> {
-                    if (isBusSelected || isPlaneSelected) {
-                        Groupie(bus_btn, plane_btn).setBackground(mUnselectedButtonBg)
-                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_black))
-                        isBusSelected = false
-                        isPlaneSelected = false
-                    }
-                    if (!isTrainSelected) {
-                        train_btn.background = mSelectedButtonBg
-                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_white))
-                        isTrainSelected = true
-                        radius_seekbar.min = 10
-                        radius_seekbar.max = 200
-                        radius_seekbar.progress = radius_seekbar.min
-                    }
-                }
-                R.id.plane_btn -> {
-                    if (isBusSelected || isTrainSelected) {
-                        Groupie(bus_btn, train_btn).setBackground(mUnselectedButtonBg)
-                        bus_btn.setImageDrawable(getDrawable(R.drawable.ic_bus_black))
-                        train_btn.setImageDrawable(getDrawable(R.drawable.ic_train_black))
-                        isBusSelected = false
-                        isTrainSelected = false
-                    }
-                    if (!isPlaneSelected) {
-                        plane_btn.background = mSelectedButtonBg
-                        plane_btn.setImageDrawable(getDrawable(R.drawable.ic_plane_white))
-                        isPlaneSelected = true
-                        radius_seekbar.min = 100
-                        radius_seekbar.max = 500
-                        radius_seekbar.progress = radius_seekbar.min
-                    }
-                }
-            }
-        }
 
         radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener {
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
