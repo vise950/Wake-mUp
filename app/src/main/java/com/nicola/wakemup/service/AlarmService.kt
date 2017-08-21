@@ -23,7 +23,7 @@ class AlarmService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
+        if (PreferencesHelper.isAnotherGeofenceActive(this) == true) {
             startAlarm()
         }
     }

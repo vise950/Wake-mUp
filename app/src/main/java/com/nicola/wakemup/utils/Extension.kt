@@ -12,7 +12,7 @@ fun Any?.error(obj: Any? = null) {
     }
 
     val message = when(this){
-        is String? -> if(this == null) "NullString" else this
+        is String? -> this ?: "NullString"
         is Int? -> if(this == null) "NullInt" else "Int: $this"
         is Float? -> if(this == null) "NullFloat" else "Float: $this"
         is Double? -> if(this == null) "NullDouble" else "Double: $this"

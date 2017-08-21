@@ -43,7 +43,6 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setPriority(Notification.PRIORITY_MAX)
                 .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)
-        //todo string
     }
 
     private val mIntentStartAlarm by lazy {
@@ -72,12 +71,11 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     }
 
     // Handle errors
-    private fun getErrorString(errorCode: Int): String {
-        when (errorCode) {
-            GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> return "GeoFence not available"
-            GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> return "Too many GeoFences"
-            GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> return "Too many pending intents"
-            else -> return "Unknown error"
-        }
-    }
+    private fun getErrorString(errorCode: Int): String =
+            when (errorCode) {
+                GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> "GeoFence not available"
+                GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> "Too many GeoFences"
+                GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> "Too many pending intents"
+                else -> "Unknown error"
+            }
 }

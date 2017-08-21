@@ -22,27 +22,6 @@ open class BaseActivity : AestheticActivity() {
         initAesthetic()
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        getColor()
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     private fun initAesthetic() {
         getColor()
 
@@ -74,7 +53,7 @@ open class BaseActivity : AestheticActivity() {
                     R.color.color_secondary_text
                 })
                 .textColorPrimaryInverseRes(R.color.color_primary_text_inverse)
-                .isDark(isThemeChanged ?: false)
+                .isDark(isThemeChanged == true)
                 .apply()
     }
 

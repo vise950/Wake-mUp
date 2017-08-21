@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
@@ -36,7 +35,6 @@ import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
 import com.nicola.wakemup.utils.Constant.Companion.INVALID_DOUBLE_VALUE
 import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
-import com.nicola.wakemup.utils.Groupie
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
 import com.nicola.wakemup.utils.error
@@ -66,7 +64,7 @@ class MainActivity : BaseActivity(),
     private val mBottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
     private var mPopupMenu: PopupMenu? = null
 
-    private val mGoogleApiClient by lazy <GoogleApiClient> {
+    private val mGoogleApiClient by lazy<GoogleApiClient> {
         GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
@@ -85,7 +83,7 @@ class MainActivity : BaseActivity(),
                 .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
     }
     private var mRadius: Double? = null
-    private val mGeofence by lazy <Geofence> {
+    private val mGeofence by lazy<Geofence> {
         Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
                 .setCircularRegion(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE, mRadius?.toFloat() ?: INVALID_FLOAT_VALUE)
@@ -93,7 +91,7 @@ class MainActivity : BaseActivity(),
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build()
     }
-    private val mGeofenceRequest by lazy <GeofencingRequest> {
+    private val mGeofenceRequest by lazy<GeofencingRequest> {
         GeofencingRequest.Builder()
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .addGeofence(mGeofence)
@@ -177,11 +175,9 @@ class MainActivity : BaseActivity(),
         }
     }
 
-    override fun onConnected(bundle: Bundle?) {
-        permissionRequest()
-    }
+    override fun onConnected(bundle: Bundle?) = permissionRequest()
 
-    override fun onConnectionFailed(result: ConnectionResult) {}
+    override fun onConnectionFailed(result: ConnectionResult) = Unit
 
     override fun onConnectionSuspended(i: Int) {
         mGeoFencePendingIntent.let { LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it) }
@@ -307,10 +303,9 @@ class MainActivity : BaseActivity(),
                                     .textColor(R.color.color_primary_text_inverse)
                                     .cancelable(false))
                     .listener(object : TapTargetSequence.Listener {
-                        override fun onSequenceCanceled(lastTarget: TapTarget) {}
-                        override fun onSequenceFinish() {
-                            PreferencesHelper.setPreferences(this@MainActivity, PreferencesHelper.KEY_SHOW_CASE, false)
-                        }
+                        override fun onSequenceCanceled(lastTarget: TapTarget) = Unit
+                        override fun onSequenceFinish() =
+                                PreferencesHelper.setPreferences(this@MainActivity, PreferencesHelper.KEY_SHOW_CASE, false)
 
                         override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
                             when (lastTarget.id()) {
@@ -327,7 +322,7 @@ class MainActivity : BaseActivity(),
         isThemeChanged = PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_THEME, false) as Boolean
 
         //workaround for intercept drag map view and disable it
-        view.setOnTouchListener { view, motionEvent -> true }
+        view.setOnTouchListener { _, _ -> true }
 
         if (isThemeChanged == true) {
             view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
@@ -359,27 +354,25 @@ class MainActivity : BaseActivity(),
                 }
             }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                if (slideOffset > 0) {
-                    place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+            override fun onSlide(bottomSheet: View, slideOffset: Float) = if (slideOffset > 0) {
+                place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+                place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+            } else {
+                if (isThemeChanged == true) {
+                    place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
                     place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                    place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
                 } else {
-                    if (isThemeChanged == true) {
-                        place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
-                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                    } else {
-                        place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
-                    }
-                    place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+                    place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                    place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
                 }
+                place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
             }
         })
 
         radius_seekbar.setOnProgressChangeListener(object : DiscreteSeekBar.OnProgressChangeListener {
-            override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) = Unit
+            override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) = Unit
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mMarker?.let {
                     mCircle?.remove()
@@ -397,7 +390,7 @@ class MainActivity : BaseActivity(),
         place_autocomplete_tv?.threshold = 2
         val adapter = PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1, mGoogleApiClient)
         place_autocomplete_tv?.setAdapter(adapter)
-        place_autocomplete_tv.setOnItemClickListener { adapterView, view, i, l ->
+        place_autocomplete_tv.setOnItemClickListener { _, _, i, _ ->
             val item = adapter.getItem(i)
             Places.GeoDataApi.getPlaceById(mGoogleApiClient, item?.placeId?.toString())
                     .setResultCallback {
@@ -423,7 +416,7 @@ class MainActivity : BaseActivity(),
 
         place_autocomplete_tv.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            if (place_autocomplete_tv?.text?.isNotEmpty() ?: false) {
+            if (place_autocomplete_tv?.text?.isNotEmpty() == true) {
                 place_autocomplete_tv.text = null
                 mMarker?.remove()
                 mCircle?.remove()
@@ -432,7 +425,7 @@ class MainActivity : BaseActivity(),
             }
         }
 
-        alarm_sound_check.setOnCheckedChangeListener { compoundButton, checked ->
+        alarm_sound_check.setOnCheckedChangeListener { _, checked ->
             PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, checked)
         }
 
@@ -443,7 +436,7 @@ class MainActivity : BaseActivity(),
             mMarker?.let {
                 if (place_autocomplete_tv.text.isNotEmpty() && place_autocomplete_tv.text.toString() != getString(R.string.unknown_place)) {
                     mLocation?.let {
-                        if (PreferencesHelper.isAnotherGeofenceActived(this) == true) {
+                        if (PreferencesHelper.isAnotherGeofenceActive(this) == true) {
                             Handler().postDelayed({
                                 Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
                                     removeGeofence({ addGeofence() })
@@ -480,16 +473,16 @@ class MainActivity : BaseActivity(),
         RxPermissions(this)
                 .requestEach(Manifest.permission.ACCESS_FINE_LOCATION)
                 .subscribe({
-                    if (it.granted) {
-                        getDeviceLocation()
-                        initShowCase()
-                    } else if (it.shouldShowRequestPermissionRationale) {
-                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                    when {
+                        it.granted -> {
+                            getDeviceLocation()
+                            initShowCase()
+                        }
+                        it.shouldShowRequestPermissionRationale -> Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
                                 actionMessage = R.string.action_Ok, actionClick = {
                             permissionRequest()
                         })
-                    } else {
-                        Utils.PermissionHelper.gotoSetting(this)
+                        else -> Utils.PermissionHelper.gotoSetting(this)
                     }
                 })
     }

@@ -4,20 +4,12 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.net.Uri
 import android.provider.Settings
-import android.support.annotation.ColorInt
-import android.support.annotation.DrawableRes
 import android.support.design.widget.Snackbar
-import android.support.v4.content.res.ResourcesCompat
-import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.nicola.wakemup.R
 import com.nicola.wakemup.retrofit.MapsGoogleApiClient
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -50,32 +42,31 @@ class Utils {
 
         fun getParseColor(color: Int): String = "#${Integer.toHexString(color).toUpperCase()}"
 
-        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int? = null): BitmapDescriptor {
-            val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
-            val bitmap = Bitmap.createBitmap(vectorDrawable?.intrinsicWidth ?: 0, vectorDrawable?.intrinsicHeight ?: 0, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            vectorDrawable?.setBounds(0, 0, canvas.width, canvas.height)
-            vectorDrawable?.let { image ->
-                color?.let { c ->
-                    DrawableCompat.setTint(image, c)
-                }
-            }
-            vectorDrawable?.draw(canvas)
-            return BitmapDescriptorFactory.fromBitmap(bitmap)
-        }
+//        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int? = null): BitmapDescriptor {
+//            val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
+//            val bitmap = Bitmap.createBitmap(vectorDrawable?.intrinsicWidth ?: 0, vectorDrawable?.intrinsicHeight ?: 0, Bitmap.Config.ARGB_8888)
+//            val canvas = Canvas(bitmap)
+//            vectorDrawable?.setBounds(0, 0, canvas.width, canvas.height)
+//            vectorDrawable?.let { image ->
+//                color?.let { c ->
+//                    DrawableCompat.setTint(image, c)
+//                }
+//            }
+//            vectorDrawable?.draw(canvas)
+//            return BitmapDescriptorFactory.fromBitmap(bitmap)
+//        }
 
         fun milesToMeters(miles: Int): Double = (miles * 1609.344)
     }
 
     object PermissionHelper {
-        fun gotoSetting(activity: Activity) {
-            AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
-                    actionMessage = R.string.action_Ok, actionClick = {
-                val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        .setData(Uri.fromParts("package", activity.packageName, null))
-                activity.startActivity(intent)
-            })
-        }
+        fun gotoSetting(activity: Activity) =
+                AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
+                        actionMessage = R.string.action_Ok, actionClick = {
+                    val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            .setData(Uri.fromParts("package", activity.packageName, null))
+                    activity.startActivity(intent)
+                })
     }
 
     object LocationHelper {
@@ -150,10 +141,8 @@ class Utils {
             showSnackBar(activity, snackBar)
         }
 
-        private fun showSnackBar(activity: Activity, snackBar: Snackbar) {
-            activity.runOnUiThread {
-                snackBar.show()
-            }
+        private fun showSnackBar(activity: Activity, snackBar: Snackbar) = activity.runOnUiThread {
+            snackBar.show()
         }
     }
 }

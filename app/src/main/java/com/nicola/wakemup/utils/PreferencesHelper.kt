@@ -59,7 +59,7 @@ object PreferencesHelper {
         return value
     }
 
-    fun isAnotherGeofenceActived(context: Context): Boolean? =
+    fun isAnotherGeofenceActive(context: Context): Boolean? =
             getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
 
     fun isUISystem(context: Context): Boolean? {
