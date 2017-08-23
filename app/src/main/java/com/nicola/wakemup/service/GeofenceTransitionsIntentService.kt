@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.support.v4.app.TaskStackBuilder
 import android.support.v7.app.NotificationCompat
 import com.google.android.gms.location.Geofence
@@ -40,6 +41,8 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setContentText(getText(R.string.notification_desc))
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
+                .setColor(Color.RED)
+                .setColorized(true)
                 .setPriority(Notification.PRIORITY_MAX)
                 .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)

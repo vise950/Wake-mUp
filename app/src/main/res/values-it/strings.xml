@@ -49,4 +49,10 @@
     <string name="notification_title">Hey! Svegliati</string>
     <string name="notification_desc">Sei arrivato a destinazione</string>
 
+    <!-- About Activity -->
+    <string name="app_version">Versione: %1$s</string>
+    <string name="contact_support">Contatta Supporto</string>
+    <string name="rate">Recensiona l\'applicazione</string>
+    <string name="share">Condividi l\'applicazione</string>
+
 </resources>

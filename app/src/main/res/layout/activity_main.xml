@@ -19,7 +19,6 @@
         android:layout_height="wrap_content"
         android:elevation="@dimen/elevation_6dp"
         android:src="@drawable/ic_alarm_add"
-        android:translationZ="@dimen/elevation_12dp"
         app:layout_anchor="@+id/bottom_sheet"
         app:layout_anchorGravity="top|end"
         app:useCompatPadding="true" />
