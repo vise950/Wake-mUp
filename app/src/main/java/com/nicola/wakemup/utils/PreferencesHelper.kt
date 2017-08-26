@@ -62,7 +62,7 @@ object PreferencesHelper {
     fun isAnotherGeofenceActive(context: Context): Boolean? =
             getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
 
-    fun isUISystem(context: Context): Boolean? {
+    fun isISU(context: Context): Boolean? {
         val pref = getDefaultPreferences(context, KEY_DISTANCE, "")
         return pref != "mi"
     }

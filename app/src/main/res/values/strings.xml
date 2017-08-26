@@ -38,8 +38,8 @@
     <string name="target_map">Press and hold to position a marker</string>
     <string name="target_edit">or type the destination</string>
     <string name="target_button">Choose the transport type</string>
-    <string name="target_seekbar">Set an action radius</string>
-    <string name="target_fab">Finally starts the service</string>
+    <string name="target_seekbar">Set action radius</string>
+    <string name="target_fab">Finally start the service</string>
 
     <!-- Shared preferences -->
     <string name="key_distance" translatable="false">distance</string>

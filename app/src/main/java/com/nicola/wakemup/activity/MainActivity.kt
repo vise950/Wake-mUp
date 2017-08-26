@@ -1,6 +1,7 @@
 package com.nicola.wakemup.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Color
@@ -104,7 +105,7 @@ class MainActivity : BaseActivity(),
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private var isThemeChanged: Boolean? = null
-    private var isUISystem: Boolean? = true     // International System of Unit, true is meters, false is miles
+    private var isISU: Boolean? = true     // International System of Unit, true is meters, false is miles
     private var isAppRunning: Boolean? = false
 
 
@@ -113,6 +114,7 @@ class MainActivity : BaseActivity(),
         setContentView(R.layout.activity_main)
         initMap()
         initUi()
+        PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, true)
     }
 
     override fun onStart() {
@@ -128,7 +130,7 @@ class MainActivity : BaseActivity(),
 
         setViewColor()
 
-        isUISystem = PreferencesHelper.isUISystem(this)
+        isISU = PreferencesHelper.isISU(this)
         radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
 
         if (Utils.isMyServiceRunning(this, AlarmService::class.java)) {
@@ -255,6 +257,7 @@ class MainActivity : BaseActivity(),
         mapFragment.getMapAsync(this)
     }
 
+    @SuppressLint("MissingPermission")
     private fun setMapUi(map: GoogleMap) {
         map.isMyLocationEnabled = true
         map.uiSettings.isMyLocationButtonEnabled = true
@@ -376,7 +379,7 @@ class MainActivity : BaseActivity(),
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
                 mMarker?.let {
                     mCircle?.remove()
-                    if (isUISystem == false) {
+                    if (isISU == false) {
                         mCircleOptions?.radius(Utils.milesToMeters(progress))
                     } else {
                         mCircleOptions?.radius(progress * 1000.0)
@@ -453,6 +456,7 @@ class MainActivity : BaseActivity(),
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun addGeofence() {
         mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
                 .addOnSuccessListener {
@@ -487,6 +491,7 @@ class MainActivity : BaseActivity(),
                 })
     }
 
+    @SuppressLint("MissingPermission")
     private fun getDeviceLocation() {
         mLocationRequest.interval = UPDATE_INTERVAL_IN_MILLISECONDS
         mLocationRequest.fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
