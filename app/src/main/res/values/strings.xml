@@ -75,5 +75,7 @@
     <string name="contact_support">Contact Support</string>
     <string name="rate">Rate Application</string>
     <string name="share">Share Application</string>
+    <string name="tnx">Thanks for icon</string>
+    <string name="davide_name" translatable="false">Davide Ghirelli</string>
 
 </resources>

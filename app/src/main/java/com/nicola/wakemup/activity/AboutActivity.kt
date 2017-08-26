@@ -3,6 +3,7 @@ package com.nicola.wakemup.activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.app.ShareCompat
 import android.view.MenuItem
 import com.nicola.wakemup.R
 import kotlinx.android.synthetic.main.activity_about.*
@@ -20,6 +21,7 @@ class AboutActivity : BaseActivity() {
         contact_support_cv.setOnClickListener { contactSupport() }
         rate_tv.setOnClickListener { rate() }
         share_tv.setOnClickListener { share() }
+        linkedin_tv.setOnClickListener { linkedin() }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -58,11 +60,14 @@ class AboutActivity : BaseActivity() {
     }
 
     private fun share() {
-        val sendIntent = Intent()
-        sendIntent.action = Intent.ACTION_SEND
-        sendIntent.putExtra(Intent.EXTRA_TEXT,
-                "Hey check out this app at: https://play.google.com/store/apps/details?id=com.nicola.wakemup")
-        sendIntent.type = "text/plain"
-        startActivity(sendIntent)
+        ShareCompat.IntentBuilder.from(this)
+                .setType("text/plain")
+                .setText("Hey check out this app at: https://play.google.com/store/apps/details?id=com.dev.nicola.allweather")
+                .startChooser()
+    }
+
+    private fun linkedin() {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.linkedin.com/in/davide-ghirelli-14a5a2133/"))
+        startActivity(browserIntent)
     }
 }
