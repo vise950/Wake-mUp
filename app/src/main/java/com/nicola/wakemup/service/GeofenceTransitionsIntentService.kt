@@ -41,6 +41,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setContentText(getText(R.string.notification_desc))
                 .setWhen(Utils.getNowInMls())
                 .setAutoCancel(true)
+                .setOngoing(true)
                 .setColor(Color.RED)
                 .setColorized(true)
                 .setPriority(Notification.PRIORITY_MAX)
