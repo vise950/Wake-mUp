@@ -1,5 +1,7 @@
 package com.nicola.wakemup.utils
 
+import android.app.Activity
+import android.view.inputmethod.InputMethodManager
 import kotlin.reflect.KClass
 
 fun Any?.error(obj: Any? = null) {
@@ -19,4 +21,12 @@ fun Any?.error(obj: Any? = null) {
         else -> if(this == null) "NullValue" else "Value: $this"
     }
     android.util.Log.e(logger, message)
+}
+
+fun Activity.hideKeyboard() {
+    (this.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager).apply {
+        this@hideKeyboard.currentFocus?.windowToken?.let {
+            this.hideSoftInputFromWindow(it, InputMethodManager.HIDE_NOT_ALWAYS)
+        }
+    }
 }

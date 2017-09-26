@@ -20,13 +20,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 class Utils {
     companion object {
 
-        fun hideKeyboard(activity: Activity) {
-            val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            activity.currentFocus?.windowToken?.let {
-                imm.hideSoftInputFromWindow(it, InputMethodManager.HIDE_NOT_ALWAYS)
-            }
-        }
-
         @Suppress("DEPRECATION")
         fun isMyServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
             val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -41,20 +34,6 @@ class Utils {
         }
 
         fun getParseColor(color: Int): String = "#${Integer.toHexString(color).toUpperCase()}"
-
-//        fun vectorToBitmap(context: Context, @DrawableRes id: Int, @ColorInt color: Int? = null): BitmapDescriptor {
-//            val vectorDrawable = ResourcesCompat.getDrawable(context.resources, id, null)
-//            val bitmap = Bitmap.createBitmap(vectorDrawable?.intrinsicWidth ?: 0, vectorDrawable?.intrinsicHeight ?: 0, Bitmap.Config.ARGB_8888)
-//            val canvas = Canvas(bitmap)
-//            vectorDrawable?.setBounds(0, 0, canvas.width, canvas.height)
-//            vectorDrawable?.let { image ->
-//                color?.let { c ->
-//                    DrawableCompat.setTint(image, c)
-//                }
-//            }
-//            vectorDrawable?.draw(canvas)
-//            return BitmapDescriptorFactory.fromBitmap(bitmap)
-//        }
 
         fun milesToMeters(miles: Int): Double = (miles * 1609.344)
     }

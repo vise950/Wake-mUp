@@ -39,6 +39,7 @@ import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
 import com.nicola.wakemup.utils.error
+import com.nicola.wakemup.utils.hideKeyboard
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
@@ -159,12 +160,10 @@ class MainActivity : BaseActivity(),
         radius_seekbar.progress = 1
         mMarker?.remove()
         mCircle?.remove()
-        Utils.hideKeyboard(this)
+        this.hideKeyboard()
         latLng?.let {
             radius_seekbar.isEnabled = true
             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.latitude, it.longitude)))
-//            mMarker?.setIcon(Utils.vectorToBitmap(this,R.drawable.ic_alarm_add))
-            mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
             mCircleOptions?.center(mMarker?.position)
             mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
             mRadius = mCircleOptions?.radius
@@ -178,9 +177,7 @@ class MainActivity : BaseActivity(),
     }
 
     override fun onConnected(bundle: Bundle?) = permissionRequest()
-
     override fun onConnectionFailed(result: ConnectionResult) = Unit
-
     override fun onConnectionSuspended(i: Int) {
         mGeoFencePendingIntent.let { LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, it) }
     }
@@ -213,6 +210,7 @@ class MainActivity : BaseActivity(),
         return super.onOptionsItemSelected(item)
     }
 
+    //todo save state map
     private fun dropdownMenu() {
         if (mPopupMenu == null) {
             mPopupMenu = PopupMenu(this, findViewById(R.id.maps_style))
@@ -248,8 +246,10 @@ class MainActivity : BaseActivity(),
     }
 
     private fun setViewColor() {
-        radius_seekbar.setThumbColor(Color.parseColor(BaseActivity.mAccentColor), Color.parseColor(BaseActivity.mAccentColor))
-        radius_seekbar.setScrubberColor(Color.parseColor(BaseActivity.mAccentColor))
+        radius_seekbar?.apply {
+            setThumbColor(Color.parseColor(BaseActivity.mAccentColor), Color.parseColor(BaseActivity.mAccentColor))
+            setScrubberColor(Color.parseColor(BaseActivity.mAccentColor))
+        }
     }
 
     private fun initMap() {
@@ -259,10 +259,12 @@ class MainActivity : BaseActivity(),
 
     @SuppressLint("MissingPermission")
     private fun setMapUi(map: GoogleMap) {
-        map.isMyLocationEnabled = true
-        map.uiSettings.isMyLocationButtonEnabled = true
-        map.uiSettings.isRotateGesturesEnabled = true
-        map.uiSettings.isMapToolbarEnabled = false
+        map.apply {
+            isMyLocationEnabled = true
+            uiSettings.isMyLocationButtonEnabled = true
+            uiSettings.isRotateGesturesEnabled = true
+            uiSettings.isMapToolbarEnabled = false
+        }
 
         map.setOnMyLocationButtonClickListener {
             mLocation?.let {
@@ -333,43 +335,48 @@ class MainActivity : BaseActivity(),
             view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
         }
 
+        val white = -3 //my white is -3 but Color.WHITE is -1
         mBottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
                         bottomSheet.isEnabled = false
-                        if (isThemeChanged == true) {
-                            place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
-                            place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                        } else {
-                            place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                            place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
+                        place_autocomplete_tv?.apply {
+                            setBackgroundColor(ContextCompat.getColor(this@MainActivity, if (isThemeChanged == true) R.color.dark else R.color.white))
+                            setTextColor(ContextCompat.getColor(this@MainActivity, if (isThemeChanged == true) R.color.color_primary_text_inverse else R.color.color_primary_text))
+                            setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
                         }
-                        place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
-
-                        Utils.hideKeyboard(this@MainActivity)
+                        this@MainActivity.hideKeyboard()
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
-                        place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
-                        place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                        place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
+                        place_autocomplete_tv?.apply {
+                            setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+                            setTextColor(ContextCompat.getColor(this@MainActivity,
+                                    if (Color.parseColor(BaseActivity.mPrimaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+                            setHintTextColor(ContextCompat.getColor(this@MainActivity,
+                                    if (Color.parseColor(BaseActivity.mPrimaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+                        }
                     }
                 }
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) = if (slideOffset > 0) {
-                place_autocomplete_tv.setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
-                place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-            } else {
-                if (isThemeChanged == true) {
-                    place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.dark))
-                    place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text_inverse))
-                } else {
-                    place_autocomplete_tv.setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.white))
-                    place_autocomplete_tv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_primary_text))
+                place_autocomplete_tv?.apply {
+                    setBackgroundColor(Color.parseColor(BaseActivity.mPrimaryColor))
+                    setTextColor(ContextCompat.getColor(this@MainActivity,
+                            if (Color.parseColor(BaseActivity.mPrimaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+                    setHintTextColor(ContextCompat.getColor(this@MainActivity,
+                            if (Color.parseColor(BaseActivity.mPrimaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
                 }
-                place_autocomplete_tv.setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+                // wtf android
+                val a = 0
+            } else {
+                place_autocomplete_tv?.apply {
+                    setBackgroundColor(ContextCompat.getColor(this@MainActivity, if (isThemeChanged == true) R.color.dark else R.color.white))
+                    setTextColor(ContextCompat.getColor(this@MainActivity, if (isThemeChanged == true) R.color.color_primary_text_inverse else R.color.color_primary_text))
+                    setHintTextColor(ContextCompat.getColor(this@MainActivity, R.color.color_secondary_text))
+                }
+                this@MainActivity.hideKeyboard()
             }
         })
 
@@ -398,7 +405,7 @@ class MainActivity : BaseActivity(),
             Places.GeoDataApi.getPlaceById(mGoogleApiClient, item?.placeId?.toString())
                     .setResultCallback {
                         if (it.status?.isSuccess == true) {
-                            Utils.hideKeyboard(this)
+                            this.hideKeyboard()
                             mMarker?.remove()
                             mCircle?.remove()
                             radius_seekbar.isEnabled = true
@@ -406,7 +413,6 @@ class MainActivity : BaseActivity(),
                             mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(it.get(0).latLng.latitude, it.get(0).latLng.longitude)))
                             mCircleOptions.center(mMarker?.position)
                             mMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.get(0).latLng.latitude, it.get(0).latLng.longitude)))
-                            mMarker?.setIcon(BitmapDescriptorFactory.defaultMarker(21F))
                             mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
                             mRadius = mCircleOptions?.radius
                             mCircle = mMap?.addCircle(mCircleOptions)
@@ -434,7 +440,7 @@ class MainActivity : BaseActivity(),
 
         fab.setOnClickListener {
             mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-            Utils.hideKeyboard(this)
+            this.hideKeyboard()
 
             mMarker?.let {
                 if (place_autocomplete_tv.text.isNotEmpty() && place_autocomplete_tv.text.toString() != getString(R.string.unknown_place)) {

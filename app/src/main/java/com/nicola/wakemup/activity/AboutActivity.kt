@@ -62,7 +62,7 @@ class AboutActivity : BaseActivity() {
     private fun share() {
         ShareCompat.IntentBuilder.from(this)
                 .setType("text/plain")
-                .setText("Hey check out this app at: https://play.google.com/store/apps/details?id=com.dev.nicola.allweather")
+                .setText("Hey check out this app at: https://play.google.com/store/apps/details?id=nicola.dev.com.allarmap")
                 .startChooser()
     }
 

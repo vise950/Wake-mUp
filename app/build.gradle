@@ -9,8 +9,8 @@ android {
         applicationId "nicola.dev.com.allarmap"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.1"
     }
     buildTypes {
         release {
@@ -34,11 +34,10 @@ android {
         compile fileTree(dir: 'libs', include: ['*.jar'])
 
         //Support library
-        //noinspection GradleCompatible
-        implementation "com.android.support:appcompat-v7:$rootProject.ext.support_version"
-        implementation "com.android.support:support-v4:$rootProject.ext.support_version"
-        implementation "com.android.support:design:$rootProject.ext.support_version"
-        implementation "com.android.support:cardview-v7:$rootProject.ext.support_version"
+        implementation "com.android.support:appcompat-v7:$support_version"
+        implementation "com.android.support:support-v4:$support_version"
+        implementation "com.android.support:design:$support_version"
+        implementation "com.android.support:cardview-v7:$support_version"
         implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta1'
 
         //Custom view
@@ -46,19 +45,19 @@ android {
         implementation 'com.getkeepsafe.taptargetview:taptargetview:1.9.1'
 
         //Color and theme
-        implementation 'com.thebluealliance:spectrum:0.7.1'
-        implementation 'com.afollestad:aesthetic:0.4.7'
+        implementation('com.thebluealliance:spectrum:0.7.1') { exclude group: 'com.android.support' }
+        implementation('com.afollestad:aesthetic:0.4.7') { exclude group: 'com.android.support' }
 
         //Play services library
-        implementation "com.google.android.gms:play-services-location:$rootProject.ext.play_services_version"
-        implementation "com.google.android.gms:play-services-maps:$rootProject.ext.play_services_version"
-        implementation "com.google.android.gms:play-services-places:$rootProject.ext.play_services_version"
+        implementation "com.google.android.gms:play-services-location:$play_services_version"
+        implementation "com.google.android.gms:play-services-maps:$play_services_version"
+        implementation "com.google.android.gms:play-services-places:$play_services_version"
 
         //Network
-        implementation "com.squareup.okhttp3:okhttp:$rootProject.ext.okHttp_version"
-        implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit_version"
-        implementation "com.squareup.retrofit2:converter-gson:$rootProject.ext.retrofit_version"
-        implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.retrofit_version"
+        implementation "com.squareup.okhttp3:okhttp:$okHttp_version"
+        implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+        implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+        implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
 
         //Kotlin
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
