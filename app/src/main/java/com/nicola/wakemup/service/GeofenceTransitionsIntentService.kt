@@ -1,14 +1,12 @@
 package com.nicola.wakemup.service
 
-import android.app.IntentService
-import android.app.Notification
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
+import android.support.v4.app.NotificationCompat
 import android.support.v4.app.TaskStackBuilder
-import android.support.v7.app.NotificationCompat
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
@@ -17,6 +15,7 @@ import com.nicola.wakemup.activity.MainActivity
 import com.nicola.wakemup.utils.Constant
 import com.nicola.wakemup.utils.Utils
 import com.nicola.wakemup.utils.error
+
 
 @Suppress("DEPRECATION")
 class GeofenceTransitionsIntentService : IntentService(TAG) {
@@ -35,7 +34,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     private val mNotificationPendingIntent by lazy { mStackBuilder?.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
     private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private val mNotification by lazy {
-        NotificationCompat.Builder(this)
+        NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_alarm)
                 .setContentTitle(getText(R.string.notification_title))
                 .setContentText(getText(R.string.notification_desc))
@@ -44,10 +43,14 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setOngoing(true)
                 .setColor(Color.RED)
                 .setColorized(true)
+                .setVibrate(longArrayOf(0))
                 .setPriority(Notification.PRIORITY_MAX)
                 .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), mIntentStopAlarm)
                 .setContentIntent(mNotificationPendingIntent)
     }
+    private val CHANNEL_ID = "wakemup_notification"
+    private lateinit var mChannel: NotificationChannel
+
 
     private val mIntentStartAlarm by lazy {
         val startAlarm = Intent()
@@ -62,11 +65,12 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     }
 
     override fun onHandleIntent(intent: Intent?) {
+        createNotificationChannel()
         GeofencingEvent.fromIntent(intent)?.let {
             if (!it.hasError()) {
                 if (it.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                     mNotificationManager.notify(Constant.NOTIFICATION_ID, mNotification.build())
-                    sendBroadcast(mIntentStartAlarm)
+                    sendBroadcastCompat(this, mIntentStartAlarm)
                 }
             } else {
                 getErrorString(it.errorCode).error()
@@ -74,7 +78,21 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         }
     }
 
-    // Handle errors
+    private fun sendBroadcastCompat(context: Context, intent: Intent) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            context.sendBroadcast(intent)
+            return
+        }
+
+        val broadcastIntent = Intent(intent)
+        context.packageManager.queryBroadcastReceivers(broadcastIntent, 0).forEach {
+            broadcastIntent.setClassName(it.activityInfo.packageName, it.activityInfo.name)
+            context.sendBroadcast(broadcastIntent)
+        }
+
+    }
+
+    //todo save error with analytics
     private fun getErrorString(errorCode: Int): String =
             when (errorCode) {
                 GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> "GeoFence not available"
@@ -82,4 +100,13 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> "Too many pending intents"
                 else -> "Unknown error"
             }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mChannel = NotificationChannel(CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH)
+            mChannel.setBypassDnd(true)
+            mChannel.enableVibration(false)
+            mNotificationManager.createNotificationChannel(mChannel)
+        }
+    }
 }

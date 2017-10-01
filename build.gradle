@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.50'
+    ext.kotlin_version = '1.1.51'
     ext.support_version = '26.1.0'
     ext.play_services_version = '11.4.0'
     ext.okHttp_version = '3.9.0'
@@ -17,15 +17,9 @@ buildscript {
     }
 }
 
-apply plugin: 'kotlin'
-
 allprojects {
     repositories {
         jcenter()
         google()
     }
-}
-
-sourceSets {
-    main.java.srcDirs += 'src/main/kotlin'
 }

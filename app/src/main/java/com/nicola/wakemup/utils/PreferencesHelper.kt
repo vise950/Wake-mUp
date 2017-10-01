@@ -15,6 +15,7 @@ object PreferencesHelper {
     val KEY_NAV_BAR_COLOR: String = "nav_bar_color"
     val KEY_FIRST_RUN: String = "is_first_run"
     val KEY_SHOW_CASE: String = "show_case"
+    val KEY_MAP_STYLE:String="map_style"
 
     fun setPreferences(context: Context, key: String, value: Any) {
         val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)

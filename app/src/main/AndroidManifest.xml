@@ -11,11 +11,11 @@
 
     <application
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:fullBackupContent="@xml/backup_descriptor">
+        android:theme="@style/AppTheme">
         <activity
             android:name="com.nicola.wakemup.activity.MainActivity"
             android:configChanges="keyboardHidden"
@@ -35,6 +35,9 @@
             android:screenOrientation="sensorPortrait" />
         <activity
             android:name="com.nicola.wakemup.activity.AboutActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".activity.BaseActivity"
             android:screenOrientation="sensorPortrait" />
 
         <meta-data

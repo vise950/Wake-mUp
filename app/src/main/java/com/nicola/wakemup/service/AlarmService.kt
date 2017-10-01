@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
 import android.os.Vibrator
 import com.nicola.wakemup.utils.PreferencesHelper
+import com.nicola.wakemup.utils.error
 
 class AlarmService : Service() {
 
@@ -41,7 +44,14 @@ class AlarmService : Service() {
 
     @Suppress("DEPRECATION")
     private fun startAlarm() {
-        mVibrator.vibrate(longArrayOf(DELAY_OF_VIBRATION, DURATION_OF_VIBRATION), 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            "vibrate O".error(this)
+            mVibrator.vibrate((VibrationEffect.createWaveform(longArrayOf(DURATION_OF_VIBRATION, DELAY_OF_VIBRATION), 0)))
+        } else {
+            mVibrator.vibrate(longArrayOf(DURATION_OF_VIBRATION, DELAY_OF_VIBRATION), 0)
+            "vibrate pre O".error(this)
+        }
+
         if (isAlarmSound) {
             mRingtone?.audioAttributes = mAudioAttr
             mRingtone?.play()
