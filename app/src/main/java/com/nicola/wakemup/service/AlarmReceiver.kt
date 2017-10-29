@@ -25,7 +25,7 @@ class AlarmReceiver : BroadcastReceiver() {
                     Constant.STOP_ALARM -> {
                         if (Utils.isMyServiceRunning(c, AlarmService::class.java)) {
                             c.stopService(Intent(c, AlarmService::class.java))
-                            MainActivity().removeGeofence()
+//                            MainActivity().removeGeofence()
                         }
 
                         val notificationManager = c.getSystemService(NOTIFICATION_SERVICE) as NotificationManager

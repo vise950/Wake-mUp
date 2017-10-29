@@ -19,9 +19,7 @@ import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingRequest
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -53,6 +51,8 @@ class MainActivity : BaseActivity(),
         GoogleApiClient.OnConnectionFailedListener {
 
     private val TAG = "ALARM MAP"
+    private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
+    private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
     private val DEFAULT_ZOOM: Float = 0F
     private val ZOOM: Float = 8F
     private val GEOFENCE_REQ_ID = "Alarm map geofence"
@@ -62,15 +62,27 @@ class MainActivity : BaseActivity(),
     private var mPopupMenu: PopupMenu? = null
 
     private val mFusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private val mSettingsClient by lazy { SettingsClient(this) }
+    private val mLocationRequest by lazy {
+        LocationRequest().apply {
+            interval = UPDATE_INTERVAL_IN_MILLISECONDS
+            fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+    private val mLocationSettingRequest by lazy { LocationSettingsRequest.Builder() }
+    private lateinit var mLocationCallback: LocationCallback
+    private var mLocation: Location? = null
 
     private val mGoogleApiClient by lazy<GoogleApiClient> {
         GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
                 .addApi(Places.GEO_DATA_API)
+                .addApi(LocationServices.API)
                 .build()
     }
-    private var mLocation: Location? = null
+
     private var mMarker: Marker? = null
     private var mMap: GoogleMap? = null
     private var mCircle: Circle? = null
@@ -507,6 +519,15 @@ class MainActivity : BaseActivity(),
 
     @SuppressLint("MissingPermission")
     private fun getDeviceLocation() {
+        mLocationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                super.onLocationResult(locationResult)
+                locationResult?.let {
+                    mLocation = it.lastLocation
+                }
+            }
+        }
+
         mFusedLocationClient?.lastLocation?.addOnCompleteListener {
             it.result?.let {
                 mLocation = it

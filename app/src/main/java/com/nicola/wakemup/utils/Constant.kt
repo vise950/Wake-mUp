@@ -9,5 +9,8 @@ class Constant {
         val NOTIFICATION_ID = 999
         val START_ALARM = "START_ALARM"
         val STOP_ALARM = "STOP_ALARM"
+
+//        val START_ALARM = "com.nicola.wakemup.service.AlarmReceiver.START_ALARM"
+//        val STOP_ALARM = "com.nicola.wakemup.service.AlarmReceiver.STOP_ALARM"
     }
 }

@@ -55,7 +55,7 @@ class AboutActivity : BaseActivity() {
 
     private fun rate() {
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("market://details?id=com.nicola.wakemup")
+        intent.data = Uri.parse("market://details?id=nicola.dev.com.allarmap")
         startActivity(intent)
     }
 
