@@ -31,7 +31,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         stackBuilder.addNextIntent(mNotificationIntent)
         stackBuilder
     }
-    private val mNotificationPendingIntent by lazy { mStackBuilder?.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
+    private val mNotificationPendingIntent by lazy { mStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
     private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private val mNotification by lazy {
         NotificationCompat.Builder(this, CHANNEL_ID)
@@ -59,7 +59,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
     }
 
     private val mIntentStopAlarm by lazy {
-        val stopAlarm = Intent()
+        val stopAlarm = Intent(this, AlarmReceiver::class.java)
         stopAlarm.action = Constant.STOP_ALARM
         PendingIntent.getBroadcast(this, 2, stopAlarm, PendingIntent.FLAG_UPDATE_CURRENT)
     }

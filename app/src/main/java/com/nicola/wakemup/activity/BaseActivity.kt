@@ -5,8 +5,6 @@ import android.os.Bundle
 import com.afollestad.aesthetic.Aesthetic
 import com.afollestad.aesthetic.AestheticActivity
 import com.nicola.wakemup.R
-import com.nicola.wakemup.service.AlarmService
-import com.nicola.wakemup.service.GeofenceTransitionsIntentService
 import com.nicola.wakemup.utils.PreferencesHelper
 import com.nicola.wakemup.utils.Utils
 
@@ -58,6 +56,7 @@ open class BaseActivity : AestheticActivity() {
                 .isDark(isThemeChanged == true)
                 .apply()
     }
+
 
     private fun getColor() {
         val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean

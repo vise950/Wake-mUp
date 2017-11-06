@@ -2,6 +2,7 @@ package com.nicola.wakemup.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Color
@@ -18,7 +19,9 @@ import android.view.View
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -32,12 +35,9 @@ import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
 import com.nicola.wakemup.preferences.Settings
 import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
+import com.nicola.wakemup.utils.*
 import com.nicola.wakemup.utils.Constant.Companion.INVALID_DOUBLE_VALUE
 import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
-import com.nicola.wakemup.utils.PreferencesHelper
-import com.nicola.wakemup.utils.Utils
-import com.nicola.wakemup.utils.error
-import com.nicola.wakemup.utils.hideKeyboard
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
@@ -48,7 +48,9 @@ class MainActivity : BaseActivity(),
         OnMapReadyCallback,
         GoogleMap.OnMapLongClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
+
 
     private val TAG = "ALARM MAP"
     private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
@@ -62,7 +64,6 @@ class MainActivity : BaseActivity(),
     private var mPopupMenu: PopupMenu? = null
 
     private val mFusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
-    private val mSettingsClient by lazy { SettingsClient(this) }
     private val mLocationRequest by lazy {
         LocationRequest().apply {
             interval = UPDATE_INTERVAL_IN_MILLISECONDS
@@ -70,7 +71,11 @@ class MainActivity : BaseActivity(),
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
-    private val mLocationSettingRequest by lazy { LocationSettingsRequest.Builder() }
+    private val mLocationSettingRequest by lazy {
+        LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest)
+                .build()
+    }
     private lateinit var mLocationCallback: LocationCallback
     private var mLocation: Location? = null
 
@@ -95,7 +100,9 @@ class MainActivity : BaseActivity(),
     private val mGeofence by lazy<Geofence> {
         Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
-                .setCircularRegion(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE, mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE, mRadius?.toFloat() ?: INVALID_FLOAT_VALUE)
+                .setCircularRegion(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE,
+                        mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE,
+                        mRadius?.toFloat() ?: INVALID_FLOAT_VALUE)
                 .setExpirationDuration(GEO_DURATION)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build()
@@ -121,6 +128,7 @@ class MainActivity : BaseActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        initLocation()
         initMap()
         initUi()
         PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, true)
@@ -159,10 +167,27 @@ class MainActivity : BaseActivity(),
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            Constant.LOCATION_SETTINGS ->
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        permissionRequest()
+                    }
+                    Activity.RESULT_CANCELED -> {
+                        //todo maybe change text
+                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                                actionMessage = R.string.action_Ok, actionClick = { initLocation() })
+                    }
+                }
+        }
+    }
+
     override fun onMapReady(map: GoogleMap?) {
-        map?.let {
-            this.mMap = it
-            it.setOnMapLongClickListener(this)
+        map?.let { pennywise ->
+            this.mMap = pennywise
+            pennywise.setOnMapLongClickListener(this)
             setMapStyle()
         }
     }
@@ -178,9 +203,10 @@ class MainActivity : BaseActivity(),
         }
     }
 
-    override fun onConnected(bundle: Bundle?) = permissionRequest()
+    override fun onConnected(bundle: Bundle?) = Unit
     override fun onConnectionFailed(result: ConnectionResult) = Unit
     override fun onConnectionSuspended(i: Int) {}
+    override fun onLocationChanged(l: Location?) {}
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.app_menu, menu)
@@ -200,6 +226,29 @@ class MainActivity : BaseActivity(),
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun initLocation() {
+        LocationServices.getSettingsClient(this)
+                .checkLocationSettings(mLocationSettingRequest)
+                .addOnCompleteListener {
+                    try {
+                        it.getResult(ApiException::class.java)
+                    } catch (exception: ApiException) {
+                        when (exception.statusCode) {
+                            LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+                                (exception as ResolvableApiException)
+                                        .startResolutionForResult(this, Constant.LOCATION_SETTINGS)
+                            }
+                            LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                                // goto Location setting
+                                startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                                //todo non so cosa fare nel onPause e on onResume perchè non posso testare questo stato
+                            }
+                        }
+                    }
+                }
+                .addOnSuccessListener { permissionRequest() }
     }
 
     private fun dropdownMenu() {
@@ -272,6 +321,7 @@ class MainActivity : BaseActivity(),
             }
         }
     }
+
 
     private fun initMap() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -508,10 +558,11 @@ class MainActivity : BaseActivity(),
                             getDeviceLocation()
                             if (!BuildConfig.DEBUG) initShowCase()
                         }
-                        it.shouldShowRequestPermissionRationale -> Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                                actionMessage = R.string.action_Ok, actionClick = {
-                            permissionRequest()
-                        })
+                        it.shouldShowRequestPermissionRationale ->
+                            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                                    actionMessage = R.string.action_Ok, actionClick = {
+                                permissionRequest()
+                            })
                         else -> Utils.PermissionHelper.gotoSetting(this)
                     }
                 })
@@ -527,6 +578,7 @@ class MainActivity : BaseActivity(),
                 }
             }
         }
+        //todo
 
         mFusedLocationClient?.lastLocation?.addOnCompleteListener {
             it.result?.let {

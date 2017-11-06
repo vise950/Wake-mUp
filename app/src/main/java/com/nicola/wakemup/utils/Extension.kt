@@ -1,11 +1,13 @@
 package com.nicola.wakemup.utils
 
 import android.app.Activity
+import android.content.Context
+import android.location.LocationManager
 import android.view.inputmethod.InputMethodManager
 import kotlin.reflect.KClass
 
 fun Any?.error(obj: Any? = null) {
-    val logger = when(obj){
+    val logger = when (obj) {
         is KClass<*> -> obj.java.simpleName
         is Class<*> -> obj.simpleName
         is String -> obj
@@ -13,12 +15,12 @@ fun Any?.error(obj: Any? = null) {
         else -> obj.javaClass.simpleName
     }
 
-    val message = when(this){
+    val message = when (this) {
         is String? -> this ?: "NullString"
-        is Int? -> if(this == null) "NullInt" else "Int: $this"
-        is Float? -> if(this == null) "NullFloat" else "Float: $this"
-        is Double? -> if(this == null) "NullDouble" else "Double: $this"
-        else -> if(this == null) "NullValue" else "Value: $this"
+        is Int? -> if (this == null) "NullInt" else "Int: $this"
+        is Float? -> if (this == null) "NullFloat" else "Float: $this"
+        is Double? -> if (this == null) "NullDouble" else "Double: $this"
+        else -> if (this == null) "NullValue" else "Value: $this"
     }
     android.util.Log.e(logger, message)
 }
@@ -29,4 +31,9 @@ fun Activity.hideKeyboard() {
             this.hideSoftInputFromWindow(it, InputMethodManager.HIDE_NOT_ALWAYS)
         }
     }
+}
+
+fun Context.isLocationEnabled(): Boolean {
+    val locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 }

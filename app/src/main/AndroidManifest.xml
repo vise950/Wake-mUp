@@ -53,10 +53,11 @@
 
         <receiver
             android:name="com.nicola.wakemup.service.AlarmReceiver"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="START_ALARM" />
-                <action android:name="STOP_ALARM" />
+                <action android:name="com.nicola.wakemup.intent.action.START_ALARM" />
+                <!--<action android:name="com.nicola.wakemup.intent.action.STOP_ALARM" />-->
             </intent-filter>
         </receiver>
 
