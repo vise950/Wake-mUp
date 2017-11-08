@@ -1,19 +1,18 @@
 package com.nicola.wakemup.utils
 
+import android.Manifest
 import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import com.nicola.wakemup.R
-import com.nicola.wakemup.retrofit.MapsGoogleApiClient
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -36,6 +35,10 @@ class Utils {
         fun getParseColor(color: Int): String = "#${Integer.toHexString(color).toUpperCase()}"
 
         fun milesToMeters(miles: Int): Double = (miles * 1609.344)
+
+        fun isLocationGranted(context: Context): Boolean {
+            return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     object PermissionHelper {
@@ -46,33 +49,6 @@ class Utils {
                             .setData(Uri.fromParts("package", activity.packageName, null))
                     activity.startActivity(intent)
                 })
-    }
-
-    object LocationHelper {
-
-        fun getLocationName(context: Context, latitude: Double, longitude: Double, onSuccess: ((String) -> Unit)? = null) {
-            MapsGoogleApiClient.service.getLocationName(latitude.toString() + "," + longitude.toString())
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe({
-                        if (it.results?.isNotEmpty() == true) {
-                            it.results[0].address_components?.forEach {
-                                if (it.types?.get(0) == "locality" || it.types?.get(0) == "administrative_area_level_3") {
-                                    onSuccess?.invoke(it.long_name.toString())
-                                    return@subscribe
-                                } else {
-                                    onSuccess?.invoke(context.getString(R.string.unknown_place))
-                                }
-                            }
-                        } else {
-                            onSuccess?.invoke(context.getString(R.string.unknown_place))
-                        }
-                    }, {
-                        it.error("get location name error")
-                        it.printStackTrace()
-                        AlertHelper.dialog(context, R.string.dialog_message_network_problem, {})
-                    })
-        }
     }
 
     object AlertHelper {

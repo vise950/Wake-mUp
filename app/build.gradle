@@ -53,12 +53,6 @@ android {
         implementation "com.google.android.gms:play-services-maps:$play_services_version"
         implementation "com.google.android.gms:play-services-places:$play_services_version"
 
-        //Network
-        implementation "com.squareup.okhttp3:okhttp:$okHttp_version"
-        implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-        implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-        implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
-
         //Kotlin
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 

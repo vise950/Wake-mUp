@@ -33,11 +33,13 @@ import com.nicola.wakemup.BuildConfig
 import com.nicola.wakemup.R
 import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
 import com.nicola.wakemup.preferences.Settings
+import com.nicola.wakemup.service.AddressReceiver
 import com.nicola.wakemup.service.AlarmService
+import com.nicola.wakemup.service.FetchAddressIntentService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
 import com.nicola.wakemup.utils.*
-import com.nicola.wakemup.utils.Constant.Companion.INVALID_DOUBLE_VALUE
-import com.nicola.wakemup.utils.Constant.Companion.INVALID_FLOAT_VALUE
+import com.nicola.wakemup.utils.Constants.Companion.INVALID_DOUBLE_VALUE
+import com.nicola.wakemup.utils.Constants.Companion.INVALID_FLOAT_VALUE
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
@@ -76,7 +78,7 @@ class MainActivity : BaseActivity(),
                 .addLocationRequest(mLocationRequest)
                 .build()
     }
-    private lateinit var mLocationCallback: LocationCallback
+    //    private lateinit var mLocationCallback: LocationCallback
     private var mLocation: Location? = null
 
     private val mGoogleApiClient by lazy<GoogleApiClient> {
@@ -118,6 +120,8 @@ class MainActivity : BaseActivity(),
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
     private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
+
+    private val addressReceiver by lazy { AddressReceiver() }
 
     private var isThemeChanged: Boolean? = null
     private var isISU: Boolean? = true     // International System of Unit, true is meters, false is miles
@@ -170,7 +174,7 @@ class MainActivity : BaseActivity(),
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            Constant.LOCATION_SETTINGS ->
+            Constants.LOCATION_SETTINGS ->
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         permissionRequest()
@@ -196,14 +200,25 @@ class MainActivity : BaseActivity(),
         mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         latLng?.let {
             clearMap(it)
-            Utils.LocationHelper.getLocationName(this, it.latitude, it.longitude, {
+
+            Intent(this, FetchAddressIntentService::class.java).apply {
+                putExtra(Constants.RECEIVER, addressReceiver)
+                putExtra(Constants.LOCATION_DATA_EXTRA, it)
+            }.let {
+                startService(it)
+            }
+
+            addressReceiver.onResultReceive = {
                 place_autocomplete_tv.setText(it)
                 place_autocomplete_tv.dismissDropDown()
-            })
+            }
         }
     }
 
-    override fun onConnected(bundle: Bundle?) = Unit
+    override fun onConnected(bundle: Bundle?) {
+        if (Utils.isLocationGranted(this)) getDeviceLocation()
+    }
+
     override fun onConnectionFailed(result: ConnectionResult) = Unit
     override fun onConnectionSuspended(i: Int) {}
     override fun onLocationChanged(l: Location?) {}
@@ -238,7 +253,7 @@ class MainActivity : BaseActivity(),
                         when (exception.statusCode) {
                             LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
                                 (exception as ResolvableApiException)
-                                        .startResolutionForResult(this, Constant.LOCATION_SETTINGS)
+                                        .startResolutionForResult(this, Constants.LOCATION_SETTINGS)
                             }
                             LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
                                 // goto Location setting
@@ -570,15 +585,20 @@ class MainActivity : BaseActivity(),
 
     @SuppressLint("MissingPermission")
     private fun getDeviceLocation() {
-        mLocationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                super.onLocationResult(locationResult)
-                locationResult?.let {
-                    mLocation = it.lastLocation
-                }
-            }
-        }
-        //todo
+
+//        mLocationCallback = object : LocationCallback() {
+//            override fun onLocationResult(locationResult: LocationResult?) {
+//                super.onLocationResult(locationResult)
+//                locationResult?.let {
+//                    it.lastLocation.let {
+//                        mLocation = it
+//                        mMap?.let { setMapUi(it) }
+//                    }
+//                }
+//            }
+//        }
+//
+//        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
 
         mFusedLocationClient?.lastLocation?.addOnCompleteListener {
             it.result?.let {
