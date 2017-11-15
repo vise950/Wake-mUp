@@ -38,26 +38,26 @@ class Settings : BaseActivity() {
 
             PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
 
-            findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { _, _ ->
                 Handler().postDelayed({
                     activity.recreate()
                 }, 300)
                 true
             }
 
-            findPreference(getString(R.string.key_nav_bar_color)).setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_nav_bar_color)).setOnPreferenceChangeListener { _, _ ->
                 Handler().postDelayed({
                     activity.recreate()
                 }, 400)
                 true
             }
 
-            findPreference(getString(R.string.key_primary_color)).setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_primary_color)).setOnPreferenceChangeListener { _, _ ->
                 activity.recreate()
                 true
             }
 
-            findPreference(getString(R.string.key_accent_color)).setOnPreferenceChangeListener { preference, value ->
+            findPreference(getString(R.string.key_accent_color)).setOnPreferenceChangeListener { _, _ ->
                 activity.recreate()
                 true
             }
