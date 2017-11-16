@@ -14,14 +14,11 @@ import com.nicola.wakemup.utils.error
 
 class AlarmService : Service() {
 
-    companion object {
-        private val DELAY_OF_VIBRATION = 1000L
-        private val DURATION_OF_VIBRATION = 1500L
-    }
-
-    private val mVibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
-    private val mRingtone by lazy { RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
-    private val mAudioAttr by lazy { AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build() }
+    private val vibrator by lazy { getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
+    private val vibratePattern by lazy { longArrayOf(0, 1500, 800) }
+    private val amplitudes by lazy { intArrayOf(0, 255, 0) }
+    private val ringtone by lazy { RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) }
+    private val audioAttr by lazy { AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build() }
     private val isAlarmSound by lazy { PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_ALARM_SOUND, true) as Boolean }
 
     override fun onCreate() {
@@ -32,9 +29,9 @@ class AlarmService : Service() {
     }
 
     override fun onDestroy() {
-        mVibrator.cancel()
-        if (mRingtone?.isPlaying == true) {
-            mRingtone?.stop()
+        vibrator.cancel()
+        if (ringtone?.isPlaying == true) {
+            ringtone?.stop()
         }
         PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, false)
         super.onDestroy()
@@ -45,16 +42,14 @@ class AlarmService : Service() {
     @Suppress("DEPRECATION")
     private fun startAlarm() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            "vibrate O".error(this)
-            mVibrator.vibrate((VibrationEffect.createWaveform(longArrayOf(DURATION_OF_VIBRATION, DELAY_OF_VIBRATION), 0)))
+            vibrator.vibrate(VibrationEffect.createWaveform(vibratePattern, amplitudes, 0))
         } else {
-            mVibrator.vibrate(longArrayOf(DURATION_OF_VIBRATION, DELAY_OF_VIBRATION), 0)
-            "vibrate pre O".error(this)
+            vibrator.vibrate(vibratePattern, 0)
         }
 
         if (isAlarmSound) {
-            mRingtone?.audioAttributes = mAudioAttr
-            mRingtone?.play()
+            ringtone?.audioAttributes = audioAttr
+            ringtone?.play()
         }
     }
 }

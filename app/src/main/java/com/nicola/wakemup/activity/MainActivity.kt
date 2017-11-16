@@ -209,8 +209,10 @@ class MainActivity : BaseActivity(),
             }
 
             addressReceiver.onResultReceive = {
-                place_autocomplete_tv.setText(it)
-                place_autocomplete_tv.dismissDropDown()
+                runOnUiThread {
+                    place_autocomplete_tv.setText(it)
+                    place_autocomplete_tv.dismissDropDown()
+                }
             }
         }
     }

@@ -12,9 +12,7 @@ import com.nicola.wakemup.utils.error
 
 class AlarmReceiver : BroadcastReceiver() {
 
-    //fixme notfication action stop
     override fun onReceive(context: Context?, intent: Intent?) {
-        "action ${intent?.action}".error(this)
         context?.let { c ->
             intent?.let {
                 when (it.action) {
