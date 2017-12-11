@@ -53,35 +53,35 @@ class MainActivity : BaseActivity(),
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    companion object {
+        private val TAG = "ALARM MAP"
+        private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
+        private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
+        private val DEFAULT_ZOOM: Float = 0F
+        private val ZOOM: Float = 8F
+        private val GEOFENCE_REQ_ID = "Alarm map geofence"
+        private val GEO_DURATION = 60 * 60 * 1000L
+    }
 
-    private val TAG = "ALARM MAP"
-    private val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 10000
-    private val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = UPDATE_INTERVAL_IN_MILLISECONDS / 2
-    private val DEFAULT_ZOOM: Float = 0F
-    private val ZOOM: Float = 8F
-    private val GEOFENCE_REQ_ID = "Alarm map geofence"
-    private val GEO_DURATION = 60 * 60 * 1000L
+    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
+    private var popupMenu: PopupMenu? = null
 
-    private val mBottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
-    private var mPopupMenu: PopupMenu? = null
-
-    private val mFusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
-    private val mLocationRequest by lazy {
+    private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private val locationRequest by lazy {
         LocationRequest().apply {
             interval = UPDATE_INTERVAL_IN_MILLISECONDS
             fastestInterval = FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
     }
-    private val mLocationSettingRequest by lazy {
+    private val locationSettingRequest by lazy {
         LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest)
+                .addLocationRequest(locationRequest)
                 .build()
     }
-    //    private lateinit var mLocationCallback: LocationCallback
-    private var mLocation: Location? = null
+    private var location: Location? = null
 
-    private val mGoogleApiClient by lazy<GoogleApiClient> {
+    private val googleApiClient by lazy<GoogleApiClient> {
         GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addConnectionCallbacks(this)
@@ -90,36 +90,36 @@ class MainActivity : BaseActivity(),
                 .build()
     }
 
-    private var mMarker: Marker? = null
-    private var mMap: GoogleMap? = null
-    private var mCircle: Circle? = null
-    private val mCircleOptions by lazy {
+    private var marker: Marker? = null
+    private var map: GoogleMap? = null
+    private var circle: Circle? = null
+    private val circleOptions by lazy {
         CircleOptions().strokeWidth(10F)
                 .strokeColor(ContextCompat.getColor(this@MainActivity, R.color.stoke_map))
                 .fillColor(ContextCompat.getColor(this@MainActivity, R.color.fill_map))
     }
-    private var mRadius: Double? = null
-    private val mGeofence by lazy<Geofence> {
+    private var radius: Double? = null
+    private val geofence by lazy<Geofence> {
         Geofence.Builder()
                 .setRequestId(GEOFENCE_REQ_ID)
-                .setCircularRegion(mMarker?.position?.latitude ?: INVALID_DOUBLE_VALUE,
-                        mMarker?.position?.longitude ?: INVALID_DOUBLE_VALUE,
-                        mRadius?.toFloat() ?: INVALID_FLOAT_VALUE)
+                .setCircularRegion(marker?.position?.latitude ?: INVALID_DOUBLE_VALUE,
+                        marker?.position?.longitude ?: INVALID_DOUBLE_VALUE,
+                        radius?.toFloat() ?: INVALID_FLOAT_VALUE)
                 .setExpirationDuration(GEO_DURATION)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build()
     }
-    private val mGeofenceRequest by lazy<GeofencingRequest> {
+    private val geofenceRequest by lazy<GeofencingRequest> {
         GeofencingRequest.Builder()
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                .addGeofence(mGeofence)
+                .addGeofence(geofence)
                 .build()
     }
-    private val mGeoFencePendingIntent by lazy<PendingIntent> {
+    private val geoFencePendingIntent by lazy<PendingIntent> {
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
-    private val mGeofenceClient by lazy { LocationServices.getGeofencingClient(this) }
+    private val geofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private val addressReceiver by lazy { AddressReceiver() }
 
@@ -140,13 +140,13 @@ class MainActivity : BaseActivity(),
 
     override fun onStart() {
         super.onStart()
-        mGoogleApiClient.connect()
+        googleApiClient.connect()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!mGoogleApiClient.isConnected) {
-            mGoogleApiClient.reconnect()
+        if (!googleApiClient.isConnected) {
+            googleApiClient.reconnect()
         }
 
         setViewColor()
@@ -166,8 +166,8 @@ class MainActivity : BaseActivity(),
 
     override fun onStop() {
         super.onStop()
-        if (mGoogleApiClient.isConnected) {
-            mGoogleApiClient.disconnect()
+        if (googleApiClient.isConnected) {
+            googleApiClient.disconnect()
         }
     }
 
@@ -190,14 +190,14 @@ class MainActivity : BaseActivity(),
 
     override fun onMapReady(map: GoogleMap?) {
         map?.let { pennywise ->
-            this.mMap = pennywise
+            this.map = pennywise
             pennywise.setOnMapLongClickListener(this)
             setMapStyle()
         }
     }
 
     override fun onMapLongClick(latLng: LatLng?) {
-        mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         latLng?.let {
             clearMap(it)
 
@@ -235,11 +235,11 @@ class MainActivity : BaseActivity(),
             R.id.maps_style -> dropdownMenu()
             R.id.settings -> {
                 startActivity(Intent(this, Settings::class.java))
-                Handler().postDelayed({ mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED }, 200)
+                Handler().postDelayed({ bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED }, 200)
             }
             R.id.credits -> {
                 startActivity(Intent(this, AboutActivity::class.java))
-                Handler().postDelayed({ mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED }, 200)
+                Handler().postDelayed({ bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED }, 200)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -247,7 +247,7 @@ class MainActivity : BaseActivity(),
 
     private fun initLocation() {
         LocationServices.getSettingsClient(this)
-                .checkLocationSettings(mLocationSettingRequest)
+                .checkLocationSettings(locationSettingRequest)
                 .addOnCompleteListener {
                     try {
                         it.getResult(ApiException::class.java)
@@ -258,9 +258,9 @@ class MainActivity : BaseActivity(),
                                         .startResolutionForResult(this, Constants.LOCATION_SETTINGS)
                             }
                             LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                                //todo snackbar
                                 // goto Location setting
                                 startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                                //todo non so cosa fare nel onPause e on onResume perchè non posso testare questo stato
                             }
                         }
                     }
@@ -269,45 +269,45 @@ class MainActivity : BaseActivity(),
     }
 
     private fun dropdownMenu() {
-        if (mPopupMenu == null) {
-            mPopupMenu = PopupMenu(this, findViewById(R.id.maps_style))
-            mPopupMenu?.menuInflater?.inflate(R.menu.maps_menu, mPopupMenu?.menu)
+        if (popupMenu == null) {
+            popupMenu = PopupMenu(this, findViewById(R.id.maps_style))
+            popupMenu?.menuInflater?.inflate(R.menu.maps_menu, popupMenu?.menu)
         }
 
         //fixme its very ugly
         when (mapStyle) {
-            0 -> mPopupMenu?.menu?.findItem(R.id.standard)?.isChecked = true
-            1 -> mPopupMenu?.menu?.findItem(R.id.standard_dark)?.isChecked = true
-            2 -> mPopupMenu?.menu?.findItem(R.id.satellite)?.isChecked = true
+            0 -> popupMenu?.menu?.findItem(R.id.standard)?.isChecked = true
+            1 -> popupMenu?.menu?.findItem(R.id.standard_dark)?.isChecked = true
+            2 -> popupMenu?.menu?.findItem(R.id.satellite)?.isChecked = true
         }
-        mPopupMenu?.show()
-        mPopupMenu?.setOnMenuItemClickListener { item ->
+        popupMenu?.show()
+        popupMenu?.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.standard -> {
                     if (!item.isChecked) {
                         item.isChecked = true
-                        mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                        mMap?.setMapStyle(null)
+                        map?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        map?.setMapStyle(null)
                         mapStyle = 0
                     }
                 }
                 R.id.standard_dark -> {
                     if (!item.isChecked) {
                         item.isChecked = true
-                        mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                        mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
+                        map?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                        map?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
                         mapStyle = 1
                     }
                 }
                 R.id.satellite -> {
                     if (!item.isChecked) {
                         item.isChecked = true
-                        mMap?.mapType = GoogleMap.MAP_TYPE_HYBRID
+                        map?.mapType = GoogleMap.MAP_TYPE_HYBRID
                         mapStyle = 2
                     }
                 }
             }
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             true
         }
     }
@@ -324,24 +324,24 @@ class MainActivity : BaseActivity(),
         when (mapStyle) {
         // map style normal
             0 -> {
-                mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                mMap?.setMapStyle(null)
+                map?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                map?.setMapStyle(null)
             }
         // map style dark
             1 -> {
-                mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
-                mMap?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
+                map?.mapType = GoogleMap.MAP_TYPE_NORMAL
+                map?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
             }
         // map style hybrid
             2 -> {
-                mMap?.mapType = GoogleMap.MAP_TYPE_HYBRID
+                map?.mapType = GoogleMap.MAP_TYPE_HYBRID
             }
         }
     }
 
 
     private fun initMap() {
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
@@ -355,11 +355,11 @@ class MainActivity : BaseActivity(),
         }
 
         map.setOnMyLocationButtonClickListener {
-            mLocation?.let { map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude))) }
+            location?.let { map.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude))) }
             true
         }
 
-        mLocation?.let {
+        location?.let {
             if (isAppRunning == false) {
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
                 map.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
@@ -371,7 +371,7 @@ class MainActivity : BaseActivity(),
     private fun initShowCase() {
         if (PreferencesHelper.isShowCase(this) == true) {
             TapTargetSequence(this)
-                    .targets(TapTarget.forView(map.view, getString(R.string.target_map))
+                    .targets(TapTarget.forView(google_map.view, getString(R.string.target_map))
                             .outerCircleColor(R.color.blue_grey_500)
                             .transparentTarget(true)
                             .textColor(R.color.color_primary_text_inverse)
@@ -400,8 +400,8 @@ class MainActivity : BaseActivity(),
 
                         override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {
                             when (lastTarget.id()) {
-                                1 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                                2 -> mBottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                                1 -> bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                2 -> bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                             }
                         }
                     })
@@ -418,7 +418,7 @@ class MainActivity : BaseActivity(),
         view.setBackgroundColor(ContextCompat.getColor(this@MainActivity, if (isThemeChanged == true) R.color.dark else R.color.white))
 
         val white = -3 //my white is -3 but Color.WHITE is -1
-        mBottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+        bottomSheetBehavior?.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
@@ -466,25 +466,25 @@ class MainActivity : BaseActivity(),
             override fun onStartTrackingTouch(seekBar: DiscreteSeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: DiscreteSeekBar?) = Unit
             override fun onProgressChanged(seekBar: DiscreteSeekBar?, progress: Int, fromUser: Boolean) {
-                mMarker?.let {
-                    mCircle?.remove()
+                marker?.let {
+                    circle?.remove()
                     if (isISU == false) {
-                        mCircleOptions?.radius(Utils.milesToMeters(progress))
+                        circleOptions?.radius(Utils.milesToMeters(progress))
                     } else {
-                        mCircleOptions?.radius(progress * 1000.0)
+                        circleOptions?.radius(progress * 1000.0)
                     }
-                    mRadius = mCircleOptions?.radius
-                    mCircle = mMap?.addCircle(mCircleOptions)
+                    radius = circleOptions?.radius
+                    circle = map?.addCircle(circleOptions)
                 }
             }
         })
 
         place_autocomplete_tv?.threshold = 2
-        val adapter = PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1, mGoogleApiClient)
+        val adapter = PlaceAutocompleteAdapter(this, android.R.layout.simple_list_item_1, googleApiClient)
         place_autocomplete_tv?.setAdapter(adapter)
         place_autocomplete_tv.setOnItemClickListener { _, _, i, _ ->
             val item = adapter.getItem(i)
-            Places.GeoDataApi.getPlaceById(mGoogleApiClient, item?.placeId?.toString())
+            Places.GeoDataApi.getPlaceById(googleApiClient, item?.placeId?.toString())
                     .setResultCallback {
                         if (it.status?.isSuccess == true) {
                             clearMap(it.get(0).latLng)
@@ -496,11 +496,11 @@ class MainActivity : BaseActivity(),
         }
 
         place_autocomplete_tv.setOnClickListener {
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             if (place_autocomplete_tv?.text?.isNotEmpty() == true) {
                 place_autocomplete_tv.text = null
-                mMarker?.remove()
-                mCircle?.remove()
+                marker?.remove()
+                circle?.remove()
                 radius_seekbar.progress = radius_seekbar.min
                 radius_seekbar.isEnabled = false
             }
@@ -511,12 +511,12 @@ class MainActivity : BaseActivity(),
         }
 
         fab.setOnClickListener {
-            mBottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
             this.hideKeyboard()
 
-            mMarker?.let {
+            marker?.let {
                 if (place_autocomplete_tv.text.isNotEmpty() && place_autocomplete_tv.text.toString() != getString(R.string.unknown_place)) {
-                    mLocation?.let {
+                    location?.let {
                         if (PreferencesHelper.isAnotherGeofenceActive(this) == true) {
                             Handler().postDelayed({
                                 Utils.AlertHelper.dialog(this, R.string.dialog_title_another_service, R.string.dialog_message_another_service, {
@@ -536,22 +536,22 @@ class MainActivity : BaseActivity(),
 
     private fun clearMap(latLng: LatLng) {
         this.hideKeyboard()
-        mRadius = 0.0
+        radius = 0.0
         radius_seekbar.progress = radius_seekbar.min
         radius_seekbar.isEnabled = true
-        mMarker?.remove()
-        mCircle?.remove()
-        mMarker = mMap?.addMarker(MarkerOptions().position(LatLng(latLng.latitude, latLng.longitude)))
-        mCircleOptions?.center(mMarker?.position)
-        mCircleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
-        mRadius = mCircleOptions?.radius
-        mCircle = mMap?.addCircle(mCircleOptions)
-        mMap?.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+        marker?.remove()
+        circle?.remove()
+        marker = map?.addMarker(MarkerOptions().position(LatLng(latLng.latitude, latLng.longitude)))
+        circleOptions?.center(marker?.position)
+        circleOptions?.radius(radius_seekbar.min * 1000.0) //min radius
+        radius = circleOptions?.radius
+        circle = map?.addCircle(circleOptions)
+        map?.animateCamera(CameraUpdateFactory.newLatLng(latLng))
     }
 
     @SuppressLint("MissingPermission")
     private fun addGeofence() {
-        mGeofenceClient.addGeofences(mGeofenceRequest, mGeoFencePendingIntent)
+        geofenceClient.addGeofences(geofenceRequest, geoFencePendingIntent)
                 .addOnSuccessListener {
                     Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start)
                     PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
@@ -561,7 +561,7 @@ class MainActivity : BaseActivity(),
     }
 
     fun removeGeofence(callback: (() -> Unit)? = null) {
-        mGeofenceClient.removeGeofences(mGeoFencePendingIntent)
+        geofenceClient.removeGeofences(geoFencePendingIntent)
                 .addOnSuccessListener { callback?.invoke() }
                 .addOnFailureListener { it.error(TAG) }
     }
@@ -587,25 +587,10 @@ class MainActivity : BaseActivity(),
 
     @SuppressLint("MissingPermission")
     private fun getDeviceLocation() {
-
-//        mLocationCallback = object : LocationCallback() {
-//            override fun onLocationResult(locationResult: LocationResult?) {
-//                super.onLocationResult(locationResult)
-//                locationResult?.let {
-//                    it.lastLocation.let {
-//                        mLocation = it
-//                        mMap?.let { setMapUi(it) }
-//                    }
-//                }
-//            }
-//        }
-//
-//        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
-
-        mFusedLocationClient?.lastLocation?.addOnCompleteListener {
+        fusedLocationClient?.lastLocation?.addOnCompleteListener {
             it.result?.let {
-                mLocation = it
-                mMap?.let { setMapUi(it) }
+                location = it
+                map?.let { setMapUi(it) }
             }
         }
     }
