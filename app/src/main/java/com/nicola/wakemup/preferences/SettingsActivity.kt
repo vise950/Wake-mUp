@@ -8,7 +8,7 @@ import com.nicola.wakemup.R
 import com.nicola.wakemup.activity.BaseActivity
 import com.nicola.wakemup.utils.PreferencesHelper
 
-class Settings : BaseActivity() {
+class SettingsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

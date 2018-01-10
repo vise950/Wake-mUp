@@ -30,7 +30,7 @@
         </activity>
 
         <activity
-            android:name="com.nicola.wakemup.preferences.Settings"
+            android:name="com.nicola.wakemup.preferences.SettingsActivity"
             android:screenOrientation="sensorPortrait" />
         <activity
             android:name="com.nicola.wakemup.activity.AboutActivity"

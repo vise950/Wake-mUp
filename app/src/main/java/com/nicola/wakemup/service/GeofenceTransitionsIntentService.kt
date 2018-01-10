@@ -17,23 +17,23 @@ import com.nicola.wakemup.utils.Utils
 import com.nicola.wakemup.utils.error
 
 
-@Suppress("DEPRECATION")
 class GeofenceTransitionsIntentService : IntentService(TAG) {
 
     companion object {
         private val TAG = "GeofenceTransitionsIntentService"
+        private val CHANNEL_ID = "wakemup_notification"
     }
 
-    private val mNotificationIntent by lazy { Intent(this, MainActivity::class.java) }
-    private val mStackBuilder by lazy {
+    private val notificationIntent by lazy { Intent(this, MainActivity::class.java) }
+    private val stackBuilder by lazy {
         val stackBuilder = TaskStackBuilder.create(this)
         stackBuilder.addParentStack(MainActivity::class.java)
-        stackBuilder.addNextIntent(mNotificationIntent)
+        stackBuilder.addNextIntent(notificationIntent)
         stackBuilder
     }
-    private val mNotificationPendingIntent by lazy { mStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
-    private val mNotificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
-    private val mNotification by lazy {
+    private val notificationPendingIntent by lazy { stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT) }
+    private val notificationManager by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
+    private val notification by lazy {
         NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_alarm)
                 .setContentTitle(getText(R.string.notification_title))
@@ -44,21 +44,19 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                 .setColor(Color.RED)
                 .setColorized(true)
                 .setVibrate(longArrayOf(0))
-                .setPriority(Notification.PRIORITY_MAX)
-                .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), mIntentStopAlarm)
-                .setContentIntent(mNotificationPendingIntent)
+                .addAction(R.drawable.ic_alarm_off, getText(R.string.action_dismiss), intentStopAlarm)
+                .setContentIntent(notificationPendingIntent)
     }
-    private val CHANNEL_ID = "wakemup_notification"
-    private lateinit var mChannel: NotificationChannel
 
+    private lateinit var channel: NotificationChannel
 
-    private val mIntentStartAlarm by lazy {
+    private val intentStartAlarm by lazy {
         val startAlarm = Intent()
         startAlarm.action = Constants.START_ALARM
         startAlarm
     }
 
-    private val mIntentStopAlarm by lazy {
+    private val intentStopAlarm by lazy {
         val stopAlarm = Intent(this, AlarmReceiver::class.java)
         stopAlarm.action = Constants.STOP_ALARM
         PendingIntent.getBroadcast(this, 2, stopAlarm, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -69,8 +67,8 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         GeofencingEvent.fromIntent(intent)?.let {
             if (!it.hasError()) {
                 if (it.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                    mNotificationManager.notify(Constants.NOTIFICATION_ID, mNotification.build())
-                    sendBroadcastCompat(this, mIntentStartAlarm)
+                    notificationManager.notify(Constants.NOTIFICATION_ID, notification.build())
+                    sendBroadcastCompat(this, intentStartAlarm)
                 }
             } else {
                 getErrorString(it.errorCode).error()
@@ -103,10 +101,10 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mChannel = NotificationChannel(CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH)
-            mChannel.setBypassDnd(true)
-            mChannel.enableVibration(false)
-            mNotificationManager.createNotificationChannel(mChannel)
+            channel = NotificationChannel(CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH)
+            channel.setBypassDnd(true)
+            channel.enableVibration(false)
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }

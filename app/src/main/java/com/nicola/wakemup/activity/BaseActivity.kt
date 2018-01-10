@@ -11,8 +11,8 @@ import com.nicola.wakemup.utils.Utils
 open class BaseActivity : AestheticActivity() {
 
     companion object {
-        var mPrimaryColor: String? = null
-        var mAccentColor: String? = null
+        var primaryColor: String? = null
+        var accentColor: String? = null
         var isThemeChanged: Boolean? = null
         var isNavBarColor: Boolean? = null
     }
@@ -34,11 +34,11 @@ open class BaseActivity : AestheticActivity() {
                 } else {
                     R.style.AppTheme
                 })
-                .colorPrimary(Color.parseColor(mPrimaryColor))
-                .colorAccent(Color.parseColor(mAccentColor))
+                .colorPrimary(Color.parseColor(primaryColor))
+                .colorAccent(Color.parseColor(accentColor))
                 .colorStatusBarAuto()
                 .colorNavigationBar(if (isNavBarColor == true) {
-                    Color.parseColor(mPrimaryColor)
+                    Color.parseColor(primaryColor)
                 } else {
                     Color.BLACK
                 })
@@ -61,11 +61,11 @@ open class BaseActivity : AestheticActivity() {
     private fun getColor() {
         val isFirstRun = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_FIRST_RUN, true) as Boolean
         if (isFirstRun) {
-            mPrimaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))
-            mAccentColor = Utils.getParseColor(Color.parseColor(getString(R.color.blue_500)))
+            primaryColor = Utils.getParseColor(Color.parseColor(getString(R.color.red_500)))
+            accentColor = Utils.getParseColor(Color.parseColor(getString(R.color.blue_500)))
         } else {
-            mPrimaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
-            mAccentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
+            primaryColor = Utils.getParseColor(this, PreferencesHelper.KEY_PRIMARY_COLOR)
+            accentColor = Utils.getParseColor(this, PreferencesHelper.KEY_ACCENT_COLOR)
         }
     }
 }
