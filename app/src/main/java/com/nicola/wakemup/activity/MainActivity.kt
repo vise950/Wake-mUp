@@ -205,8 +205,8 @@ class MainActivity : BaseActivity(),
                 putExtra(Constants.RECEIVER, addressReceiver)
                 putExtra(Constants.LOCATION_DATA_EXTRA, it)
             }.let {
-                startService(it)
-            }
+                        startService(it)
+                    }
 
             addressReceiver.onResultReceive = {
                 runOnUiThread {
@@ -341,8 +341,7 @@ class MainActivity : BaseActivity(),
 
 
     private fun initMap() {
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        (supportFragmentManager.findFragmentById(R.id.google_map) as SupportMapFragment).getMapAsync(this)
     }
 
     @SuppressLint("MissingPermission")
