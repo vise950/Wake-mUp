@@ -3,7 +3,7 @@ package com.nicola.wakemup.activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.ShareCompat
+import androidx.core.app.ShareCompat
 import android.view.MenuItem
 import com.nicola.wakemup.R
 import kotlinx.android.synthetic.main.activity_about.*
