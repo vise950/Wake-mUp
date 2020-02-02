@@ -5,17 +5,14 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.snackbar.Snackbar
-import androidx.core.content.ContextCompat
-import androidx.appcompat.widget.PopupMenu
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetSequence
 import com.google.android.gms.common.ConnectionResult
@@ -29,6 +26,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.snackbar.Snackbar
 import com.nicola.wakemup.BuildConfig
 import com.nicola.wakemup.R
 import com.nicola.wakemup.adapter.PlaceAutocompleteAdapter
@@ -38,9 +37,6 @@ import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.FetchAddressIntentService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
 import com.nicola.wakemup.utils.*
-import com.nicola.wakemup.utils.Constants.Companion.INVALID_DOUBLE_VALUE
-import com.nicola.wakemup.utils.Constants.Companion.INVALID_FLOAT_VALUE
-import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_details.*
 import kotlinx.android.synthetic.main.map.*
@@ -169,20 +165,14 @@ class MainActivity : BaseActivity(),
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            Constants.LOCATION_SETTINGS ->
-                when (resultCode) {
-                    Activity.RESULT_OK -> {
-                        permissionRequest()
-                    }
-                    Activity.RESULT_CANCELED -> {
-                        //todo maybe change text
-                        Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                                actionMessage = R.string.action_Ok, actionClick = { initLocation() })
-                    }
-                }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode== LOCATION_PERMISSION){
+            if (permissions.isNotEmpty() && isPermissionGranted(permissions.first()))
+                getDeviceLocation()
+            else
+                Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                        actionMessage = R.string.action_Ok, actionClick = { permissionRequest() })
         }
     }
 
@@ -200,11 +190,11 @@ class MainActivity : BaseActivity(),
             clearMap(it)
 
             Intent(this, FetchAddressIntentService::class.java).apply {
-                putExtra(Constants.RECEIVER, addressReceiver)
-                putExtra(Constants.LOCATION_DATA_EXTRA, it)
+                putExtra(RECEIVER, addressReceiver)
+                putExtra(LOCATION_DATA_EXTRA, it)
             }.let {
-                        startService(it)
-                    }
+                startService(it)
+            }
 
             addressReceiver.onResultReceive = {
                 runOnUiThread {
@@ -253,7 +243,7 @@ class MainActivity : BaseActivity(),
                         when (exception.statusCode) {
                             LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
                                 (exception as ResolvableApiException)
-                                        .startResolutionForResult(this, Constants.LOCATION_SETTINGS)
+                                        .startResolutionForResult(this, LOCATION_SETTINGS)
                             }
                             LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
                                 //todo snackbar
@@ -313,17 +303,17 @@ class MainActivity : BaseActivity(),
     private fun setMapStyle() {
         mapStyle = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_MAP_STYLE, -1) as Int
         when (mapStyle) {
-        // map style normal
+            // map style normal
             0 -> {
                 map?.mapType = GoogleMap.MAP_TYPE_NORMAL
                 map?.setMapStyle(null)
             }
-        // map style dark
+            // map style dark
             1 -> {
                 map?.mapType = GoogleMap.MAP_TYPE_NORMAL
                 map?.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.maps_dark_style))
             }
-        // map style hybrid
+            // map style hybrid
             2 -> {
                 map?.mapType = GoogleMap.MAP_TYPE_HYBRID
             }
@@ -422,7 +412,7 @@ class MainActivity : BaseActivity(),
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         place_autocomplete_tv?.apply {
-//                            setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
+                            //                            setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
 //                            setTextColor(ContextCompat.getColor(this@MainActivity,
 //                                    if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
 //                            setHintTextColor(ContextCompat.getColor(this@MainActivity,
@@ -434,7 +424,7 @@ class MainActivity : BaseActivity(),
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) = if (slideOffset > 0) {
                 place_autocomplete_tv?.apply {
-//                    setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
+                    //                    setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
 //                    setTextColor(ContextCompat.getColor(this@MainActivity,
 //                            if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
 //                    setHintTextColor(ContextCompat.getColor(this@MainActivity,
@@ -556,23 +546,14 @@ class MainActivity : BaseActivity(),
                 .addOnFailureListener { it.error(TAG) }
     }
 
+    @SuppressLint("NewApi")
     private fun permissionRequest() {
-        RxPermissions(this)
-                .requestEach(Manifest.permission.ACCESS_FINE_LOCATION)
-                .subscribe({
-                    when {
-                        it.granted -> {
-                            getDeviceLocation()
-                            if (!BuildConfig.DEBUG) initShowCase()
-                        }
-                        it.shouldShowRequestPermissionRationale ->
-                            Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                                    actionMessage = R.string.action_Ok, actionClick = {
-                                permissionRequest()
-                            })
-                        else -> Utils.PermissionHelper.gotoSetting(this)
-                    }
-                })
+        if (isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            getDeviceLocation()
+            if (!BuildConfig.DEBUG) initShowCase()
+        } else {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION)
+        }
     }
 
     @SuppressLint("MissingPermission")

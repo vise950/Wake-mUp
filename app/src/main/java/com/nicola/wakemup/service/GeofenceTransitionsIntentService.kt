@@ -12,9 +12,7 @@ import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.nicola.wakemup.R
 import com.nicola.wakemup.activity.MainActivity
-import com.nicola.wakemup.utils.Constants
-import com.nicola.wakemup.utils.Utils
-import com.nicola.wakemup.utils.error
+import com.nicola.wakemup.utils.*
 
 
 class GeofenceTransitionsIntentService : IntentService(TAG) {
@@ -52,13 +50,13 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
 
     private val intentStartAlarm by lazy {
         val startAlarm = Intent()
-        startAlarm.action = Constants.START_ALARM
+        startAlarm.action = START_ALARM
         startAlarm
     }
 
     private val intentStopAlarm by lazy {
         val stopAlarm = Intent(this, AlarmReceiver::class.java)
-        stopAlarm.action = Constants.STOP_ALARM
+        stopAlarm.action = STOP_ALARM
         PendingIntent.getBroadcast(this, 2, stopAlarm, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
@@ -67,7 +65,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
         GeofencingEvent.fromIntent(intent)?.let {
             if (!it.hasError()) {
                 if (it.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                    notificationManager.notify(Constants.NOTIFICATION_ID, notification.build())
+                    notificationManager.notify(NOTIFICATION_ID, notification.build())
                     sendBroadcastCompat(this, intentStartAlarm)
                 }
             } else {

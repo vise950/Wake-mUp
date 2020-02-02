@@ -8,8 +8,7 @@ import android.os.Bundle
 import android.os.ResultReceiver
 import com.google.android.gms.maps.model.LatLng
 import com.nicola.wakemup.R
-import com.nicola.wakemup.utils.Constants
-import com.nicola.wakemup.utils.error
+import com.nicola.wakemup.utils.*
 import java.io.IOException
 import java.util.*
 
@@ -25,12 +24,12 @@ class FetchAddressIntentService : IntentService(TAG) {
     private var addresses: List<Address>? = null
 
     override fun onHandleIntent(intent: Intent?) {
-        receiver = intent?.getParcelableExtra(Constants.RECEIVER)
-        location = intent?.getParcelableExtra(Constants.LOCATION_DATA_EXTRA)
+        receiver = intent?.getParcelableExtra(RECEIVER)
+        location = intent?.getParcelableExtra(LOCATION_DATA_EXTRA)
 
         try {
-            addresses = geocoder.getFromLocation(location?.latitude ?: Constants.INVALID_DOUBLE_VALUE,
-                    location?.longitude ?: Constants.INVALID_DOUBLE_VALUE, 1)
+            addresses = geocoder.getFromLocation(location?.latitude ?: INVALID_DOUBLE_VALUE,
+                    location?.longitude ?: INVALID_DOUBLE_VALUE, 1)
         } catch (ioException: IOException) {
             ioException.error()
         } catch (illegalArgumentException: IllegalArgumentException) {
@@ -45,6 +44,6 @@ class FetchAddressIntentService : IntentService(TAG) {
     }
 
     private fun deliverResultToReceiver(message: String) {
-        receiver?.send(Constants.FETCH_ADDRESS, Bundle().apply { putString(Constants.RESULT_DATA_KEY, message) })
+        receiver?.send(FETCH_ADDRESS, Bundle().apply { putString(RESULT_DATA_KEY, message) })
     }
 }
