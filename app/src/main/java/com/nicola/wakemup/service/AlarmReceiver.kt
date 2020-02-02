@@ -27,7 +27,7 @@ class AlarmReceiver : BroadcastReceiver() {
                         notificationManager.cancel(NOTIFICATION_ID)
                     }
                     else -> {
-                        "no action".error("ALARM RECEIVER")
+                        "no action".log("ALARM RECEIVER")
                     }
                 }
             }

@@ -10,7 +10,6 @@ import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
 import com.nicola.wakemup.utils.PreferencesHelper
-import com.nicola.wakemup.utils.error
 
 class AlarmService : Service() {
 

@@ -11,7 +11,7 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.nicola.wakemup.R
-import com.nicola.wakemup.activity.MainActivity
+import com.nicola.wakemup.ui.activity.MainActivity
 import com.nicola.wakemup.utils.*
 
 
@@ -69,7 +69,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                     sendBroadcastCompat(this, intentStartAlarm)
                 }
             } else {
-                getErrorString(it.errorCode).error()
+                getErrorString(it.errorCode).log()
             }
         }
     }

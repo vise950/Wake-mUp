@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.preference.PreferenceFragment
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import com.nicola.wakemup.R
-import com.nicola.wakemup.activity.BaseActivity
 import com.nicola.wakemup.utils.PreferencesHelper
 
-class SettingsActivity : BaseActivity() {
+class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

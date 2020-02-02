@@ -18,7 +18,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.nicola.wakemup.activity.MainActivity"
+            android:name="com.nicola.wakemup.ui.activity.MainActivity"
             android:configChanges="keyboardHidden"
             android:launchMode="singleTask"
             android:screenOrientation="sensorPortrait"
@@ -35,10 +35,10 @@
             android:name="com.nicola.wakemup.preferences.SettingsActivity"
             android:screenOrientation="sensorPortrait" />
         <activity
-            android:name="com.nicola.wakemup.activity.AboutActivity"
+            android:name="com.nicola.wakemup.ui.activity.AboutActivity"
             android:screenOrientation="sensorPortrait" />
         <activity
-            android:name=".activity.BaseActivity"
+            android:name="com.nicola.wakemup.ui.activity.BaseActivity"
             android:screenOrientation="sensorPortrait" />
 
 

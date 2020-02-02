@@ -8,7 +8,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import kotlin.reflect.KClass
 
-fun Any?.error(obj: Any? = null) {
+fun Any?.log(obj: Any? = null) {
     val logger = when (obj) {
         is KClass<*> -> obj.java.simpleName
         is Class<*> -> obj.simpleName

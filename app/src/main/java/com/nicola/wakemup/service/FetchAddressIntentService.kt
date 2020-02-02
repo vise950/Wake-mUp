@@ -31,9 +31,9 @@ class FetchAddressIntentService : IntentService(TAG) {
             addresses = geocoder.getFromLocation(location?.latitude ?: INVALID_DOUBLE_VALUE,
                     location?.longitude ?: INVALID_DOUBLE_VALUE, 1)
         } catch (ioException: IOException) {
-            ioException.error()
+            ioException.log()
         } catch (illegalArgumentException: IllegalArgumentException) {
-            illegalArgumentException.error()
+            illegalArgumentException.log()
         }
 
         if (addresses?.isNotEmpty() == true) {
