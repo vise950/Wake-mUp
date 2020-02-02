@@ -149,8 +149,6 @@ class MainActivity : BaseActivity(),
             googleApiClient.reconnect()
         }
 
-        setViewColor()
-
         isISU = PreferencesHelper.isISU(this)
         radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
 
@@ -312,13 +310,6 @@ class MainActivity : BaseActivity(),
         }
     }
 
-    private fun setViewColor() {
-        radius_seekbar?.apply {
-            setThumbColor(Color.parseColor(BaseActivity.accentColor), Color.parseColor(BaseActivity.accentColor))
-            setScrubberColor(Color.parseColor(BaseActivity.accentColor))
-        }
-    }
-
     private fun setMapStyle() {
         mapStyle = PreferencesHelper.getPreferences(this, PreferencesHelper.KEY_MAP_STYLE, -1) as Int
         when (mapStyle) {
@@ -431,11 +422,11 @@ class MainActivity : BaseActivity(),
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         place_autocomplete_tv?.apply {
-                            setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
-                            setTextColor(ContextCompat.getColor(this@MainActivity,
-                                    if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
-                            setHintTextColor(ContextCompat.getColor(this@MainActivity,
-                                    if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+//                            setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
+//                            setTextColor(ContextCompat.getColor(this@MainActivity,
+//                                    if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+//                            setHintTextColor(ContextCompat.getColor(this@MainActivity,
+//                                    if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
                         }
                     }
                 }
@@ -443,11 +434,11 @@ class MainActivity : BaseActivity(),
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) = if (slideOffset > 0) {
                 place_autocomplete_tv?.apply {
-                    setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
-                    setTextColor(ContextCompat.getColor(this@MainActivity,
-                            if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
-                    setHintTextColor(ContextCompat.getColor(this@MainActivity,
-                            if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+//                    setBackgroundColor(Color.parseColor(BaseActivity.primaryColor))
+//                    setTextColor(ContextCompat.getColor(this@MainActivity,
+//                            if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
+//                    setHintTextColor(ContextCompat.getColor(this@MainActivity,
+//                            if (Color.parseColor(BaseActivity.primaryColor) == white) R.color.color_primary_text else R.color.color_primary_text_inverse))
                 }
                 // wtf android
                 val a = 0
