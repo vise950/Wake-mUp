@@ -19,8 +19,8 @@ import com.nicola.wakemup.utils.log
 class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
     companion object {
-        private val DEFAULT_ZOOM: Float = 0F
-        private val ZOOM: Float = 8F
+        private const val DEFAULT_ZOOM: Float = 0F
+        private const val ZOOM: Float = 8F
     }
 
     private var map: GoogleMap? = null
@@ -39,8 +39,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickList
         super.onViewCreated(view, savedInstanceState)
 
         locationUpdated = {
-            "location updated".log()
-            "lat: ${it.latitude}, lng: ${it.longitude}".log()
+            "location -- lat: ${it.latitude}, lng: ${it.longitude}".log()
             location = it
             updateMapUi()
         }
@@ -81,19 +80,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickList
             uiSettings.isMyLocationButtonEnabled = true
             uiSettings.isRotateGesturesEnabled = true
             uiSettings.isMapToolbarEnabled = false
+
+            setOnMyLocationButtonClickListener {
+                //fixme camera zoom animation
+                location?.let { moveMapCamera(it) }
+                true
+            }
         }
 
-        map?.setOnMyLocationButtonClickListener {
-            location?.let { map?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude))) }
-            true
-        }
+        location?.let { moveMapCamera(it) }
+    }
 
-        location?.let {
-            //            if (isAppRunning == false) {
-            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), DEFAULT_ZOOM))
-            map?.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
-//                isAppRunning = true
-//        }
-        }
+    private fun moveMapCamera(location: Location) {
+        map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), DEFAULT_ZOOM))
+        map?.animateCamera(CameraUpdateFactory.zoomTo(ZOOM), 2000, null)
     }
 }

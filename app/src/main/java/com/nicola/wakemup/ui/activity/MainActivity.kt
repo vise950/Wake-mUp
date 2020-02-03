@@ -10,6 +10,7 @@ import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.ApiException
@@ -24,16 +25,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.nicola.wakemup.R
 import com.nicola.wakemup.preferences.SettingsActivity
 import com.nicola.wakemup.service.AddressReceiver
-import com.nicola.wakemup.service.AlarmService
 import com.nicola.wakemup.service.GeofenceTransitionsIntentService
 import com.nicola.wakemup.ui.fragment.MapFragment
 import com.nicola.wakemup.utils.*
 import kotlinx.android.synthetic.main.bottom_details.*
 
-class MainActivity : AppCompatActivity(),
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+class MainActivity : AppCompatActivity(){
 
     companion object {
         private val TAG = "ALARM MAP"
@@ -44,9 +41,12 @@ class MainActivity : AppCompatActivity(),
         private val GEO_DURATION = 60 * 60 * 1000L
     }
 
-    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
-
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+
+
+    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
+
+    private val bottomSheetBehavior by lazy { BottomSheetBehavior.from(bottom_sheet) }
     private val locationRequest by lazy {
         LocationRequest().apply {
             interval = UPDATE_INTERVAL_IN_MILLISECONDS
@@ -61,14 +61,14 @@ class MainActivity : AppCompatActivity(),
     }
     private var location: Location? = null
 
-    private val googleApiClient by lazy<GoogleApiClient> {
-        GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addConnectionCallbacks(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(LocationServices.API)
-                .build()
-    }
+//    private val googleApiClient by lazy<GoogleApiClient> {
+//        GoogleApiClient.Builder(this)
+//                .enableAutoManage(this, this)
+//                .addConnectionCallbacks(this)
+//                .addApi(Places.GEO_DATA_API)
+//                .addApi(LocationServices.API)
+//                .build()
+//    }
 
     private var marker: Marker? = null
     private var circle: Circle? = null
@@ -98,7 +98,6 @@ class MainActivity : AppCompatActivity(),
         val intent = Intent(this, GeofenceTransitionsIntentService::class.java)
         PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
-    private val geofenceClient by lazy { LocationServices.getGeofencingClient(this) }
 
     private val addressReceiver by lazy { AddressReceiver() }
 
@@ -108,7 +107,9 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initLocation()
+
+        requestLocationPermission()
+
 //        initUi()
 
         supportFragmentManager.beginTransaction()
@@ -117,14 +118,14 @@ class MainActivity : AppCompatActivity(),
 
     override fun onStart() {
         super.onStart()
-        googleApiClient.connect()
+//        googleApiClient.connect()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!googleApiClient.isConnected) {
-            googleApiClient.reconnect()
-        }
+//        if (!googleApiClient.isConnected) {
+//            googleApiClient.reconnect()
+//        }
 //
 //        isISU = PreferencesHelper.isISU(this)
 //        radius_txt.text = String.format(resources.getString(R.string.text_radius), PreferencesHelper.getDefaultPreferences(this, PreferencesHelper.KEY_DISTANCE, "km"))
@@ -136,29 +137,10 @@ class MainActivity : AppCompatActivity(),
 
     override fun onStop() {
         super.onStop()
-        if (googleApiClient.isConnected) {
-            googleApiClient.disconnect()
-        }
+//        if (googleApiClient.isConnected) {
+//            googleApiClient.disconnect()
+//        }
     }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION) {
-            if (permissions.isNotEmpty() && isPermissionGranted(permissions.first()))
-                getDeviceLocation()
-            else
-                Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-                        actionMessage = R.string.action_Ok, actionClick = { permissionRequest() })
-        }
-    }
-
-    override fun onConnected(bundle: Bundle?) {
-        if (Utils.isLocationGranted(this)) getDeviceLocation()
-    }
-
-    override fun onConnectionFailed(result: ConnectionResult) = Unit
-    override fun onConnectionSuspended(i: Int) {}
-    override fun onLocationChanged(l: Location?) {}
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.app_menu, menu)
@@ -175,28 +157,59 @@ class MainActivity : AppCompatActivity(),
         return super.onOptionsItemSelected(item)
     }
 
-    private fun initLocation() {
-        LocationServices.getSettingsClient(this)
-                .checkLocationSettings(locationSettingRequest)
-                .addOnCompleteListener {
-                    try {
-                        it.getResult(ApiException::class.java)
-                    } catch (exception: ApiException) {
-                        when (exception.statusCode) {
-                            LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
-                                (exception as ResolvableApiException)
-                                        .startResolutionForResult(this, LOCATION_SETTINGS)
-                            }
-                            LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
-                                //todo snackbar
-                                // goto Location setting
-                                startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                            }
-                        }
-                    }
-                }
-                .addOnSuccessListener { permissionRequest() }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_LOCATION_CODE) {
+            if (permissions.isNotEmpty() && permissions.all { isPermissionGranted(it) })
+                retrieveLocation()
+            else
+                Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
+                        actionMessage = R.string.action_Ok, actionClick = { requestLocationPermission() })
+        }
     }
+
+
+
+
+    private fun requestLocationPermission() {
+        if (isPermissionGranted(PERMISSION_FINE_LOCATION) && isPermissionGranted(PERMISSION_BACKGROUND_LOCATION)) {
+            retrieveLocation()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(PERMISSION_FINE_LOCATION, PERMISSION_BACKGROUND_LOCATION), PERMISSION_LOCATION_CODE)
+        }
+    }
+
+    private fun retrieveLocation(){
+        fusedLocationClient?.lastLocation?.addOnCompleteListener {
+            it.result?.let {
+                locationUpdated.invoke(it)
+            }
+        }
+    }
+
+
+//    private fun initLocation() {
+//        LocationServices.getSettingsClient(this)
+//                .checkLocationSettings(locationSettingRequest)
+//                .addOnCompleteListener {
+//                    try {
+//                        it.getResult(ApiException::class.java)
+//                    } catch (exception: ApiException) {
+//                        when (exception.statusCode) {
+//                            LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+//                                (exception as ResolvableApiException)
+//                                        .startResolutionForResult(this, LOCATION_SETTINGS)
+//                            }
+//                            LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+//                                //todo snackbar
+//                                // goto Location setting
+//                                startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+//                            }
+//                        }
+//                    }
+//                }
+//                .addOnSuccessListener { permissionRequest() }
+//    }
 
 //    private fun initUi() {
 //        //workaround for intercept drag map view and disable it
@@ -336,40 +349,20 @@ class MainActivity : AppCompatActivity(),
 //        map?.animateCamera(CameraUpdateFactory.newLatLng(latLng))
 //    }
 
-    @SuppressLint("MissingPermission")
-    private fun addGeofence() {
-        geofenceClient.addGeofences(geofenceRequest, geoFencePendingIntent)
-                .addOnSuccessListener {
-                    Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start)
-                    PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
-                    Handler().postDelayed({ finishAndRemoveTask() }, 2000)
-                }
-                .addOnFailureListener { it.log(TAG) }
-    }
-
-    fun removeGeofence(callback: (() -> Unit)? = null) {
-        geofenceClient.removeGeofences(geoFencePendingIntent)
-                .addOnSuccessListener { callback?.invoke() }
-                .addOnFailureListener { it.log(TAG) }
-    }
-
-    @SuppressLint("NewApi")
-    private fun permissionRequest() {
-        if (isPermissionGranted(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            getDeviceLocation()
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun getDeviceLocation() {
-        fusedLocationClient?.lastLocation?.addOnCompleteListener {
-            it.result?.let {
-                locationUpdated.invoke(it)
-//                location = it
-//                map?.let { setMapUi(it) }
-            }
-        }
-    }
+//    @SuppressLint("MissingPermission")
+//    private fun addGeofence() {
+//        geofenceClient.addGeofences(geofenceRequest, geoFencePendingIntent)
+//                .addOnSuccessListener {
+//                    Utils.AlertHelper.snackbar(this, R.string.snackbar_service_start)
+//                    PreferencesHelper.setPreferences(this, PreferencesHelper.KEY_ADD_GEOFENCE, true)
+//                    Handler().postDelayed({ finishAndRemoveTask() }, 2000)
+//                }
+//                .addOnFailureListener { it.log(TAG) }
+//    }
+//
+//    fun removeGeofence(callback: (() -> Unit)? = null) {
+//        geofenceClient.removeGeofences(geoFencePendingIntent)
+//                .addOnSuccessListener { callback?.invoke() }
+//                .addOnFailureListener { it.log(TAG) }
+//    }
 }

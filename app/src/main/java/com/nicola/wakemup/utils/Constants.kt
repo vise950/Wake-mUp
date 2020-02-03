@@ -1,10 +1,15 @@
 package com.nicola.wakemup.utils
 
+import android.Manifest
+
 
 private val PACKAGE_NAME = "com.nicola.wakemup"
 
+const val PERMISSION_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
+const val PERMISSION_BACKGROUND_LOCATION = Manifest.permission.ACCESS_BACKGROUND_LOCATION
+const val PERMISSION_LOCATION_CODE = 372
+
 val LOCATION_SETTINGS = 555
-val LOCATION_PERMISSION = 372
 
 val INVALID_FLOAT_VALUE = -999.0F
 val INVALID_DOUBLE_VALUE = -999.0
