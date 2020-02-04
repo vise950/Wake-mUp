@@ -16,7 +16,7 @@ import com.nicola.wakemup.utils.locationUpdated
 import com.nicola.wakemup.utils.log
 
 
-class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
+class MapFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val DEFAULT_ZOOM: Float = 0F
@@ -25,6 +25,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickList
 
     private var map: GoogleMap? = null
     private var location: Location? = null
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val layout = inflater.inflate(R.layout.fragment_map, null)
@@ -49,29 +50,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMapLongClickList
     override fun onMapReady(googleMap: GoogleMap?) {
         googleMap?.let { pennywise ->
             this.map = pennywise
-            pennywise.setOnMapLongClickListener(this)
         }
-    }
-
-    override fun onMapLongClick(latLng: LatLng?) {
-//        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-//        latLng?.let {
-//            clearMap(it)
-//
-//            Intent(this, FetchAddressIntentService::class.java).apply {
-//                putExtra(RECEIVER, addressReceiver)
-//                putExtra(LOCATION_DATA_EXTRA, it)
-//            }.let {
-//                startService(it)
-//            }
-//
-//            addressReceiver.onResultReceive = {
-//                runOnUiThread {
-//                    place_autocomplete_tv.setText(it)
-//                    place_autocomplete_tv.dismissDropDown()
-//                }
-//            }
-//        }
     }
 
     private fun updateMapUi() {
