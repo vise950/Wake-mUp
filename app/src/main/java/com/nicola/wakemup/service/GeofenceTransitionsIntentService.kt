@@ -69,7 +69,7 @@ class GeofenceTransitionsIntentService : IntentService(TAG) {
                     sendBroadcastCompat(this, intentStartAlarm)
                 }
             } else {
-                getErrorString(it.errorCode).log()
+                getErrorString(it.errorCode).log( )
             }
         }
     }

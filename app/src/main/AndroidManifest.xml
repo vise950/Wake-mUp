@@ -35,6 +35,16 @@
             android:name="com.nicola.wakemup.preferences.SettingsActivity"
             android:screenOrientation="sensorPortrait" />
 
+        <receiver
+            android:name=".service.GeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".service.GeofenceTransitionsJobIntentService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+
         <service
             android:name="com.nicola.wakemup.service.GeofenceTransitionsIntentService"
             android:exported="false" />
