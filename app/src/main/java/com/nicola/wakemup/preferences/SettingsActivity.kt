@@ -36,7 +36,7 @@ class SettingsActivity : AppCompatActivity() {
             super.onCreate(savedInstanceState)
             addPreferencesFromResource(R.xml.settings)
 
-            PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
+//            PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
 
             findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { _, _ ->
                 Handler().postDelayed({

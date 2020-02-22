@@ -27,11 +27,6 @@ class Utils {
 
         fun getNowInMls(): Long = System.currentTimeMillis()
 
-        fun getParseColor(context: Context, key: String): String {
-            val pref = PreferencesHelper.getDefaultPreferences(context, key, -1) as Int
-            return "#${Integer.toHexString(pref).toUpperCase()}"
-        }
-
         fun getParseColor(color: Int): String = "#${Integer.toHexString(color).toUpperCase()}"
 
         fun milesToMeters(miles: Int): Double = (miles * 1609.344)

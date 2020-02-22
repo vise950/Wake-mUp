@@ -5,11 +5,12 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
     <application
+        android:name=".application.Init"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
@@ -39,30 +40,21 @@
             android:name=".service.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="true" />
+
         <service
             android:name=".service.GeofenceTransitionsJobIntentService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <service android:name=".service.AlarmJobIntentService" />
 
-        <service
-            android:name="com.nicola.wakemup.service.GeofenceTransitionsIntentService"
-            android:exported="false" />
-        <service
-            android:name="com.nicola.wakemup.service.AlarmService"
-            android:exported="false" />
         <service
             android:name=".service.FetchAddressIntentService"
             android:exported="false" />
 
         <receiver
-            android:name="com.nicola.wakemup.service.AlarmReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.nicola.wakemup.START_ALARM" />
-            </intent-filter>
-        </receiver>
+            android:name="com.nicola.wakemup.service.AlarmBroadcastReceiver"
+            android:enabled="true"/>
 
 
         <meta-data

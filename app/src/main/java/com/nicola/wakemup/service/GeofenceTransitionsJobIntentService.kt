@@ -5,10 +5,7 @@ import android.content.Intent
 import androidx.core.app.JobIntentService
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
-import com.nicola.wakemup.utils.GEOFENCE_INTENT_SERVICE_JOB_ID
-import com.nicola.wakemup.utils.GeofenceHelper
-import com.nicola.wakemup.utils.NotificationHelper
-import com.nicola.wakemup.utils.log
+import com.nicola.wakemup.utils.*
 
 
 class GeofenceTransitionsJobIntentService : JobIntentService() {
@@ -28,9 +25,8 @@ class GeofenceTransitionsJobIntentService : JobIntentService() {
         GeofencingEvent.fromIntent(intent)?.let {
             if (!it.hasError()) {
                 if (it.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                    NotificationHelper.showNotification()
-//                    sendBroadcastCompat(this, intentStartAlarm)
-                    "enter in geofence"
+                    NotificationHelper.show()
+                    this.sendBroadcast(AlarmHelper.getStartIntent())
                 }
             } else {
                 GeofenceHelper.getGeofenceError(it.errorCode).log()

@@ -18,17 +18,10 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.nicola.wakemup.R
 import com.nicola.wakemup.service.GeofenceBroadcastReceiver
-import com.nicola.wakemup.utils.GeofenceHelper
-import com.nicola.wakemup.utils.locationUpdated
-import com.nicola.wakemup.utils.log
+import com.nicola.wakemup.utils.*
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
-
-    companion object {
-        private const val DEFAULT_ZOOM: Float = 0F
-        private const val ZOOM: Float = 10F
-    }
 
     private val geofencingClient by lazy { LocationServices.getGeofencingClient(this.requireActivity()) }
     private val geofencePendingIntent: PendingIntent by lazy {

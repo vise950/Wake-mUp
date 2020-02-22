@@ -19,15 +19,18 @@ object NotificationHelper {
     private lateinit var notificationManager: NotificationManager
     private lateinit var notification: Notification
 
-
     fun init(context: Context) {
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
         buildNotification(context)
     }
 
-    fun showNotification(){
+    fun show() {
         notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    fun dismiss() {
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     private fun buildNotification(context: Context) {
@@ -40,7 +43,7 @@ object NotificationHelper {
                 .setOngoing(true)
                 .setColor(Color.RED)
                 .setColorized(true)
-//                .addAction(R.drawable.ic_alarm_off, context.getText(R.string.action_dismiss), intentStopAlarm)
+                .addAction(R.drawable.ic_alarm_off, context.getText(R.string.action_dismiss), AlarmHelper.getStopPendingIntent())
                 .setContentIntent(createNotificationIntent(context))
                 .build()
     }
@@ -64,7 +67,7 @@ object NotificationHelper {
                 addNextIntent(this@with)
             }
         }.also {
-             return it.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+            return it.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
         }
     }
 }

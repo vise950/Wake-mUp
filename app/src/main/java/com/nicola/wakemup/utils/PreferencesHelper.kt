@@ -1,7 +1,7 @@
 package com.nicola.wakemup.utils
 
 import android.content.Context
-import android.preference.PreferenceManager
+import android.content.SharedPreferences
 import com.nicola.wakemup.ui.activity.MainActivity
 
 object PreferencesHelper {
@@ -15,11 +15,16 @@ object PreferencesHelper {
     val KEY_NAV_BAR_COLOR: String = "nav_bar_color"
     val KEY_FIRST_RUN: String = "is_first_run"
     val KEY_SHOW_CASE: String = "show_case"
-    val KEY_MAP_STYLE:String="map_style"
+    val KEY_MAP_STYLE: String = "map_style"
 
-    fun setPreferences(context: Context, key: String, value: Any) {
-        val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
-        val editor = sp.edit()
+    private lateinit var sharedPreferences: SharedPreferences
+
+    fun init(context: Context) {
+        sharedPreferences = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
+    }
+
+    fun setPreferences(key: String, value: Any) {
+        val editor = sharedPreferences.edit()
         when (value) {
             is String -> editor.putString(key, value)
             is Boolean -> editor.putBoolean(key, value)
@@ -30,44 +35,28 @@ object PreferencesHelper {
         editor.apply()
     }
 
-    fun getPreferences(context: Context, key: String, defaultValue: Any): Any? {
-        val sp = context.getSharedPreferences(MainActivity::class.java.name, Context.MODE_PRIVATE)
+    fun getPreferences(key: String, defaultValue: Any): Any? {
         var value: Any? = null
 
         when (defaultValue) {
-            is String -> value = sp.getString(key, defaultValue)
-            is Boolean -> value = sp.getBoolean(key, defaultValue)
-            is Int -> value = sp.getInt(key, defaultValue)
-            is Float -> value = sp.getFloat(key, defaultValue)
-            is Long -> value = sp.getLong(key, defaultValue)
+            is String -> value = sharedPreferences.getString(key, defaultValue)
+            is Boolean -> value = sharedPreferences.getBoolean(key, defaultValue)
+            is Int -> value = sharedPreferences.getInt(key, defaultValue)
+            is Float -> value = sharedPreferences.getFloat(key, defaultValue)
+            is Long -> value = sharedPreferences.getLong(key, defaultValue)
         }
 
         return value
     }
 
-    fun getDefaultPreferences(context: Context, key: String, defaultValue: Any): Any? {
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        var value: Any? = null
+    fun isAnotherGeofenceActive(): Boolean? =
+            getPreferences(KEY_ADD_GEOFENCE, false) as? Boolean
 
-        when (defaultValue) {
-            is String -> value = sp.getString(key, defaultValue)
-            is Boolean -> value = sp.getBoolean(key, defaultValue)
-            is Int -> value = sp.getInt(key, defaultValue)
-            is Float -> value = sp.getFloat(key, defaultValue)
-            is Long -> value = sp.getLong(key, defaultValue)
-        }
-
-        return value
-    }
-
-    fun isAnotherGeofenceActive(context: Context): Boolean? =
-            getPreferences(context, KEY_ADD_GEOFENCE, false) as? Boolean
-
-    fun isISU(context: Context): Boolean? {
-        val pref = getDefaultPreferences(context, KEY_DISTANCE, "")
-        return pref != "mi"
-    }
-
-    fun isShowCase(context: Context): Boolean? =
-            getPreferences(context, KEY_SHOW_CASE, true) as? Boolean
+//    fun isISU(context: Context): Boolean? {
+//        val pref = getDefaultPreferences(context, KEY_DISTANCE, "")
+//        return pref != "mi"
+//    }
+//
+//    fun isShowCase(context: Context): Boolean? =
+//            getPreferences(context, KEY_SHOW_CASE, true) as? Boolean
 }
