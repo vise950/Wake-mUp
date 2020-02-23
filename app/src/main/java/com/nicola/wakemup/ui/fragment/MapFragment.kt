@@ -1,14 +1,11 @@
 package com.nicola.wakemup.ui.fragment
 
-import android.app.PendingIntent
-import android.content.Intent
 import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -17,17 +14,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.nicola.wakemup.R
-import com.nicola.wakemup.service.GeofenceBroadcastReceiver
-import com.nicola.wakemup.utils.*
+import com.nicola.wakemup.utils.DEFAULT_ZOOM
+import com.nicola.wakemup.utils.GeofenceHelper
+import com.nicola.wakemup.utils.ZOOM
+import com.nicola.wakemup.utils.locationUpdated
+import kotlinx.android.synthetic.main.fragment_map.*
 
 
 class MapFragment : Fragment(), OnMapReadyCallback {
-
-    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this.requireActivity()) }
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(this.requireContext(), GeofenceBroadcastReceiver::class.java)
-        PendingIntent.getBroadcast(this.requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
 
     private var map: GoogleMap? = null
     private var location: Location? = null
@@ -46,8 +40,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initView()
+
         locationUpdated = {
-            "location -- lat: ${it.latitude}, lng: ${it.longitude}".log()
             location = it
             updateMapUi()
         }
@@ -58,6 +53,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         googleMap?.let { pennywise ->
             this.map = pennywise
         }
+    }
+
+    private fun initView(){
+        handleViewListener()
     }
 
     private fun updateMapUi() {
@@ -78,7 +77,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             // possibilità di modificare il raggio di azione del marker o eliminarlo al click
             setOnMapClickListener {
                 addMarker(it)
-                addGeofence(it, 200F)
             }
         }
 
@@ -99,20 +97,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         marker?.remove()
     }
 
-    private fun addGeofence(position: LatLng, radius: Float) {
-        geofencingClient.addGeofences(GeofenceHelper.getGeofenceRequest(position, radius), geofencePendingIntent)
-                .addOnSuccessListener {
-                    "geofence added correctly".log()
-                    //todo show ok message to user
-                }
-                .addOnFailureListener { it.log("error add geofence") }
-    }
-
-    private fun removeGeofence() {
-        geofencingClient.removeGeofences(geofencePendingIntent)
-                .addOnSuccessListener {
-                    "geofence removed correctly".log()
-                }
-                .addOnFailureListener { it.log("error remove geofence") }
+    private fun handleViewListener(){
+        start_geofence_fab.setOnClickListener {
+            marker?.let {
+                GeofenceHelper.addGeofence(it.position, 300F)
+            }
+        }
     }
 }

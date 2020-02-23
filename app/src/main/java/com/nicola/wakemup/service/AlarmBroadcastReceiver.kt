@@ -10,6 +10,5 @@ class AlarmBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         AlarmJobIntentService.enqueueWork(context, intent)
-        NotificationHelper.dismiss()
     }
 }
