@@ -11,8 +11,8 @@ class Init : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        NotificationHelper.init(this)
         AlarmHelper.init(this)
+        NotificationHelper.init(this)
         PreferencesHelper.init(this)
         GeofenceHelper.init(this)
     }

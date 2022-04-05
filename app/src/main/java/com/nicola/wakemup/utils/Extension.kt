@@ -3,7 +3,6 @@ package com.nicola.wakemup.utils
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.LocationManager
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import kotlin.reflect.KClass
@@ -35,5 +34,14 @@ fun Activity.hideKeyboard() {
     }
 }
 
-fun Context.isPermissionGranted(permission:String):Boolean =
-        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+fun Context.hasPermission(permission: String): Boolean =
+    ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+
+fun Context.hasPermission(permissions: Array<String>): Boolean {
+    permissions.forEach {
+        if (!this.hasPermission(it)) {
+            return false
+        }
+    }
+    return true
+}

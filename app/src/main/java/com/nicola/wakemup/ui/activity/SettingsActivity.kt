@@ -1,13 +1,16 @@
-package com.nicola.wakemup.preferences
+package com.nicola.wakemup.ui.activity
 
 import android.os.Bundle
 import android.os.Handler
-import android.preference.PreferenceFragment
+import android.os.Looper
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
 import com.nicola.wakemup.R
-import com.nicola.wakemup.utils.PreferencesHelper
 
+
+//fixme
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,7 +18,8 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.action_menu_settings)
 
-        fragmentManager.beginTransaction().replace(android.R.id.content, AppPreferenceFragment()).commit()
+        supportFragmentManager.beginTransaction()
+            .add(android.R.id.content, SettingsFragment()).commit()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -30,19 +34,15 @@ class SettingsActivity : AppCompatActivity() {
         finish()
     }
 
-    class AppPreferenceFragment : PreferenceFragment() {
+    class SettingsFragment : PreferenceFragmentCompat() {
 
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            addPreferencesFromResource(R.xml.settings)
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.settings, rootKey)
 
-//            PreferencesHelper.setPreferences(activity, PreferencesHelper.KEY_FIRST_RUN, false)
-
-            findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener { _, _ ->
-                Handler().postDelayed({
-                    activity.recreate()
+            findPreference<SwitchPreference>(getString(R.string.key_theme))?.setOnPreferenceChangeListener { _, _ ->
+                Handler(Looper.getMainLooper()).postDelayed({
+                    this.activity?.recreate()
                 }, 300)
-                true
             }
         }
     }

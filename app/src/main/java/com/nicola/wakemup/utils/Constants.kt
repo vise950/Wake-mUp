@@ -1,11 +1,15 @@
 package com.nicola.wakemup.utils
 
 import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 
-private val PACKAGE_NAME = "com.nicola.wakemup"
+private const val PACKAGE_NAME = "com.nicola.wakemup"
 
 const val PERMISSION_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
+const val PERMISSION_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION
+@RequiresApi(Build.VERSION_CODES.Q)
 const val PERMISSION_BACKGROUND_LOCATION = Manifest.permission.ACCESS_BACKGROUND_LOCATION
 const val PERMISSION_LOCATION_CODE = 372
 

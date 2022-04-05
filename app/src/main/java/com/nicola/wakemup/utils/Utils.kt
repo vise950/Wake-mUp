@@ -37,13 +37,13 @@ class Utils {
     }
 
     object PermissionHelper {
-        fun gotoSetting(activity: Activity) =
-                AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
-                        actionMessage = R.string.action_Ok, actionClick = {
-                    val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                            .setData(Uri.fromParts("package", activity.packageName, null))
-                    activity.startActivity(intent)
-                })
+//        fun gotoSetting(activity: Activity) =
+//                AlertHelper.snackbar(activity, R.string.snackbar_permission_denied,
+//                        actionMessage = R.string.action_Ok, actionClick = {
+//                    val intent = Intent().setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+//                            .setData(Uri.fromParts("package", activity.packageName, null))
+//                    activity.startActivity(intent)
+//                })
     }
 
     object AlertHelper {
@@ -75,24 +75,24 @@ class Utils {
                     .show()
         }
 
-        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container, duration: Int = Snackbar.LENGTH_LONG) {
-            val snackBar = Snackbar.make(view, message, duration)
-            showSnackBar(activity, snackBar)
-        }
-
-        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container,
-                     duration: Int = Snackbar.LENGTH_INDEFINITE,
-                     actionMessage: Int,
-                     actionClick: (() -> Unit)) {
-            val snackBar = Snackbar.make(view, message, duration)
-            if (duration == Snackbar.LENGTH_INDEFINITE) {
-                snackBar.setAction(actionMessage, { actionClick.invoke() })
-            }
-            showSnackBar(activity, snackBar)
-        }
-
-        private fun showSnackBar(activity: Activity, snackBar: Snackbar) = activity.runOnUiThread {
-            snackBar.show()
-        }
+//        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container, duration: Int = Snackbar.LENGTH_LONG) {
+//            val snackBar = Snackbar.make(view, message, duration)
+//            showSnackBar(activity, snackBar)
+//        }
+//
+//        fun snackbar(activity: Activity, message: Int, view: View = activity.root_container,
+//                     duration: Int = Snackbar.LENGTH_INDEFINITE,
+//                     actionMessage: Int,
+//                     actionClick: (() -> Unit)) {
+//            val snackBar = Snackbar.make(view, message, duration)
+//            if (duration == Snackbar.LENGTH_INDEFINITE) {
+//                snackBar.setAction(actionMessage, { actionClick.invoke() })
+//            }
+//            showSnackBar(activity, snackBar)
+//        }
+//
+//        private fun showSnackBar(activity: Activity, snackBar: Snackbar) = activity.runOnUiThread {
+//            snackBar.show()
+//        }
     }
 }
