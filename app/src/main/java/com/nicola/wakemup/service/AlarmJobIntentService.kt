@@ -19,7 +19,7 @@ class AlarmJobIntentService : JobIntentService() {
             STOP_ALARM -> {
                 AlarmHelper.stop()
                 NotificationHelper.dismiss()
-                GeofenceHelper.removeGeofence()
+                GeofenceHelper.removeGeofence({},{})
             }
         }
     }

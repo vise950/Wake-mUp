@@ -29,7 +29,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService() {
                     this.sendBroadcast(AlarmHelper.getStartIntent())
                 }
             } else {
-                GeofenceHelper.getGeofenceError(it.errorCode).log()
+//                GeofenceHelper.getGeofenceError(it.errorCode).log()
             }
         }
     }

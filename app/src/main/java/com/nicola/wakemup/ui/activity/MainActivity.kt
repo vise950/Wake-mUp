@@ -10,11 +10,13 @@ import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import com.nicola.wakemup.R
 import com.nicola.wakemup.databinding.ActivityMainBinding
 import com.nicola.wakemup.ui.fragment.MapFragment
 import com.nicola.wakemup.utils.hasPermission
 import com.nicola.wakemup.utils.locationUpdated
+import com.nicola.wakemup.utils.showSnackbar
 
 
 class MainActivity : AppCompatActivity() {
@@ -22,22 +24,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
 
-    private val permissions = arrayOf(
+    private val locationPermission = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
 //        Manifest.permission.ACCESS_BACKGROUND_LOCATION
     )
 
-    private val requestMultiplePermissions =
+    private val locationPermissionRequest =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            permissions.entries.forEach {
-                Log.e("DEBUG", "${it.key} = ${it.value}")
-//                if (!it.value) {
-//                    Utils.AlertHelper.snackbar(this, R.string.snackbar_ask_permission,
-//                        actionMessage = R.string.action_Ok, actionClick = {
-//                            askPermissions(this.permissions)
-//                        })
-//                    return@registerForActivityResult
-//                }
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    retrieveLocation()
+                }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    // Only approximate location access granted.
+                }
+                else -> {
+                    binding.root.showSnackbar(
+                        R.string.snackbar_ask_permission,
+                        Snackbar.LENGTH_INDEFINITE,
+                        R.string.action_Ok
+                    ) {
+                        askPermissions(locationPermission)
+                    }
+                }
             }
         }
 
@@ -47,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        askPermissions(permissions)
+        askPermissions(locationPermission)
 
         supportFragmentManager.beginTransaction()
             .add(binding.mapFragment.id, MapFragment()).commit()
@@ -67,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun askPermissions(permissions: Array<String>) {
         if (!hasPermission(permissions)) {
-            requestMultiplePermissions.launch(permissions)
+            locationPermissionRequest.launch(permissions)
         } else {
             Log.d("PERMISSIONS", "All permissions are already granted")
             retrieveLocation()

@@ -12,8 +12,13 @@ class Init : Application() {
         super.onCreate()
 
         AlarmHelper.init(this)
-        NotificationHelper.init(this)
+        NotificationHelper.init(this.applicationContext)
         PreferencesHelper.init(this)
-        GeofenceHelper.init(this)
+        GeofenceHelper.init(this.applicationContext)
+    }
+
+    override fun onTerminate() {
+
+        super.onTerminate()
     }
 }

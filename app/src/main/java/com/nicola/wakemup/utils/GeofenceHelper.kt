@@ -1,9 +1,13 @@
 package com.nicola.wakemup.utils
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.google.android.gms.location.*
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.GeofencingRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.nicola.wakemup.service.GeofenceBroadcastReceiver
 
@@ -16,47 +20,48 @@ object GeofenceHelper {
     fun init(context: Context) {
         geofencingClient = LocationServices.getGeofencingClient(context)
         geofenceIntent = Intent(context, GeofenceBroadcastReceiver::class.java)
-        geofencePendingIntent = PendingIntent.getBroadcast(context, 0, geofenceIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        geofencePendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            geofenceIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
-    fun addGeofence(position: LatLng, radius: Float) {
+    @SuppressLint("MissingPermission")
+    fun addGeofence(
+        position: LatLng,
+        radius: Float,
+        onComplete: () -> Unit?,
+        onError: (Exception) -> Unit?
+    ) {
         geofencingClient.addGeofences(getGeofenceRequest(position, radius), geofencePendingIntent)
-                .addOnSuccessListener {
-                    "geofence added correctly".log()
-                    //todo show ok message to user
-                }
-                .addOnFailureListener { it.log("error add geofence") }
+            .addOnSuccessListener { onComplete() }
+            .addOnFailureListener { onError(it) }
     }
 
-    fun removeGeofence() {
+    fun removeGeofence(onComplete: () -> Unit?, onError: (Exception) -> Unit?) {
         geofencingClient.removeGeofences(geofencePendingIntent)
-                .addOnSuccessListener {
-                    "geofence removed correctly".log()
-                }
-                .addOnFailureListener { it.log("error remove geofence") }
+            .addOnSuccessListener { onComplete() }
+            .addOnFailureListener { onError(it) }
     }
+
 
     private fun getGeofenceRequest(position: LatLng, radius: Float): GeofencingRequest {
         return GeofencingRequest.Builder()
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                .addGeofence(createGeofence(position, radius))
-                .build()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(createGeofence(position, radius))
+            .build()
     }
-
-    fun getGeofenceError(errorCode: Int): String =
-            when (errorCode) {
-                GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> "GeoFence not available"
-                GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> "Too many GeoFences"
-                GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> "Too many pending intents"
-                else -> "Unknown error"
-            }
 
     private fun createGeofence(position: LatLng, radius: Float): Geofence {
         return Geofence.Builder()
-                .setRequestId(GEOFENCE_ID)
-                .setCircularRegion(position.latitude, position.longitude, radius)
-                .setExpirationDuration(GEOFENCE_EXPIRE_DURATION)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build()
+            .setRequestId(GEOFENCE_ID)
+            .setCircularRegion(position.latitude, position.longitude, radius)
+            .setExpirationDuration(GEOFENCE_EXPIRE_DURATION)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
     }
+
+
 }

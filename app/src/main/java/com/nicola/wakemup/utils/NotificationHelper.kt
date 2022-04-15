@@ -33,6 +33,7 @@ object NotificationHelper {
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
+
     private fun buildNotification(context: Context) {
         notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_alarm)
@@ -43,13 +44,13 @@ object NotificationHelper {
                 .setOngoing(true)
                 .setColor(Color.RED)
                 .setColorized(true)
-                .addAction(R.drawable.ic_alarm_off, context.getText(R.string.action_dismiss), AlarmHelper.getStopPendingIntent())
-                .setContentIntent(createNotificationIntent(context))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                .addAction(R.drawable.ic_alarm_off, context.getText(R.string.action_dismiss), AlarmHelper.getStopPendingIntent())
+//                .setContentIntent(createNotificationIntent(context))
                 .build()
     }
 
     //todo evitare di ricreare il channel ogni volta che richiamo la classe
-    @TargetApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
         NotificationChannel(NOTIFICATION_CHANNEL_ID, "General", NotificationManager.IMPORTANCE_HIGH)
                 .apply {
